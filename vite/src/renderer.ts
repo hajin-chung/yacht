@@ -4,7 +4,10 @@ import { Object } from "./object";
 
 export class Renderer {
   gl: WebGLRenderingContext
+  lastTimestamp: number | null;
+
   constructor(gl: WebGLRenderingContext) {
+    this.lastTimestamp = null;
     this.gl = gl
   }
 
@@ -32,7 +35,7 @@ export class Renderer {
     mat4.translate(
       modelViewMatrix,
       modelViewMatrix,
-      [-0.0, 0.0, -6.0],
+      [-0.0, 0.0, -10.0],
     );
 
     shader.setUniformMat4fv("uProjectionMatrix", projectionMatrix)
