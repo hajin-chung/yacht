@@ -106,6 +106,9 @@ export class Cuboid extends Object {
   }
 
   draw(shader: Shader) {
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer)
+
     const size = 3;
     const type = this.gl.FLOAT;
     const normalize = false;
@@ -128,20 +131,17 @@ export class Cuboid extends Object {
       offset,
     );
 
-    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer)
-
     this.gl.useProgram(shader.program);
 
     const rotationMatrix = mat4.create();
     mat4.fromQuat(rotationMatrix, this.rotation)
 
-    const modelViewMatrix = mat4.create();
-    mat4.fromTranslation(modelViewMatrix, this.translation);
+    const modelMatrix = mat4.create();
+    mat4.fromTranslation(modelMatrix, this.translation);
 
-    mat4.mul(modelViewMatrix, modelViewMatrix, rotationMatrix)
+    mat4.mul(modelMatrix, modelMatrix, rotationMatrix)
 
-    shader.setUniformMat4fv("uModelViewMatrix", modelViewMatrix)
+    shader.setUniformMat4fv("uModelMatrix", modelMatrix)
     this.gl.drawElements(this.gl.TRIANGLES, 36, this.gl.UNSIGNED_SHORT, 0);
 
     this.children.forEach((child) => child.draw(shader));
