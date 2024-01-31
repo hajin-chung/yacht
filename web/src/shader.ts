@@ -1,5 +1,3 @@
-import { checkError } from "./utils";
-
 export class Shader {
   program: WebGLProgram
   gl: WebGLRenderingContext
