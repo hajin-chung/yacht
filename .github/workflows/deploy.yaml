@@ -27,6 +27,9 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "./web"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,15 +38,12 @@ jobs:
           version: 8
       - name: Set up Node
         uses: actions/setup-node@v3
-        working-directory: ./web
         with:
           node-version: 18
           cache: 'pnpm'
       - name: Install dependencies
-        working-directory: ./web
         run: pnpm install
       - name: Build
-        working-directory: ./web
         run: pnpm run build
       - name: Setup Pages
         uses: actions/configure-pages@v3
@@ -51,7 +51,7 @@ jobs:
         uses: actions/upload-pages-artifact@v2
         with:
           # Upload dist repository
-          path: './web/dist'
+          path: './dist'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
