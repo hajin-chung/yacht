@@ -1,14 +1,35 @@
 import { mat4, quat, vec3 } from "gl-matrix";
 import { Shader } from "./shader";
 
-// TODO: add textures
 export class Object {
   gl: WebGLRenderingContext;
   name: string;
 
+  rotation: quat;
+  translation: vec3;
+
   constructor(gl: WebGLRenderingContext, name: string) {
     this.name = name;
     this.gl = gl;
+
+    this.rotation = quat.create();
+    this.translation = vec3.create();
+  }
+
+  translate(v: vec3) {
+    vec3.add(this.translation, this.translation, v)
+  }
+
+  rotateX(rad: number) {
+    quat.rotateX(this.rotation, this.rotation, rad)
+  }
+
+  rotateY(rad: number) {
+    quat.rotateY(this.rotation, this.rotation, rad)
+  }
+
+  rotateZ(rad: number) {
+    quat.rotateZ(this.rotation, this.rotation, rad)
   }
 
   draw(shader: Shader) {
@@ -17,26 +38,48 @@ export class Object {
 }
 
 export class Cuboid extends Object {
-  vertexBuffer: WebGLBuffer | null;
-  normalBuffer: WebGLBuffer | null;
-  indexBuffer: WebGLBuffer | null;
+  vertexBuffer: WebGLBuffer;
+  normalBuffer: WebGLBuffer;
+  indexBuffer: WebGLBuffer;
+  textureCoordBuffer: WebGLBuffer;
+  texture: WebGLTexture;
 
-  rotation: quat;
-  translation: vec3;
-
-  constructor(gl: WebGLRenderingContext, name: string, w: number, h: number, d: number) {
+  constructor(
+    gl: WebGLRenderingContext, name: string,
+    w: number, h: number, d: number
+  ) {
     super(gl, name)
 
-    this.rotation = quat.create();
-    this.translation = vec3.create();
-
     const vertices = [
-      -w / 2, -h / 2, d / 2, w / 2, -h / 2, d / 2, w / 2, h / 2, d / 2, -w / 2, h / 2, d / 2, // front
-      -w / 2, -h / 2, -d / 2, -w / 2, h / 2, -d / 2, w / 2, h / 2, -d / 2, w / 2, -h / 2, -d / 2, // back
-      -w / 2, h / 2, -d / 2, -w / 2, h / 2, d / 2, w / 2, h / 2, d / 2, w / 2, h / 2, -d / 2, // top
-      -w / 2, -h / 2, -d / 2, w / 2, -h / 2, -d / 2, w / 2, -h / 2, d / 2, -w / 2, -d / 2, h / 2, // bottom
-      w / 2, -h / 2, -d / 2, w / 2, h / 2, -d / 2, w / 2, h / 2, d / 2, w / 2, -h / 2, d / 2, // right
-      -w / 2, -h / 2, -d / 2, -w / 2, -h / 2, d / 2, -w / 2, h / 2, d / 2, -w / 2, h / 2, -d / 2, // left
+      -w / 2, -h / 2, d / 2,
+      w / 2, -h / 2, d / 2,
+      w / 2, h / 2, d / 2,
+      -w / 2, h / 2, d / 2, // front
+
+      -w / 2, -h / 2, -d / 2,
+      -w / 2, h / 2, -d / 2,
+      w / 2, h / 2, -d / 2,
+      w / 2, -h / 2, -d / 2, // back
+
+      -w / 2, h / 2, -d / 2,
+      -w / 2, h / 2, d / 2,
+      w / 2, h / 2, d / 2,
+      w / 2, h / 2, -d / 2, // top
+
+      -w / 2, -h / 2, -d / 2,
+      w / 2, -h / 2, -d / 2,
+      w / 2, -h / 2, d / 2,
+      -w / 2, -h / 2, d / 2, // bottom
+
+      w / 2, -h / 2, -d / 2,
+      w / 2, h / 2, -d / 2,
+      w / 2, h / 2, d / 2,
+      w / 2, -h / 2, d / 2, // right
+
+      -w / 2, -h / 2, -d / 2,
+      -w / 2, -h / 2, d / 2,
+      -w / 2, h / 2, d / 2,
+      -w / 2, h / 2, -d / 2, // left
     ];
 
     const indices = [
@@ -55,6 +98,38 @@ export class Cuboid extends Object {
       0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
       1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
       -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0,
+    ];
+
+    const textureCoords = [
+      0, 0,
+      0, 1,
+      1, 1,
+      1, 0, // front
+
+      0, 0,
+      0, 1,
+      1, 1,
+      1, 0, // back
+
+      0, 0,
+      0, 1,
+      1, 1,
+      1, 0, //front
+
+      0, 0,
+      0, 1,
+      1, 1,
+      1, 0, //front
+
+      0, 0,
+      0, 1,
+      1, 1,
+      1, 0, //front
+
+      0, 0,
+      0, 1,
+      1, 1,
+      1, 0, //front
     ]
 
     const vertexBuffer = gl.createBuffer();
@@ -74,22 +149,29 @@ export class Cuboid extends Object {
     this.normalBuffer = normalBuffer;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
-  }
 
-  translate(v: vec3) {
-    vec3.add(this.translation, this.translation, v)
-  }
+    const textureCoordBuffer = gl.createBuffer();
+    if (textureCoordBuffer === null) throw new Error("createBuffer error");
+    this.textureCoordBuffer = textureCoordBuffer;
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
 
-  rotateX(rad: number) {
-    quat.rotateX(this.rotation, this.rotation, rad)
-  }
-
-  rotateY(rad: number) {
-    quat.rotateY(this.rotation, this.rotation, rad)
-  }
-
-  rotateZ(rad: number) {
-    quat.rotateZ(this.rotation, this.rotation, rad)
+    const texture = gl.createTexture();
+    if (texture === null) throw new Error("createTexture error")
+    this.texture = texture;
+    gl.bindTexture(gl.TEXTURE_2D, this.texture)
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      1,
+      1,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      new Uint8Array([255, 255, 255, 255])
+    );
+    gl.generateMipmap(gl.TEXTURE_2D)
   }
 
   draw(shader: Shader) {
@@ -145,6 +227,41 @@ export class Cuboid extends Object {
       );
     }
 
+    {
+      const location = this.gl.getAttribLocation(
+        shader.program,
+        "aTextureCoord"
+      )
+      if (location === null) throw new Error(`getAttribLocation error`)
+
+      this.gl.enableVertexAttribArray(location);
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.textureCoordBuffer)
+
+      const size = 2;
+      const type = this.gl.FLOAT;
+      const normalize = false;
+      const stride = 0;
+      const offset = 0;
+      this.gl.vertexAttribPointer(
+        location,
+        size,
+        type,
+        normalize,
+        stride,
+        offset,
+      );
+    }
+
+    {
+      this.gl.activeTexture(this.gl.TEXTURE0)
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+
+      const location = this.gl.getUniformLocation(shader.program, "uTexture")
+      if (location === null) throw new Error("getUniformLocation error")
+
+      this.gl.uniform1i(location, 0);
+    }
+
     this.gl.useProgram(shader.program);
 
     const rotationMatrix = mat4.create();
@@ -156,12 +273,75 @@ export class Cuboid extends Object {
     mat4.mul(modelMatrix, modelMatrix, rotationMatrix)
 
     shader.setUniformMat4fv("uModelMatrix", modelMatrix)
-    if (this.name === "ground") {
-      shader.setUniform3fv("uColor", [0.6, 0.2, 0.2]);
-    } else {
-      shader.setUniform3fv("uColor", [0.15, 0.5, 0.15]);
-
-    }
     this.gl.drawElements(this.gl.TRIANGLES, 36, this.gl.UNSIGNED_SHORT, 0);
+  }
+}
+
+export class Dice extends Cuboid {
+  image: TexImageSource;
+
+  constructor(
+    gl: WebGLRenderingContext, name: string,
+    w: number, h: number, d: number,
+    image: HTMLImageElement,
+  ) {
+    super(gl, name, w, h, d);
+
+    const textureCoords = [
+      0, 0,
+      0, 1,
+      1 / 8, 1,
+      1 / 8, 0, // front
+
+      1 / 8, 0,
+      1 / 8, 1,
+      2 / 8, 1,
+      2 / 8, 0, // back
+
+      2 / 8, 0,
+      2 / 8, 1,
+      3 / 8, 1,
+      3 / 8, 0, //front
+
+      3 / 8, 0,
+      3 / 8, 1,
+      4 / 8, 1,
+      4 / 8, 0, //front
+
+      4 / 8, 0,
+      4 / 8, 1,
+      5 / 8, 1,
+      5 / 8, 0, //front
+
+      5 / 8, 0,
+      5 / 8, 1,
+      6 / 8, 1,
+      6 / 8, 0, //front
+    ]
+    const textureCoordBuffer = gl.createBuffer();
+    if (textureCoordBuffer === null) throw new Error("createBuffer error");
+    this.textureCoordBuffer = textureCoordBuffer;
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
+
+    const texture = gl.createTexture();
+    if (texture === null) throw new Error("createTexture error")
+    console.log(image.width, image.height);
+    this.texture = texture;
+    this.image = image;
+    gl.bindTexture(gl.TEXTURE_2D, this.texture)
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      image,
+    );
+    gl.generateMipmap(gl.TEXTURE_2D);
   }
 }

@@ -4,6 +4,16 @@ async function fetchText(url: string): Promise<string> {
   return text
 }
 
+async function fetchImage(url: string): Promise<HTMLImageElement> {
+  return new Promise(resolve => {
+    const image=  new Image();
+    image.onload = () => {
+      resolve(image)
+    }
+    image.src = url;
+  })
+}
+
 function checkError(gl: WebGLRenderingContext) {
   const error = gl.getError();
   if (error !== 0) {
@@ -11,4 +21,4 @@ function checkError(gl: WebGLRenderingContext) {
   }
 }
 
-export { fetchText, checkError }
+export { fetchText, fetchImage, checkError }
