@@ -35,6 +35,7 @@ jobs:
           version: 8
       - name: Set up Node
         uses: actions/setup-node@v3
+        working-directory: ./web
         with:
           node-version: 18
           cache: 'pnpm'
