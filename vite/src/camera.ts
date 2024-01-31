@@ -36,6 +36,24 @@ export class Camera {
   rotateZ(rad: number) {
     quat.rotateZ(this.rotation, this.rotation, rad)
   }
+
+  lookAt(center: vec3) {
+    const v1: vec3 = [0, 0, 1]
+    const v2 = vec3.create();
+    vec3.sub(v2, this.translation, center);
+    vec3.normalize(v2, v2);
+
+    const axis = vec3.create();
+    vec3.cross(axis, v1, v2)
+
+    const theta = Math.acos(vec3.dot(v1, v2))
+    const w = Math.cos(theta / 2)
+    const xyz = vec3.create()
+    vec3.copy(xyz, axis)
+    vec3.scale(xyz, xyz, Math.sin(theta / 2))
+
+    quat.set(this.rotation, xyz[0], xyz[1], xyz[2], w)
+  }
 }
 
 export class PerspectiveCamera extends Camera {

@@ -4,4 +4,11 @@ async function fetchText(url: string): Promise<string> {
   return text
 }
 
-export { fetchText }
+function checkError(gl: WebGLRenderingContext) {
+  const error = gl.getError();
+  if (error !== 0) {
+    console.error(error) 
+  }
+}
+
+export { fetchText, checkError }

@@ -1,7 +1,7 @@
 import { mat4 } from "gl-matrix";
 import { Shader } from "./shader";
-import { Object } from "./object";
 import { Camera } from "./camera";
+import { World } from "./world";
 
 export class Renderer {
   gl: WebGLRenderingContext
@@ -12,7 +12,7 @@ export class Renderer {
     this.gl = gl
   }
 
-  draw(shader: Shader, world: Object, camera: Camera) {
+  draw(shader: Shader, world: World, camera: Camera) {
     this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
     this.gl.clearDepth(1.0);
     this.gl.enable(this.gl.DEPTH_TEST);
@@ -23,14 +23,17 @@ export class Renderer {
     this.gl.useProgram(shader.program)
 
     const projectionMatrix = mat4.create();
-    const eyeMatrix = mat4.create();
-    mat4.translate(eyeMatrix, eyeMatrix, camera.translation)
+
+    const viewMatrix = mat4.create();
+    mat4.translate(viewMatrix, viewMatrix, camera.translation)
+
     const rotationMatrix = mat4.create()
     mat4.fromQuat(rotationMatrix, camera.rotation);
-    mat4.mul(eyeMatrix, eyeMatrix, rotationMatrix)
-    mat4.invert(eyeMatrix, eyeMatrix)
+    mat4.mul(viewMatrix, viewMatrix, rotationMatrix)
+    mat4.invert(viewMatrix, viewMatrix)
+
     mat4.copy(projectionMatrix, camera.projectionMatrix)
-    mat4.mul(projectionMatrix, projectionMatrix, eyeMatrix)
+    mat4.mul(projectionMatrix, projectionMatrix, viewMatrix)
 
     shader.setUniformMat4fv("uProjectionMatrix", projectionMatrix)
     world.draw(shader)
