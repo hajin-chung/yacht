@@ -326,7 +326,6 @@ export class Dice extends Cuboid {
 
     const texture = gl.createTexture();
     if (texture === null) throw new Error("createTexture error")
-    console.log(image.width, image.height);
     this.texture = texture;
     this.image = image;
     gl.bindTexture(gl.TEXTURE_2D, this.texture)
