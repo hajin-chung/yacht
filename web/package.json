@@ -10,9 +10,12 @@
   },
   "devDependencies": {
     "typescript": "^5.2.2",
-    "vite": "^5.0.8"
+    "vite": "^5.0.8",
+    "vite-plugin-top-level-await": "^1.4.1",
+    "vite-plugin-wasm": "^3.3.0"
   },
   "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.11.2",
     "gl-matrix": "^3.4.3"
   }
 }

@@ -11,11 +11,12 @@ realtime 3d secure yacht dice game
 - [x] dice texture
 - [ ] board texture
 - [ ] cup texture
-- [ ] client side 3d physics simulation
+- [x] client side 3d physics simulation
 - [ ] server side 3d physics simulation
+- [ ] rolling dice phyisics simulation for one cycle
 - [ ] sending server side 3d simulation to client side
 - [ ] dice result detection
-- [ ] score system
+- [ ] score system + game logic
 - [ ] various game effects
 - [ ] landing page
 - [ ] various effects

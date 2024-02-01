@@ -46,7 +46,8 @@ export class Cuboid extends Object {
 
   constructor(
     gl: WebGLRenderingContext, name: string,
-    w: number, h: number, d: number
+    w: number, h: number, d: number,
+    image?: HTMLImageElement,
   ) {
     super(gl, name)
 
@@ -160,18 +161,31 @@ export class Cuboid extends Object {
     if (texture === null) throw new Error("createTexture error")
     this.texture = texture;
     gl.bindTexture(gl.TEXTURE_2D, this.texture)
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA,
-      1,
-      1,
-      0,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      new Uint8Array([255, 255, 255, 255])
-    );
-    gl.generateMipmap(gl.TEXTURE_2D)
+
+    if (image) {
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        image,
+      );
+      gl.generateMipmap(gl.TEXTURE_2D);
+    } else {
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        1,
+        1,
+        0,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        new Uint8Array([28, 87, 43, 255])
+      );
+      gl.generateMipmap(gl.TEXTURE_2D)
+    }
   }
 
   draw(shader: Shader) {
