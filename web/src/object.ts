@@ -184,7 +184,8 @@ export class Cuboid extends Object {
         gl.UNSIGNED_BYTE,
         new Uint8Array([28, 87, 43, 255])
       );
-      gl.generateMipmap(gl.TEXTURE_2D)
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
     }
   }
 

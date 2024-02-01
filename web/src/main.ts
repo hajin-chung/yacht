@@ -80,9 +80,8 @@ async function main() {
   const shader = new Shader(gl, vertShaderSrc, fragShaderSrc)
   const renderer = new Renderer(gl)
   const camera = new Camera(gl);
-  // camera.translate([0, 10, 0]);
   camera.translate([0, 20, 0]);
-  camera.lookAt([0, 0, 0])
+  camera.rotateX(Math.PI * 3/2)
 
   // set graphics
   const world = new World(gl)
