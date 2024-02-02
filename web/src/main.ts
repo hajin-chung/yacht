@@ -82,6 +82,12 @@ async function main() {
       shuffleCup = false;
     }
   });
+
+  const rollButton = document.getElementById("roll")!;
+  rollButton.onmousedown = () => shuffleCup = true
+  rollButton.onmouseup = () => shuffleCup = false
+  rollButton.ontouchstart = () => shuffleCup = true
+  rollButton.ontouchend = () => shuffleCup = false
 }
 
 main();
