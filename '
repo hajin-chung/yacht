@@ -1,5 +1,6 @@
 import { Vector, type RigidBody, Rotation } from "@dimforge/rapier3d-compat";
 import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 // import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
@@ -111,10 +112,10 @@ async function main() {
 
   const light = new THREE.AmbientLight(0xeeeeff); // soft white light
   scene.add(light);
-  const directionalLight = new THREE.DirectionalLight(0xffffee, 2);
+  const directionalLight = new THREE.DirectionalLight(0xffffee, 4);
   directionalLight.position.set(1, 1, 1);
   scene.add(directionalLight);
-  const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x080820, 0.8);
+  const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x080820, 1);
   scene.add(hemisphereLight);
 
   let material = new THREE.LineBasicMaterial({
@@ -131,9 +132,9 @@ async function main() {
   const throwFrames = generateCupThrow();
   const cupFrames: Frame[] = [];
 
-  // const controls = new OrbitControls(camera, renderer.domElement);
+  const controls = new OrbitControls(camera, renderer.domElement);
   setInterval(() => {
-    // controls.update()
+    controls.update()
     // let buffers = pWorld.debugRender();
     // lines.geometry.setAttribute('position', new THREE.BufferAttribute(buffers.vertices, 3));
     // lines.geometry.setAttribute('color', new THREE.BufferAttribute(buffers.colors, 4));
