@@ -7,10 +7,10 @@ realtime 3d secure yacht dice game
 - [x] basic 3d rendering structure
 - [x] basic box rendering
 - [x] basic ambient & directional light
-- [ ] basic cup rendering
+- [x] basic cup rendering
 - [x] dice texture
-- [ ] board texture
-- [ ] cup texture
+- [x] board texture
+- [x] cup texture
 - [x] client side 3d physics simulation
 - [ ] server side 3d physics simulation
 - [ ] rolling dice phyisics simulation for one cycle
