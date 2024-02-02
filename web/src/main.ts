@@ -1,148 +1,239 @@
-import { fetchText, fetchImage } from "./utils";
-import { Shader } from "./shader";
-import { Renderer } from "./renderer";
-import { Cuboid, Dice } from "./object";
-import { Camera } from "./camera";
-import { World } from "./world";
-import type { RigidBody } from "@dimforge/rapier3d-compat";
+import { Vector, type RigidBody, Rotation } from "@dimforge/rapier3d-compat";
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+
+interface Frame {
+  translation?: Vector
+  rotation?: Rotation
+}
 
 function getRapier() {
   return import("@dimforge/rapier3d-compat")
 }
 
-main()
+function random() {
+  return 2 * Math.random() - 1
+}
+
 async function main() {
+  const fps = 60;
+
   const rapier = await getRapier();
   await rapier.init();
 
-  // world settings
-  const fps = 30;
+  const loader = new GLTFLoader();
+  const diceGltf = await loader.loadAsync("/models/dice.glb");
+  const boardGltf = await loader.loadAsync("/models/board.glb");
+  const cupGltf = await loader.loadAsync("/models/cup.glb");
 
-  // set physics
-  const gravity = { x: 0, y: -9.81, z: 0.0 };
-  const pWorld = new rapier.World(gravity)
-  pWorld.timestep = 1 / fps;
+  const cupX = 3;
+  const cupY = 5;
 
-  const groundWidth = 6.25, groundHeight = 6.25, groundDepth = 1;
-  const groundColliderDesc = rapier.ColliderDesc.cuboid(groundWidth / 2, groundDepth / 2, groundHeight / 2);
+  const pWorld = new rapier.World({ x: 0, y: -8, z: 0 });
+  const cupGeometry: any = (cupGltf.scene.children[0].children[0] as any).geometry
+  const cupVertex: Float32Array = cupGeometry.attributes.position.array
+  const cupIndex: Uint32Array = Uint32Array.from(cupGeometry.index.array)
+  const pCupRigidBodyDesc = rapier
+    .RigidBodyDesc
+    .dynamic()
+    .lockTranslations()
+    .lockRotations()
+    .setTranslation(cupX, cupY, 0)
+  const pCup = pWorld
+    .createRigidBody(pCupRigidBodyDesc)
+  const pCupColliderDesc = rapier.ColliderDesc
+    .trimesh(cupVertex.map((f, i) => {
+      if (i % 3 == 1 && f > 0) return 20;
+      return f
+    }), cupIndex)
+  pWorld.createCollider(pCupColliderDesc, pCup);
 
-  const wallWidth = groundWidth, wallHeight = 20, wallDepth = 1;
-  const rightColliderDesc = rapier.ColliderDesc
-    .cuboid(wallDepth / 2, wallHeight / 2, wallWidth / 2)
-    .setTranslation(groundWidth / 2 + wallDepth / 2, wallHeight / 2 + groundDepth / 2, 0);
-  const leftColliderDesc = rapier.ColliderDesc
-    .cuboid(wallDepth / 2, wallHeight / 2, wallWidth / 2)
-    .setTranslation(-groundWidth / 2 - wallDepth / 2, wallHeight / 2 + groundDepth / 2, 0);
-  const topColliderDesc = rapier.ColliderDesc
-    .cuboid(wallWidth / 2, wallHeight / 2, wallDepth / 2)
-    .setTranslation(0, wallHeight / 2 + groundDepth / 2, -groundHeight / 2 - wallDepth / 2);
-  const bottomColliderDesc = rapier.ColliderDesc
-    .cuboid(wallWidth / 2, wallHeight / 2, wallDepth / 2)
-    .setTranslation(0, wallHeight / 2 + groundDepth / 2, groundHeight / 2 + wallDepth / 2);
-  pWorld.createCollider(groundColliderDesc)
-  pWorld.createCollider(rightColliderDesc)
-  pWorld.createCollider(leftColliderDesc)
-  pWorld.createCollider(topColliderDesc)
-  pWorld.createCollider(bottomColliderDesc)
+  const pGround = rapier.ColliderDesc.cuboid(10, 1, 10).setTranslation(0, -1, 0)
+  pWorld.createCollider(pGround)
 
   const pDice: RigidBody[] = [];
   for (let i = 0; i < 5; i++) {
     const rigidBodyDesc =
       rapier.RigidBodyDesc
         .dynamic()
-        .setTranslation(-2.5 + 1.25 * i, 5, 0)
-        .setRotation({ x: Math.random(), y: Math.random(), z: Math.random(), w: Math.random() });
+        .setTranslation(cupX + random(), 3 * cupY + i * 6, 0)
     const rigidBody = pWorld.createRigidBody(rigidBodyDesc)
 
-    const colliderDesc = rapier.ColliderDesc.cuboid(0.5, 0.5, 0.5);
-    // const collider = 
+    const colliderDesc = rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4);
     pWorld.createCollider(colliderDesc, rigidBody);
 
     pDice.push(rigidBody)
   }
 
-  const canvas: HTMLCanvasElement = document.querySelector("canvas") as HTMLCanvasElement;
-  initCanvas(canvas)
-  const gl = canvas.getContext("webgl");
-
-  if (gl === null) {
-    alert(
-      "Unable to initialize WebGL. Your browser or machine may not support it.",
-    );
-    return;
-  }
-
-  const vertShaderSrc = await fetchText("/vert.glsl")
-  const fragShaderSrc = await fetchText("/frag.glsl")
-  const diceTexture = await fetchImage("/textures/dice.png")
-  const woodTexture = await fetchImage("/textures/wood.png")
-
-  const shader = new Shader(gl, vertShaderSrc, fragShaderSrc)
-  const renderer = new Renderer(gl)
-  const camera = new Camera(gl);
-  camera.translate([0, 20, 0]);
-  camera.rotateX(Math.PI * 3/2)
-
-  // set graphics
-  const world = new World(gl)
-  const ground = new Cuboid(gl, "ground", groundWidth, groundDepth, groundHeight)
-  const leftWall = new Cuboid(gl, "leftWall", wallDepth, 4, wallWidth)
-  const rightWall = new Cuboid(gl, "leftWall", wallDepth, 4, wallWidth)
-  const topWall = new Cuboid(gl, "leftWall", wallWidth, 4, wallDepth)
-  const bottomWall = new Cuboid(gl, "leftWall", wallWidth, 4, wallDepth)
-  const back = new Dice(gl, "back", 100, 1, 100, woodTexture);
-  back.translate([0, -1, 0]);
-  world.addObject(back);
-
-  leftWall.translate([leftColliderDesc.translation.x, 2.5, leftColliderDesc.translation.z])
-  rightWall.translate([rightColliderDesc.translation.x, 2.5, rightColliderDesc.translation.z])
-  topWall.translate([topColliderDesc.translation.x, 2.5, topColliderDesc.translation.z])
-  bottomWall.translate([bottomColliderDesc.translation.x, 2.5, bottomColliderDesc.translation.z])
-
-  world.addObject(leftWall);
-  world.addObject(rightWall);
-  world.addObject(topWall);
-  world.addObject(bottomWall);
-
-  const diceList: Dice[] = []
-  for (let i = 0; i < 5; i++) {
-    const dice = new Dice(gl, `dice${i}`, 1, 1, 1, diceTexture)
-    diceList.push(dice)
-    world.addObject(dice)
-  }
-
-  world.addObject(ground)
-
-  // TODO: abstract!
-  shader.setUniform3fv("uReverseLightDirection", [0.1, 1, 0])
-
-  // const lastTimestamp = performance.now();
-  // const interval = 
-  setInterval(() => {
-    // const timestamp = performance.now();
-    // const dt = timestamp - lastTimestamp;
-    pWorld.step();
-
-    let status = ""
-    for (let i = 0; i < 5; i++) {
-      status += `dice ${i} sleeping?: ${pDice[i].isSleeping()}, moving?: ${pDice[i].isMoving()}\n`
-    }
-    console.log(status)
-
-    for (let i = 0; i < 5; i++) {
-      const pTranslation = pDice[i].translation();
-      const pRotation = pDice[i].rotation();
-      diceList[i].translation = [pTranslation.x, pTranslation.y, pTranslation.z];
-      diceList[i].rotation = [pRotation.x, pRotation.y, pRotation.z, pRotation.w]
-    }
-
-    renderer.draw(shader, world, camera)
-
-    // clearInterval(interval)
-  }, 1000 / fps)
-}
-
-function initCanvas(canvas: HTMLCanvasElement) {
+  const canvas = document.getElementById("canvas") as HTMLCanvasElement;
   canvas.width = canvas.clientWidth;
   canvas.height = canvas.clientHeight;
+
+  const renderer = new THREE.WebGLRenderer({ canvas: canvas });
+  renderer.setSize(canvas.width, canvas.height);
+
+  const scene = new THREE.Scene();
+
+  const camera = new THREE.PerspectiveCamera(
+    30,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+  );
+  camera.position.set(0, 20, 0);
+  camera.rotateX(Math.PI * 3 / 2)
+
+  const board = boardGltf.scene;
+  scene.add(board);
+
+  {
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const cube = new THREE.Mesh(geometry);
+    scene.add(cube);
+  }
+
+  const diceModel = diceGltf.scene;
+  const diceList: THREE.Group<THREE.Object3DEventMap>[] = [];
+  for (let i = 0; i < 5; i++) {
+    const dice = diceModel.clone();
+
+    diceList.push(dice);
+    scene.add(dice);
+  }
+
+  const cup = cupGltf.scene;
+  cup.position.set(cupX, cupY, 0);
+  scene.add(cup);
+
+  const groundTexture = await new THREE.TextureLoader().loadAsync("/textures/wood.jpg");
+  groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
+  groundTexture.repeat.set(10, 10);
+  const groundMaterial = new THREE.MeshStandardMaterial({ map: groundTexture });
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), groundMaterial)
+  ground.rotateX(Math.PI * 3 / 2)
+  ground.position.set(0, -2, 0);
+  scene.add(ground)
+
+  const light = new THREE.AmbientLight(0xeeffff); // soft white light
+  scene.add(light);
+  const directionalLight = new THREE.DirectionalLight(0xffffee, 2);
+  scene.add(directionalLight);
+
+  let material = new THREE.LineBasicMaterial({
+    color: 0xffffff,
+    vertexColors: true
+  });
+  let _geometry = new THREE.BufferGeometry();
+  const lines = new THREE.LineSegments(_geometry, material);
+  scene.add(lines);
+
+  // cup shuffling
+  let shuffleCup = false, throwCup = false;
+  const shuffleFrames = generateCupShuffle()
+  const throwFrames = generateCupThrow();
+  const cupFrames: Frame[] = [];
+
+  // const controls = new OrbitControls(camera, renderer.domElement);
+  setInterval(() => {
+    // controls.update()
+    // let buffers = pWorld.debugRender();
+    // lines.geometry.setAttribute('position', new THREE.BufferAttribute(buffers.vertices, 3));
+    // lines.geometry.setAttribute('color', new THREE.BufferAttribute(buffers.colors, 4));
+
+    pWorld.step();
+
+    if (cupFrames.length === 0 && shuffleCup) {
+      cupFrames.push(...shuffleFrames)
+    }
+    if (throwCup) {
+      cupFrames.push(...throwFrames);
+      throwCup = false;
+    }
+
+    if (cupFrames.length !== 0) {
+      const frame = cupFrames.pop();
+      if (frame?.translation !== undefined) {
+        pCup.setTranslation(vectorAdd(pCup.translation(), frame.translation), false);
+      }
+      if (frame?.rotation !== undefined)
+        pCup.setRotation(frame.rotation, false);
+    }
+
+    for (let i = 0; i < 5; i++) {
+      const translation = pDice[i].translation();
+      const rotation = pDice[i].rotation();
+      diceList[i].position.set(translation.x, translation.y, translation.z);
+      diceList[i].quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w)
+    }
+
+    {
+      const translation = pCup.translation();
+      const rotation = pCup.rotation();
+      cup.position.set(translation.x, translation.y, translation.z);
+      cup.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w)
+    }
+
+    renderer.render(scene, camera);
+  }, 1 / fps)
+
+  document.addEventListener("keydown", (evt) => {
+    if (evt.key === " ") {
+      shuffleCup = true;
+    } else if (evt.key === "t") {
+      throwCup = true;
+    }
+  });
+
+  document.addEventListener("keyup", (evt) => {
+    if (evt.key === " ") {
+      shuffleCup = false;
+    }
+  });
+}
+
+main();
+
+function generateCupShuffle(): Frame[] {
+  const dx = 0.05;
+  const dy = 0.075;
+  const steps = 15;
+  const frames: Frame[] = [];
+
+  for (let i = 1; i <= steps; i++) {
+    frames.push({ translation: { x: i * dx / steps, y: i * dy / steps, z: 0 } });
+  }
+
+  for (let i = 1; i <= 2 * steps; i++) {
+    frames.push({ translation: { x: dx - i * dx / steps, y: dy - i * dy / steps, z: 0 } });
+  }
+
+  for (let i = 1; i <= steps; i++) {
+    frames.push({ translation: { x: -dx + i * dx / steps, y: -dy + i * dy / steps, z: 0 } });
+  }
+
+  frames.reverse();
+  return frames;
+}
+
+function generateCupThrow(): Frame[] {
+  const steps = 100;
+  const dt = Math.PI * 3 / 4;
+
+  const frames: Frame[] = [];
+  for (let i = 1; i <= steps; i++) {
+    const quat = new THREE.Quaternion();
+    quat.setFromAxisAngle({ x: 0, y: 0, z: 1 }, i * dt / steps)
+    frames.push({ rotation: quat })
+  }
+  for (let i = 1; i <= steps; i++) {
+    frames.push(frames[steps - i]);
+  }
+
+  frames.reverse()
+  return frames;
+}
+
+function vectorAdd(a: Vector, b: Vector): Vector {
+  return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z }
 }
