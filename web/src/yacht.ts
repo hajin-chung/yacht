@@ -32,7 +32,7 @@ export class Yacht {
     this.isDebug = false;
     this.world = new rapier.World({ x: 0, y: -8, z: 0 });
     this.canvas = canvas;
-    this.renderer = new THREE.WebGLRenderer({ canvas: canvas });
+    this.renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     this.renderer.setSize(canvas.width, canvas.height);
 
     this.camera = new THREE.PerspectiveCamera(
