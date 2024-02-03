@@ -90,11 +90,13 @@ class Board extends Component {
     super();
 
     { rapier; world }
+    // const wallW = 5.35;
     // const wallH = 4;
-    // const left = rapier.ColliderDesc.cuboid(2.67, wallH, 0.12).setTranslation(0, 0, -2.79);
-    // const right = rapier.ColliderDesc.cuboid(2.67,wallH, 0.1).setTranslation(0, 0, 2.79);
-    // const top = rapier.ColliderDesc.cuboid(0.1, wallH, 2.67).setTranslation(-2.79, 0, 0);
-    // const bottom = rapier.ColliderDesc.cuboid(0.1, wallH, 2.67).setTranslation(2.79, 0, 0);
+    // const wallD = 0.2;
+    // const top = rapier.ColliderDesc.cuboid(wallW / 2, wallH, wallD / 2).setTranslation(0, wallH / 2, -wallW / 2 - wallD / 2);
+    // const bottom = rapier.ColliderDesc.cuboid(wallW / 2, wallH, wallD / 2).setTranslation(0, wallH / 2, wallW / 2 + wallD / 2);
+    // const left = rapier.ColliderDesc.cuboid(wallD / 2, wallH, wallW / 2).setTranslation(-wallW / 2 - wallD / 2, wallH / 2, 0);
+    // const right = rapier.ColliderDesc.cuboid(wallD / 2, wallH, wallW / 2).setTranslation(wallW / 2 + wallD / 2, wallH / 2, 0);
     // world.createCollider(left);
     // world.createCollider(right);
     // world.createCollider(top);
