@@ -6,11 +6,11 @@ import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 type RAPIER = typeof import("@dimforge/rapier3d-compat");
 
 class Component {
-  constructor() {}
+  constructor() { }
 
-  update() {}
+  update() { }
 
-  draw() {}
+  draw() { }
 }
 
 class Dice extends Component {
@@ -29,9 +29,9 @@ class Dice extends Component {
 
     this.num = num;
     const rigidBodyDesc = rapier.RigidBodyDesc.dynamic().setTranslation(
-      cupX + random(),
-      3 * cupY + num * 6,
-      0,
+      cupX + 0.8 * random(),
+      cupY + 1.5 + 0.4 * random(),
+      0.8 * random(),
     );
     this.rigidBody = world.createRigidBody(rigidBodyDesc);
     const colliderDesc = rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4);
@@ -65,14 +65,11 @@ class Cup extends Component {
       .lockRotations()
       .setTranslation(cupX, cupY, 0);
     this.rigidBody = world.createRigidBody(rigidBodyDesc);
-    const colliderDesc = rapier.ColliderDesc.trimesh(
-      vertex.map((f, i) => {
-        if (i % 3 == 1 && f > 0) return 20;
-        return f;
-      }),
-      index,
-    );
+    const colliderDesc = rapier.ColliderDesc.trimesh(vertex, index);
+    const topColliderDesc = rapier.ColliderDesc.cuboid(2, 0.1, 2)
+    topColliderDesc.setTranslation(0, 3.1, 0);
     world.createCollider(colliderDesc, this.rigidBody);
+    world.createCollider(topColliderDesc, this.rigidBody);
 
     this.model = gltf.scene;
     scene.add(this.model);
@@ -89,8 +86,20 @@ class Cup extends Component {
 class Board extends Component {
   model: THREE.Group<THREE.Object3DEventMap>;
 
-  constructor(scene: THREE.Scene, gltf: GLTF) {
+  constructor(rapier: RAPIER, world: World, scene: THREE.Scene, gltf: GLTF) {
     super();
+
+    { rapier; world }
+    // const wallH = 4;
+    // const left = rapier.ColliderDesc.cuboid(2.67, wallH, 0.12).setTranslation(0, 0, -2.79);
+    // const right = rapier.ColliderDesc.cuboid(2.67,wallH, 0.1).setTranslation(0, 0, 2.79);
+    // const top = rapier.ColliderDesc.cuboid(0.1, wallH, 2.67).setTranslation(-2.79, 0, 0);
+    // const bottom = rapier.ColliderDesc.cuboid(0.1, wallH, 2.67).setTranslation(2.79, 0, 0);
+    // world.createCollider(left);
+    // world.createCollider(right);
+    // world.createCollider(top);
+    // world.createCollider(bottom);
+
     this.model = gltf.scene;
     scene.add(this.model);
   }
@@ -108,7 +117,7 @@ class Ground extends Component {
     super();
     const colliderDesc = rapier.ColliderDesc.cuboid(10, 1, 10).setTranslation(
       0,
-      -3,
+      -1,
       0,
     );
     world.createCollider(colliderDesc);

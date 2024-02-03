@@ -37,6 +37,7 @@ async function main() {
     boardGltf,
     groundTexture,
   );
+  // yacht.debug();
 
   let shuffleCup = false,
     throwCup = false;
@@ -93,32 +94,20 @@ async function main() {
 main();
 
 function generateCupShuffle(): Frame[] {
-  const dx = 0.05;
-  const dy = 0.075;
+  const dx = 0.4;
+  const dy = 1.2;
+  const dz = 0.0;
   const steps = 15;
   const frames: Frame[] = [];
 
-  for (let i = 1; i <= steps; i++) {
-    frames.push({
-      translation: { x: (i * dx) / steps, y: (i * dy) / steps, z: 0 },
-    });
-  }
-
-  for (let i = 1; i <= 2 * steps; i++) {
-    frames.push({
-      translation: { x: dx - (i * dx) / steps, y: dy - (i * dy) / steps, z: 0 },
-    });
-  }
-
-  for (let i = 1; i <= steps; i++) {
-    frames.push({
-      translation: {
-        x: -dx + (i * dx) / steps,
-        y: -dy + (i * dy) / steps,
-        z: 0,
-      },
-    });
-  }
+  for (let i = 1; i <= steps; i++)
+    frames.push({ translation: { x: dx / steps, y: dy / steps, z: dz / steps } });
+  for (let i = 1; i <= steps; i++)
+    frames.push({ translation: { x: -dx / steps, y: -dy / steps, z: -dz / steps } });
+  for (let i = 1; i <= steps; i++)
+    frames.push({ translation: { x: -dx / steps, y: dy / steps, z: dz / steps } });
+  for (let i = 1; i <= steps; i++)
+    frames.push({ translation: { x: dx / steps, y: -dy / steps, z: -dz / steps } });
 
   frames.reverse();
   return frames;

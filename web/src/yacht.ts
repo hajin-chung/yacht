@@ -61,7 +61,7 @@ export class Yacht {
     }
 
     this.cup = new Cup(rapier, this.world, this.scene, cupGltf);
-    this.board = new Board(this.scene, boardGltf);
+    this.board = new Board(rapier, this.world, this.scene, boardGltf);
     this.ground = new Ground(rapier, this.world, this.scene, groundTexture);
   }
 
