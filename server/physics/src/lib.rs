@@ -48,8 +48,8 @@ pub mod test {
             let embedded = *ptr;
             let size: u32 = embedded.to_bits();
             println!("size: {}", size);
-            if size > 2 {
-                println!("pointer value: {}", *(ptr.wrapping_add(1)));
+            if size > 20 {
+                println!("pointer value: {}", *(ptr.wrapping_add(10)));
             }
         }
     }

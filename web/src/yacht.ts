@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { Board, Cup, Dice, Ground } from "./component";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { rollAnimation } from "./animation";
 type RAPIER = typeof import("@dimforge/rapier3d-compat");
 
 export class Yacht {
@@ -16,6 +17,11 @@ export class Yacht {
   cup: Cup;
   board: Board;
   ground: Ground;
+
+  boardCollisionGroup: number;
+  cupCollisionGroup: number;
+
+  cupRolling: boolean;
 
   isDebug: boolean;
   lines?: THREE.LineSegments;
@@ -54,21 +60,43 @@ export class Yacht {
     const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x080820, 0.8);
     this.scene.add(hemisphereLight);
 
+    this.cupCollisionGroup = 0x00010001;
+    this.boardCollisionGroup = 0x00020002;
+
     this.diceList = [];
     for (let i = 0; i < 5; i++) {
-      const dice = new Dice(rapier, this.world, this.scene, diceGltf, i);
+      const dice = new Dice(rapier, this.world, this.scene, diceGltf, i,);
+      dice.setCollisionGroup(this.cupCollisionGroup);
       this.diceList.push(dice);
     }
 
     this.cup = new Cup(rapier, this.world, this.scene, cupGltf);
+    this.cup.setCollisionGroup(this.cupCollisionGroup);
     this.board = new Board(rapier, this.world, this.scene, boardGltf);
-    this.ground = new Ground(rapier, this.world, this.scene, groundTexture);
+    this.board.setCollisionGroup(this.boardCollisionGroup);
+    this.ground = new Ground(this.scene, groundTexture);
+
+    this.cupRolling = true;
   }
 
   update() {
     this.world.step();
     this.diceList.forEach((dice) => dice.update());
     this.cup.update();
+
+    if (this.cupRolling && this.cup.rollFrames.length === rollAnimation.length / 2) {
+      this.cupRolling = false;
+
+      this.diceList.forEach((dice) => {
+        dice.rigidBody.addForce({x: -0.6, y: -0.1, z: 0.1}, false);
+        
+
+        // get animation from server
+
+
+        dice.setCollisionGroup(this.boardCollisionGroup);
+      })
+    }
   }
 
   draw() {
@@ -98,5 +126,10 @@ export class Yacht {
     let geometry = new THREE.BufferGeometry();
     this.lines = new THREE.LineSegments(geometry, material);
     this.scene.add(this.lines);
+  }
+
+  roll() {
+    this.cup.roll();
+    this.cupRolling = true;
   }
 }

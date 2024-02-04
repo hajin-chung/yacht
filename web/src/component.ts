@@ -1,8 +1,9 @@
-import { RigidBody, World } from "@dimforge/rapier3d-compat";
+import { Collider, RigidBody, World } from "@dimforge/rapier3d-compat";
 import { cupX, cupY } from "./constants";
-import { random } from "./utils";
+import { random, vectorAdd } from "./utils";
 import * as THREE from "three";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { Frame, rollAnimation, shakeAnimation } from "./animation";
 type RAPIER = typeof import("@dimforge/rapier3d-compat");
 
 class Component {
@@ -16,6 +17,7 @@ class Component {
 class Dice extends Component {
   num: number;
   rigidBody: RigidBody;
+  collider: Collider;
   model: THREE.Group<THREE.Object3DEventMap>;
 
   constructor(
@@ -35,7 +37,7 @@ class Dice extends Component {
     );
     this.rigidBody = world.createRigidBody(rigidBodyDesc);
     const colliderDesc = rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4);
-    world.createCollider(colliderDesc, this.rigidBody);
+    this.collider = world.createCollider(colliderDesc, this.rigidBody);
 
     this.model = gltf.scene.clone();
     scene.add(this.model);
@@ -47,11 +49,20 @@ class Dice extends Component {
     this.model.position.set(translation.x, translation.y, translation.z);
     this.model.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
   }
+
+  setCollisionGroup(collisionGroup: number) {
+    this.collider.setCollisionGroups(collisionGroup);
+  }
 }
 
 class Cup extends Component {
   rigidBody: RigidBody;
+  cupCollider: Collider;
+  topCollider: Collider;
   model: THREE.Group<THREE.Object3DEventMap>;
+  shakeFrames: Frame[] = [];
+  rollFrames: Frame[] = [];
+  shake: boolean;
 
   constructor(rapier: RAPIER, world: World, scene: THREE.Scene, gltf: GLTF) {
     super();
@@ -68,11 +79,13 @@ class Cup extends Component {
     const colliderDesc = rapier.ColliderDesc.trimesh(vertex, index);
     const topColliderDesc = rapier.ColliderDesc.cuboid(2, 0.1, 2)
     topColliderDesc.setTranslation(0, 3.1, 0);
-    world.createCollider(colliderDesc, this.rigidBody);
-    world.createCollider(topColliderDesc, this.rigidBody);
+    this.cupCollider = world.createCollider(colliderDesc, this.rigidBody);
+    this.topCollider = world.createCollider(topColliderDesc, this.rigidBody);
 
     this.model = gltf.scene;
     scene.add(this.model);
+
+    this.shake = false;
   }
 
   update() {
@@ -80,30 +93,117 @@ class Cup extends Component {
     const rotation = this.rigidBody.rotation();
     this.model.position.set(translation.x, translation.y, translation.z);
     this.model.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
+
+    if (this.shake && this.shakeFrames.length === 0 && this.rollFrames.length === 0) {
+      this.shakeFrames.push(...shakeAnimation);
+    }
+
+    if (this.shakeFrames.length !== 0) {
+      const frame = this.shakeFrames.pop();
+      if (frame?.translation !== undefined) {
+        this.rigidBody.setTranslation(
+          vectorAdd(this.rigidBody.translation(), frame.translation),
+          false,
+        );
+      }
+      if (frame?.rotation !== undefined)
+        this.rigidBody.setRotation(frame.rotation, false);
+    }
+
+    if (this.shakeFrames.length === 0 && this.rollFrames.length !== 0) {
+      const frame = this.rollFrames.pop();
+      if (frame?.translation !== undefined) {
+        this.rigidBody.setTranslation(
+          vectorAdd(this.rigidBody.translation(), frame.translation),
+          false,
+        );
+      }
+      if (frame?.rotation !== undefined)
+        this.rigidBody.setRotation(frame.rotation, false);
+    }
+  }
+
+  startShake() {
+    this.shake = true;
+  }
+
+  stopShake() {
+    this.shake = false;
+  }
+
+  roll() {
+    this.rollFrames.push(...rollAnimation);
+  }
+
+  setCollisionGroup(collisionGroup: number) {
+    this.topCollider.setCollisionGroups(collisionGroup);
+    this.cupCollider.setCollisionGroups(collisionGroup);
   }
 }
 
 class Board extends Component {
   model: THREE.Group<THREE.Object3DEventMap>;
+  leftCollider: Collider;
+  rightCollider: Collider;
+  topCollider: Collider;
+  bottomCollider: Collider;
+  groundCollider: Collider;
 
   constructor(rapier: RAPIER, world: World, scene: THREE.Scene, gltf: GLTF) {
     super();
 
     { rapier; world }
-    // const wallW = 5.35;
-    // const wallH = 4;
-    // const wallD = 0.2;
-    // const top = rapier.ColliderDesc.cuboid(wallW / 2, wallH, wallD / 2).setTranslation(0, wallH / 2, -wallW / 2 - wallD / 2);
-    // const bottom = rapier.ColliderDesc.cuboid(wallW / 2, wallH, wallD / 2).setTranslation(0, wallH / 2, wallW / 2 + wallD / 2);
-    // const left = rapier.ColliderDesc.cuboid(wallD / 2, wallH, wallW / 2).setTranslation(-wallW / 2 - wallD / 2, wallH / 2, 0);
-    // const right = rapier.ColliderDesc.cuboid(wallD / 2, wallH, wallW / 2).setTranslation(wallW / 2 + wallD / 2, wallH / 2, 0);
-    // world.createCollider(left);
-    // world.createCollider(right);
-    // world.createCollider(top);
-    // world.createCollider(bottom);
+
+    const wallW = 5.35;
+    const wallH = 4;
+    const wallD = 0.2;
+
+    const top = rapier.ColliderDesc.cuboid(wallW / 2, wallH, wallD / 2).setTranslation(0, wallH / 2, -wallW / 2 - wallD / 2);
+    const bottom = rapier.ColliderDesc.cuboid(wallW / 2, wallH, wallD / 2).setTranslation(0, wallH / 2, wallW / 2 + wallD / 2);
+    const left = rapier.ColliderDesc.cuboid(wallD / 2, wallH, wallW / 2).setTranslation(-wallW / 2 - wallD / 2, wallH / 2, 0);
+    const right = rapier.ColliderDesc.cuboid(wallD / 2, wallH, wallW / 2).setTranslation(wallW / 2 + wallD / 2, wallH / 2, 0);
+
+    this.leftCollider = world.createCollider(left);
+    this.rightCollider = world.createCollider(right);
+    this.topCollider = world.createCollider(top);
+    this.bottomCollider = world.createCollider(bottom);
+
+    const ground = rapier
+      .ColliderDesc
+      .cuboid(10, 1, 10)
+      .setTranslation(0, -1, 0);
+    this.groundCollider = world.createCollider(ground);
+
+    const friction = 0.5;
+    this.leftCollider.setFriction(friction);
+    this.rightCollider.setFriction(friction);
+    this.topCollider.setFriction(friction);
+    this.bottomCollider.setFriction(friction);
+    this.groundCollider.setFriction(friction);
+
+    this.leftCollider.setFrictionCombineRule(rapier.CoefficientCombineRule.Max);
+    this.rightCollider.setFrictionCombineRule(rapier.CoefficientCombineRule.Max);
+    this.topCollider.setFrictionCombineRule(rapier.CoefficientCombineRule.Max);
+    this.bottomCollider.setFrictionCombineRule(rapier.CoefficientCombineRule.Max);
+    this.groundCollider.setFrictionCombineRule(rapier.CoefficientCombineRule.Max);
+
+    const restitution = 0.6;
+    this.leftCollider.setRestitution(restitution);
+    this.rightCollider.setRestitution(restitution);
+    this.topCollider.setRestitution(restitution);
+    this.bottomCollider.setRestitution(restitution);
+    this.groundCollider.setRestitution(restitution);
 
     this.model = gltf.scene;
     scene.add(this.model);
+  }
+
+  setCollisionGroup(collisionGroup: number) {
+    this.leftCollider.setCollisionGroups(collisionGroup);
+    this.rightCollider.setCollisionGroups(collisionGroup);
+    this.topCollider.setCollisionGroups(collisionGroup);
+    this.bottomCollider.setCollisionGroups(collisionGroup);
+    this.groundCollider.setCollisionGroups(collisionGroup);
   }
 }
 
@@ -111,18 +211,10 @@ class Ground extends Component {
   model: THREE.Mesh;
 
   constructor(
-    rapier: RAPIER,
-    world: World,
     scene: THREE.Scene,
     texture: THREE.Texture,
   ) {
     super();
-    const colliderDesc = rapier.ColliderDesc.cuboid(10, 1, 10).setTranslation(
-      0,
-      -1,
-      0,
-    );
-    world.createCollider(colliderDesc);
 
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(10, 10);

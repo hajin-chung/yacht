@@ -9,13 +9,15 @@ body {
   margin: 0;
 }
 
-#roll {
+#controls {
   position: absolute;
   bottom: 20px;
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+#controls>button{
   padding: 12px;
   background-color: white;
-  left: 0;
-  right: 0;
-  margin: auto;
-  width: fit-content;
 }
