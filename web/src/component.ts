@@ -152,47 +152,54 @@ class Board extends Component {
   constructor(rapier: RAPIER, world: World, scene: THREE.Scene, gltf: GLTF) {
     super();
 
-    { rapier; world }
-
     const wallW = 5.35;
     const wallH = 4;
     const wallD = 0.2;
 
-    const top = rapier.ColliderDesc.cuboid(wallW / 2, wallH, wallD / 2).setTranslation(0, wallH / 2, -wallW / 2 - wallD / 2);
-    const bottom = rapier.ColliderDesc.cuboid(wallW / 2, wallH, wallD / 2).setTranslation(0, wallH / 2, wallW / 2 + wallD / 2);
-    const left = rapier.ColliderDesc.cuboid(wallD / 2, wallH, wallW / 2).setTranslation(-wallW / 2 - wallD / 2, wallH / 2, 0);
-    const right = rapier.ColliderDesc.cuboid(wallD / 2, wallH, wallW / 2).setTranslation(wallW / 2 + wallD / 2, wallH / 2, 0);
+    const friction = 0.5;
+    const restitution = 0.6;
+
+    const top = rapier
+      .ColliderDesc
+      .cuboid(wallW / 2, wallH, wallD / 2)
+      .setTranslation(0, wallH / 2, -wallW / 2 - wallD / 2)
+      .setFriction(friction)
+      .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
+      .setRestitution(restitution);
+    const bottom = rapier
+      .ColliderDesc
+      .cuboid(wallW / 2, wallH, wallD / 2)
+      .setTranslation(0, wallH / 2, wallW / 2 + wallD / 2)
+      .setFriction(friction)
+      .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
+      .setRestitution(restitution);
+    const left = rapier
+      .ColliderDesc
+      .cuboid(wallD / 2, wallH, wallW / 2)
+      .setTranslation(-wallW / 2 - wallD / 2, wallH / 2, 0)
+      .setFriction(friction)
+      .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
+      .setRestitution(restitution);
+    const right = rapier
+      .ColliderDesc
+      .cuboid(wallD / 2, wallH, wallW / 2)
+      .setTranslation(wallW / 2 + wallD / 2, wallH / 2, 0)
+      .setFriction(friction)
+      .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
+      .setRestitution(restitution);
+    const ground = rapier
+      .ColliderDesc
+      .cuboid(10, 1, 10)
+      .setTranslation(0, -1, 0)
+      .setFriction(friction)
+      .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
+      .setRestitution(restitution);
 
     this.leftCollider = world.createCollider(left);
     this.rightCollider = world.createCollider(right);
     this.topCollider = world.createCollider(top);
     this.bottomCollider = world.createCollider(bottom);
-
-    const ground = rapier
-      .ColliderDesc
-      .cuboid(10, 1, 10)
-      .setTranslation(0, -1, 0);
     this.groundCollider = world.createCollider(ground);
-
-    const friction = 0.5;
-    this.leftCollider.setFriction(friction);
-    this.rightCollider.setFriction(friction);
-    this.topCollider.setFriction(friction);
-    this.bottomCollider.setFriction(friction);
-    this.groundCollider.setFriction(friction);
-
-    this.leftCollider.setFrictionCombineRule(rapier.CoefficientCombineRule.Max);
-    this.rightCollider.setFrictionCombineRule(rapier.CoefficientCombineRule.Max);
-    this.topCollider.setFrictionCombineRule(rapier.CoefficientCombineRule.Max);
-    this.bottomCollider.setFrictionCombineRule(rapier.CoefficientCombineRule.Max);
-    this.groundCollider.setFrictionCombineRule(rapier.CoefficientCombineRule.Max);
-
-    const restitution = 0.6;
-    this.leftCollider.setRestitution(restitution);
-    this.rightCollider.setRestitution(restitution);
-    this.topCollider.setRestitution(restitution);
-    this.bottomCollider.setRestitution(restitution);
-    this.groundCollider.setRestitution(restitution);
 
     this.model = gltf.scene;
     scene.add(this.model);

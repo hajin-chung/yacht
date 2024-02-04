@@ -31,7 +31,7 @@ async function main() {
     boardGltf,
     groundTexture,
   );
-  yacht.debug();
+  // yacht.debug();
 
   setInterval(() => {
     yacht.update();
