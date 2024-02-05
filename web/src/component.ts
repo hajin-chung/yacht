@@ -1,4 +1,4 @@
-import { Collider, RigidBody, World } from "@dimforge/rapier3d-compat";
+import { Collider, RigidBody, RigidBodyDesc, World } from "@dimforge/rapier3d-compat";
 import { cupX, cupY } from "./constants";
 import { random, vectorAdd } from "./utils";
 import * as THREE from "three";
@@ -15,6 +15,8 @@ class Component {
 }
 
 class Dice extends Component {
+  rapier: RAPIER;
+  world: World;
   num: number;
   rigidBody: RigidBody;
   collider: Collider;
@@ -29,6 +31,8 @@ class Dice extends Component {
   ) {
     super();
 
+    this.rapier = rapier;
+    this.world = world;
     this.num = num;
     const rigidBodyDesc = rapier.RigidBodyDesc.dynamic().setTranslation(
       cupX + 0.8 * random(),
@@ -38,6 +42,7 @@ class Dice extends Component {
     this.rigidBody = world.createRigidBody(rigidBodyDesc);
     const colliderDesc = rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4);
     this.collider = world.createCollider(colliderDesc, this.rigidBody);
+    this.collider.setMass(0.5);
 
     this.model = gltf.scene.clone();
     scene.add(this.model);
@@ -52,6 +57,26 @@ class Dice extends Component {
 
   setCollisionGroup(collisionGroup: number) {
     this.collider.setCollisionGroups(collisionGroup);
+  }
+
+  reset() {
+    const translation = this.rigidBody.translation();
+    const rotation = this.rigidBody.rotation();
+
+    this.world.removeRigidBody(this.rigidBody);
+    this.world.removeCollider(this.collider);
+
+    console.log(translation);
+    const rigidBodyDesc = this.rapier
+      .RigidBodyDesc
+      .dynamic()
+      .setTranslation(translation.x, translation.y, translation.z)
+      .setRotation(rotation);
+    this.rigidBody = this.world.createRigidBody(rigidBodyDesc);
+
+    const colliderDesc = this.rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4);
+    this.collider = this.world.createCollider(colliderDesc, this.rigidBody);
+    this.collider.setMass(0.5);
   }
 }
 

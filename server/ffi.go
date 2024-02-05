@@ -7,6 +7,7 @@ package main
 import "C"
 import (
 	"errors"
+	"fmt"
 	"unsafe"
 )
 
@@ -18,7 +19,7 @@ import (
 // returned []float32 are initial rotation quaternions(4) concatenated
 func GenerateRotation(
 	num int,
-	result []int,
+	result []int32,
 	translations []float32,
 	rotations []float32,
 ) ([]float32, error) {
@@ -26,12 +27,13 @@ func GenerateRotation(
 		return nil, errors.New("incorrect arguments size")
 	}
 
+	fmt.Printf("translations: %+v\n", translations)
+	fmt.Printf("rotations: %+v\n", rotations)
+
 	r_result := (*C.int)(unsafe.Pointer(&result[0]))
 	r_translations := (*C.float)(unsafe.Pointer(&translations[0]))
 	r_rotations := (*C.float)(unsafe.Pointer(&rotations[0]))
 	ptr := C.generate_rotation(C.int(num), r_result, r_translations, r_rotations)
-
-	println("now go!")
 
 	buffer := unsafe.Slice((*float32)(unsafe.Pointer(ptr)), num*4)
 

@@ -24,3 +24,5 @@ test-server: build-lib
 	cd server && go test
 
 install: install-web
+
+build: build-server build-web

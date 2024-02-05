@@ -1,5 +1,5 @@
 use rapier3d::{
-    na::{Quaternion, UnitQuaternion, Unit},
+    na::{Quaternion, Unit, UnitQuaternion},
     prelude::*,
 };
 
@@ -10,9 +10,15 @@ pub fn generate_rotation(
     translations: Vec<f32>,
     rotations: Vec<f32>,
 ) {
-    let debug = false;
+    let num = num as usize;
+    let debug = true;
 
-    let fps = 30.0;
+    if debug {
+        println!("translations: {:?}", translations);
+        println!("rotations: {:?}", rotations);
+    }
+
+    let fps = 60.0;
 
     let mut rigid_body_set = RigidBodySet::new();
     let mut collider_set = ColliderSet::new();
@@ -55,52 +61,64 @@ pub fn generate_rotation(
         .restitution(restitution)
         .build();
 
-    collider_set.insert(top);
-    collider_set.insert(bottom);
     collider_set.insert(left);
     collider_set.insert(right);
+    collider_set.insert(top);
+    collider_set.insert(bottom);
     collider_set.insert(ground);
 
     let mut dice_handles = Vec::new();
     for _ in 0..num {
         let rigid_body = RigidBodyBuilder::dynamic().build();
-        let collider = ColliderBuilder::cuboid(0.4, 0.4, 0.4);
         let dice_handle = rigid_body_set.insert(rigid_body);
+
+        let mut collider = ColliderBuilder::cuboid(0.4, 0.4, 0.4).build();
+        collider.set_mass(0.5);
         collider_set.insert_with_parent(
             collider,
             dice_handle,
             &mut rigid_body_set,
         );
+
         dice_handles.push(dice_handle);
     }
 
     for i in 0..num {
-        let body = &mut rigid_body_set[dice_handles[i as usize]];
+        let body = &mut rigid_body_set[dice_handles[i]];
         body.set_translation(
             vector![
-                translations[(3 * i) as usize],
-                translations[(3 * i + 1) as usize],
-                translations[(3 * i + 2) as usize],
+                translations[3 * i],
+                translations[3 * i + 1],
+                translations[3 * i + 2],
             ],
             false,
         );
-
         body.set_rotation(
             Rotation::from_quaternion(Quaternion::new(
-                rotations[(4 * i) as usize],
-                rotations[(4 * i + 1) as usize],
-                rotations[(4 * i + 2) as usize],
-                rotations[(4 * i + 3) as usize],
+                rotations[4 * i],
+                rotations[4 * i + 1],
+                rotations[4 * i + 2],
+                rotations[4 * i + 3],
             )),
             false,
         );
+        body.set_linvel(vector![0., 0., 0.], false);
+        body.set_angvel(vector![0., 0., 0.], false);
+        body.reset_forces(false);
+        body.reset_torques(false);
+
+        println!("{} {}", body.linvel(), body.angvel());
+        println!("{}", body.is_sleeping());
+        println!("{}", body.translation());
+        println!("{}", body.rotation().as_vector());
+        println!("{}", body.mass());
+        println!("{}", body.next_position());
 
         body.add_force(vector![-0.6, -0.1, 0.1], false);
     }
 
     let gravity = vector![0., -8.0, 0.];
     let mut integration_parameters = IntegrationParameters::default();
-    integration_parameters.dt = 1. / fps;
     let mut physics_pipeline = PhysicsPipeline::new();
     let mut island_manager = IslandManager::new();
     let mut broad_phase = BroadPhase::new();
@@ -112,16 +130,27 @@ pub fn generate_rotation(
     let physics_hooks = ();
     let event_handler = ();
 
-    for dice_handle in &dice_handles {
-        let dice_body: &RigidBody = &rigid_body_set[*dice_handle];
-        let translation = dice_body.translation();
-
-        if debug {
-            println!("{} {} {}", translation.x, translation.y, translation.z);
-        }
-    }
+    integration_parameters.dt = 1. / fps;
 
     loop {
+        let dice_body: &RigidBody = &rigid_body_set[dice_handles[0]];
+        let translation = dice_body.translation();
+        let rotation = dice_body.rotation();
+        if debug {
+            if !dice_body.is_sleeping() {
+                println!(
+                    "{} {} {} {} {} {} {}",
+                    translation.x,
+                    translation.y,
+                    translation.z,
+                    rotation.i,
+                    rotation.j,
+                    rotation.k,
+                    rotation.w
+                );
+            }
+        }
+
         physics_pipeline.step(
             &gravity,
             &integration_parameters,
@@ -138,31 +167,15 @@ pub fn generate_rotation(
             &event_handler,
         );
 
-        let mut is_dice_asleep = false;
-        for dice_handle in &dice_handles {
-            let dice_body: &RigidBody = &rigid_body_set[*dice_handle];
-            if dice_body.is_sleeping() {
-                is_dice_asleep = true;
-            }
-
-            let translation = dice_body.translation();
-            let rotation = dice_body.rotation();
-
-            if debug {
-                println!(
-                    "{} {} {}\n{} {} {} {}",
-                    translation.x,
-                    translation.y,
-                    translation.z,
-                    rotation.i,
-                    rotation.j,
-                    rotation.k,
-                    rotation.w
-                );
+        let mut is_dice_moving = false;
+        for i in 0..num {
+            let dice_body: &RigidBody = &rigid_body_set[dice_handles[i]];
+            if dice_body.is_moving() {
+                is_dice_moving = true;
             }
         }
 
-        if is_dice_asleep {
+        if !is_dice_moving {
             break;
         }
     }
@@ -179,8 +192,8 @@ pub fn generate_rotation(
     ];
     let up_vector = vector![0., 1., 0.];
 
-    for i in 0..num {
-        let dice_body: &RigidBody = &rigid_body_set[dice_handles[i as usize]];
+    for i in 0..(num) {
+        let dice_body: &RigidBody = &rigid_body_set[dice_handles[i]];
         let rotation = dice_body.rotation();
         let rotation_matrix = rotation.to_rotation_matrix();
         let mut max_product = 0.;
@@ -196,15 +209,24 @@ pub fn generate_rotation(
         }
 
         let dice_vector = rotation * face_vectors[0];
-        let target_face = result[i as usize];
+        let target_face = (result[i] - 1) as usize;
         println!("{} {}", face, target_face);
 
-        let axis_vector =
-            face_vectors[target_face as usize].cross(&dice_vector);
+        let axis_vector = face_vectors[target_face].cross(&dice_vector);
         let axis = Unit::new_normalize(axis_vector);
-        let angle = face_vectors[target_face as usize].angle(&dice_vector);
-        let rotation = UnitQuaternion::from_axis_angle(&axis, angle);
+        let angle = face_vectors[target_face].angle(&dice_vector);
+        let face_rotation = UnitQuaternion::from_axis_angle(&axis, angle);
+        let original_rotation =
+            UnitQuaternion::from_quaternion(Quaternion::from_vector(vector![
+                rotations[4 * i],
+                rotations[4 * i + 1],
+                rotations[4 * i + 2],
+                rotations[4 * i + 3],
+            ]));
 
+        let rotation_matrix = face_rotation.to_rotation_matrix()
+            * original_rotation.to_rotation_matrix();
+        let rotation = UnitQuaternion::from_rotation_matrix(&rotation_matrix);
         buffer.push(rotation.i);
         buffer.push(rotation.j);
         buffer.push(rotation.k);
