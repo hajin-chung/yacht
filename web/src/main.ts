@@ -52,8 +52,8 @@ async function main() {
   shakeButton.ontouchend = () => yacht.cup.stopShake();
 
   const rollButton = document.getElementById("roll")!;
-  rollButton.onclick = () => yacht.cup.roll(); 
-  rollButton.ontouchstart = () => yacht.cup.roll(); 
+  rollButton.onclick = () => yacht.cup.roll();
+  rollButton.ontouchstart = () => yacht.cup.roll();
 }
 
 main();

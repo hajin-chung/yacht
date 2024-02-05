@@ -32,13 +32,14 @@ export class Yacht {
   ) {
     this.isDebug = false;
 
-    this.world = new rapier.World(
-      { x: 0.0, y: -8.0, z: 0.0 },
-    );
+    this.world = new rapier.World({ x: 0.0, y: -8.0, z: 0.0 });
     this.world.timestep = 1 / fps;
 
     this.canvas = canvas;
-    this.renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    this.renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      antialias: true,
+    });
     this.renderer.setSize(canvas.width, canvas.height);
 
     this.camera = new THREE.PerspectiveCamera(
@@ -79,8 +80,8 @@ export class Yacht {
     if (this.cup.didRoll && !this.cup.didMove && this.cup.frames.length === 0) {
       this.cup.move();
 
-      this.world.removeCollider(this.cup.topCollider, false)
-      this.world.removeCollider(this.cup.cupCollider, false)
+      this.world.removeCollider(this.cup.topCollider, false);
+      this.world.removeCollider(this.cup.cupCollider, false);
 
       for (let i = 0; i < this.diceList.length; i++) {
         const dice = this.diceList[i];
@@ -124,24 +125,24 @@ export class Yacht {
   }
 
   rotationBuffer(): number[] {
-    const rotations: number[] = []
+    const rotations: number[] = [];
     for (let i = 0; i < this.diceList.length; i++) {
       const rotation = this.diceList[i].rigidBody.rotation();
-      rotations.push(rotation.x)
-      rotations.push(rotation.y)
-      rotations.push(rotation.z)
-      rotations.push(rotation.w)
+      rotations.push(rotation.x);
+      rotations.push(rotation.y);
+      rotations.push(rotation.z);
+      rotations.push(rotation.w);
     }
     return rotations;
   }
 
   translationBuffer(): number[] {
-    const translations: number[] = []
+    const translations: number[] = [];
     for (let i = 0; i < this.diceList.length; i++) {
       const translation = this.diceList[i].rigidBody.translation();
-      translations.push(translation.x)
-      translations.push(translation.y)
-      translations.push(translation.z)
+      translations.push(translation.x);
+      translations.push(translation.y);
+      translations.push(translation.z);
     }
     return translations;
   }

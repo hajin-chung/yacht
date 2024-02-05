@@ -3,15 +3,20 @@ import { cupX, cupY } from "./constants";
 import { random, vectorAdd } from "./utils";
 import * as THREE from "three";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { Frame, moveAnimation, rollAnimation, shakeAnimation } from "./animation";
+import {
+  Frame,
+  moveAnimation,
+  rollAnimation,
+  shakeAnimation,
+} from "./animation";
 type RAPIER = typeof import("@dimforge/rapier3d-compat");
 
 class Component {
-  constructor() { }
+  constructor() {}
 
-  update() { }
+  update() {}
 
-  draw() { }
+  draw() {}
 }
 
 class Dice extends Component {
@@ -40,7 +45,9 @@ class Dice extends Component {
       0.8 * random(),
     );
     this.rigidBody = world.createRigidBody(rigidBodyDesc);
-    const colliderDesc = this.rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4).setMass(0.5);
+    const colliderDesc = this.rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4).setMass(
+      0.5,
+    );
     this.collider = world.createCollider(colliderDesc, this.rigidBody);
 
     this.model = gltf.scene.clone();
@@ -79,7 +86,7 @@ class Cup extends Component {
       .setTranslation(cupX, cupY, 0);
     this.rigidBody = world.createRigidBody(rigidBodyDesc);
     const colliderDesc = rapier.ColliderDesc.trimesh(vertex, index);
-    const topColliderDesc = rapier.ColliderDesc.cuboid(2, 0.1, 2)
+    const topColliderDesc = rapier.ColliderDesc.cuboid(2, 0.1, 2);
     topColliderDesc.setTranslation(0, 3.1, 0);
     this.cupCollider = world.createCollider(colliderDesc, this.rigidBody);
     this.topCollider = world.createCollider(topColliderDesc, this.rigidBody);
@@ -153,37 +160,27 @@ class Board extends Component {
     const friction = 0.5;
     const restitution = 0.6;
 
-    const top = rapier
-      .ColliderDesc
-      .cuboid(wallW / 2.0, wallH, wallD / 2.0)
+    const top = rapier.ColliderDesc.cuboid(wallW / 2.0, wallH, wallD / 2.0)
       .setTranslation(0.0, wallH / 2.0, -wallW / 2.0 - wallD / 2.0)
       .setFriction(friction)
       .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
       .setRestitution(restitution);
-    const bottom = rapier
-      .ColliderDesc
-      .cuboid(wallW / 2.0, wallH, wallD / 2.0)
+    const bottom = rapier.ColliderDesc.cuboid(wallW / 2.0, wallH, wallD / 2.0)
       .setTranslation(0.0, wallH / 2.0, wallW / 2.0 + wallD / 2.0)
       .setFriction(friction)
       .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
       .setRestitution(restitution);
-    const left = rapier
-      .ColliderDesc
-      .cuboid(wallD / 2.0, wallH, wallW / 2.0)
+    const left = rapier.ColliderDesc.cuboid(wallD / 2.0, wallH, wallW / 2.0)
       .setTranslation(-wallW / 2.0 - wallD / 2.0, wallH / 2.0, 0.0)
       .setFriction(friction)
       .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
       .setRestitution(restitution);
-    const right = rapier
-      .ColliderDesc
-      .cuboid(wallD / 2.0, wallH, wallW / 2.0)
+    const right = rapier.ColliderDesc.cuboid(wallD / 2.0, wallH, wallW / 2.0)
       .setTranslation(wallW / 2.0 + wallD / 2.0, wallH / 2.0, 0.0)
       .setFriction(friction)
       .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
       .setRestitution(restitution);
-    const ground = rapier
-      .ColliderDesc
-      .cuboid(10.0, 1.0, 10.0)
+    const ground = rapier.ColliderDesc.cuboid(10.0, 1.0, 10.0)
       .setTranslation(0, -1.0, 0)
       .setFriction(friction)
       .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
@@ -203,10 +200,7 @@ class Board extends Component {
 class Ground extends Component {
   model: THREE.Mesh;
 
-  constructor(
-    scene: THREE.Scene,
-    texture: THREE.Texture,
-  ) {
+  constructor(scene: THREE.Scene, texture: THREE.Texture) {
     super();
 
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;

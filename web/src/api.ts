@@ -1,9 +1,13 @@
 interface RotationData {
   result: number[];
   rotations: number[];
-};
+}
 
-export async function getRotations(num: number, translations: number[], rotations: number[]): Promise<RotationData> {
+export async function getRotations(
+  num: number,
+  translations: number[],
+  rotations: number[],
+): Promise<RotationData> {
   const payload = { num, translations, rotations };
 
   // FIXME: currently test endpoint
@@ -12,7 +16,7 @@ export async function getRotations(num: number, translations: number[], rotation
     body: JSON.stringify(payload),
   });
 
-  const data = await res.json() as RotationData;
+  const data = (await res.json()) as RotationData;
 
   return data;
 }

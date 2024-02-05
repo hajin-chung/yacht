@@ -17,7 +17,7 @@ body {
   justify-content: center;
 }
 
-#controls>button{
+#controls > button {
   padding: 12px;
   background-color: white;
 }

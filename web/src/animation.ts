@@ -14,13 +14,21 @@ function generateCupShake(): Frame[] {
   const frames: Frame[] = [];
 
   for (let i = 1; i <= steps; i++)
-    frames.push({ translation: { x: dx / steps, y: dy / steps, z: dz / steps } });
+    frames.push({
+      translation: { x: dx / steps, y: dy / steps, z: dz / steps },
+    });
   for (let i = 1; i <= steps; i++)
-    frames.push({ translation: { x: -dx / steps, y: -dy / steps, z: -dz / steps } });
+    frames.push({
+      translation: { x: -dx / steps, y: -dy / steps, z: -dz / steps },
+    });
   for (let i = 1; i <= steps; i++)
-    frames.push({ translation: { x: -dx / steps, y: dy / steps, z: dz / steps } });
+    frames.push({
+      translation: { x: -dx / steps, y: dy / steps, z: dz / steps },
+    });
   for (let i = 1; i <= steps; i++)
-    frames.push({ translation: { x: dx / steps, y: -dy / steps, z: -dz / steps } });
+    frames.push({
+      translation: { x: dx / steps, y: -dy / steps, z: -dz / steps },
+    });
 
   frames.reverse();
   return frames;
@@ -50,7 +58,7 @@ function generateCupMove(): Frame[] {
   const dz = 3;
   const frames: Frame[] = [];
   for (let i = 1; i <= steps; i++) {
-    frames.push({ translation: {x: dz / steps, y: 0, z: 0} });
+    frames.push({ translation: { x: dz / steps, y: 0, z: 0 } });
   }
 
   frames.reverse();
