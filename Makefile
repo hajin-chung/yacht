@@ -4,6 +4,9 @@ build-web:
 dev-web:
 	cd web && pnpm run dev
 
+install-web:
+	cd web && pnpm i
+
 build-lib:
 	cd server/lib && cargo build --release
 	cp server/lib/target/release/libyacht.a server/lib/
@@ -19,3 +22,5 @@ dev-server: build-lib
 
 test-server: build-lib
 	cd server && go test
+
+install: install-web
