@@ -4,7 +4,6 @@ import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { Board, Cup, Dice, Ground } from "./component";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { fps } from "./constants";
-import { getRotations } from "./api";
 type RAPIER = typeof import("@dimforge/rapier3d-compat");
 
 export class Yacht {
@@ -18,9 +17,6 @@ export class Yacht {
   cup: Cup;
   board: Board;
   ground: Ground;
-
-  boardCollisionGroup: number;
-  cupCollisionGroup: number;
 
   isDebug: boolean;
   lines?: THREE.LineSegments;
@@ -64,21 +60,14 @@ export class Yacht {
     const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x080820, 0.8);
     this.scene.add(hemisphereLight);
 
-    this.cupCollisionGroup = 0x00010001;
-    this.boardCollisionGroup = 0x00020002;
-
     this.diceList = [];
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < 5; i++) {
       const dice = new Dice(rapier, this.world, this.scene, diceGltf, i);
-
-      dice.setCollisionGroup(this.boardCollisionGroup);
       this.diceList.push(dice);
     }
 
     this.cup = new Cup(rapier, this.world, this.scene, cupGltf);
-    this.cup.setCollisionGroup(this.boardCollisionGroup);
     this.board = new Board(rapier, this.world, this.scene, boardGltf);
-    this.board.setCollisionGroup(this.boardCollisionGroup);
     this.ground = new Ground(this.scene, groundTexture);
   }
 
@@ -86,11 +75,6 @@ export class Yacht {
     this.diceList.forEach((dice) => dice.update());
     this.cup.update();
     this.world.step();
-
-    if (this.cup.didMove && this.diceList[0].rigidBody.isMoving()) {
-      console.log(this.diceList[0].rigidBody.translation(),
-        this.diceList[0].rigidBody.rotation());
-    }
 
     if (this.cup.didRoll && !this.cup.didMove && this.cup.frames.length === 0) {
       this.cup.move();
@@ -105,7 +89,6 @@ export class Yacht {
         dice.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
         dice.rigidBody.resetForces(true);
         dice.rigidBody.resetTorques(true);
-        dice.setCollisionGroup(this.boardCollisionGroup);
         dice.rigidBody.addForce({ x: -0.6, y: -0.1, z: 0.1 }, true);
       }
     }
@@ -164,10 +147,9 @@ export class Yacht {
   }
 
   getRotations() {
-    const num = this.diceList.length;
-    const translations = this.translationBuffer();
-    const rotations = this.rotationBuffer();
-    console.log(translations, rotations);
-    getRotations(num, translations, rotations);
+    // const num = this.diceList.length;
+    // const translations = this.translationBuffer();
+    // const rotations = this.rotationBuffer();
+    // getRotations(num, translations, rotations);
   }
 }

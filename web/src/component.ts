@@ -53,10 +53,6 @@ class Dice extends Component {
     this.model.position.set(translation.x, translation.y, translation.z);
     this.model.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
   }
-
-  setCollisionGroup(collisionGroup: number) {
-    this.collider.setCollisionGroups(collisionGroup);
-  }
 }
 
 class Cup extends Component {
@@ -137,11 +133,6 @@ class Cup extends Component {
     this.didMove = true;
     this.frames.push(...moveAnimation);
   }
-
-  setCollisionGroup(collisionGroup: number) {
-    this.topCollider.setCollisionGroups(collisionGroup);
-    this.cupCollider.setCollisionGroups(collisionGroup);
-  }
 }
 
 class Board extends Component {
@@ -206,14 +197,6 @@ class Board extends Component {
 
     this.model = gltf.scene;
     scene.add(this.model);
-  }
-
-  setCollisionGroup(collisionGroup: number) {
-    this.leftCollider.setCollisionGroups(collisionGroup);
-    this.rightCollider.setCollisionGroups(collisionGroup);
-    this.topCollider.setCollisionGroups(collisionGroup);
-    this.bottomCollider.setCollisionGroups(collisionGroup);
-    this.groundCollider.setCollisionGroups(collisionGroup);
   }
 }
 
