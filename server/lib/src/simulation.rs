@@ -1,11 +1,14 @@
-use rapier3d::prelude::*;
+use rapier3d::{
+    na::{Quaternion, UnitQuaternion, Unit},
+    prelude::*,
+};
 
 pub fn generate_rotation(
     buffer: &mut Vec<f32>,
     num: i32,
-    _result: Vec<i32>,
-    _translations: Vec<f32>,
-    _rotations: Vec<f32>,
+    result: Vec<i32>,
+    translations: Vec<f32>,
+    rotations: Vec<f32>,
 ) {
     let debug = false;
 
@@ -59,10 +62,8 @@ pub fn generate_rotation(
     collider_set.insert(ground);
 
     let mut dice_handles = Vec::new();
-    for i in 0..num {
-        let rigid_body = RigidBodyBuilder::dynamic()
-            .translation(vector![0., 1. + 2. * i as f32, 0.])
-            .build();
+    for _ in 0..num {
+        let rigid_body = RigidBodyBuilder::dynamic().build();
         let collider = ColliderBuilder::cuboid(0.4, 0.4, 0.4);
         let dice_handle = rigid_body_set.insert(rigid_body);
         collider_set.insert_with_parent(
@@ -71,6 +72,30 @@ pub fn generate_rotation(
             &mut rigid_body_set,
         );
         dice_handles.push(dice_handle);
+    }
+
+    for i in 0..num {
+        let body = &mut rigid_body_set[dice_handles[i as usize]];
+        body.set_translation(
+            vector![
+                translations[(3 * i) as usize],
+                translations[(3 * i + 1) as usize],
+                translations[(3 * i + 2) as usize],
+            ],
+            false,
+        );
+
+        body.set_rotation(
+            Rotation::from_quaternion(Quaternion::new(
+                rotations[(4 * i) as usize],
+                rotations[(4 * i + 1) as usize],
+                rotations[(4 * i + 2) as usize],
+                rotations[(4 * i + 3) as usize],
+            )),
+            false,
+        );
+
+        body.add_force(vector![-0.6, -0.1, 0.1], false);
     }
 
     let gravity = vector![0., -8.0, 0.];
@@ -142,9 +167,44 @@ pub fn generate_rotation(
         }
     }
 
-    for dice_handle in dice_handles.iter() {
-        let dice_body: &RigidBody = &rigid_body_set[*dice_handle];
+    // TODO: detect which face is up and caculate the initial rotation
+    // of dice to achieve the desired result
+    let face_vectors = vec![
+        vector![0., 1., 0.],
+        vector![0., 0., 1.],
+        vector![1., 0., 0.],
+        vector![-1., 0., 0.],
+        vector![0., 0., -1.],
+        vector![0., -1., 0.],
+    ];
+    let up_vector = vector![0., 1., 0.];
+
+    for i in 0..num {
+        let dice_body: &RigidBody = &rigid_body_set[dice_handles[i as usize]];
         let rotation = dice_body.rotation();
+        let rotation_matrix = rotation.to_rotation_matrix();
+        let mut max_product = 0.;
+        let mut face = 0;
+
+        for j in 0..6 {
+            let face_vector = rotation_matrix * face_vectors[j];
+            let product = up_vector.dot(&face_vector);
+            if product > max_product {
+                max_product = product;
+                face = j + 1;
+            }
+        }
+
+        let dice_vector = rotation * face_vectors[0];
+        let target_face = result[i as usize];
+        println!("{} {}", face, target_face);
+
+        let axis_vector =
+            face_vectors[target_face as usize].cross(&dice_vector);
+        let axis = Unit::new_normalize(axis_vector);
+        let angle = face_vectors[target_face as usize].angle(&dice_vector);
+        let rotation = UnitQuaternion::from_axis_angle(&axis, angle);
+
         buffer.push(rotation.i);
         buffer.push(rotation.j);
         buffer.push(rotation.k);

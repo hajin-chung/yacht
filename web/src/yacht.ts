@@ -76,6 +76,10 @@ export class Yacht {
     this.board.setCollisionGroup(this.boardCollisionGroup);
     this.ground = new Ground(this.scene, groundTexture);
 
+    const testModel = diceGltf.scene.clone();
+    testModel.translateY(2);
+    this.scene.add(testModel);
+
     this.cupRolling = true;
   }
 
