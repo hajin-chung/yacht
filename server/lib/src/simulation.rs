@@ -1,14 +1,18 @@
-use rapier3d_f64::{
+use rapier3d::{
     na::{Quaternion, Unit, UnitQuaternion},
     prelude::*,
 };
 
+pub fn print_vector(vector: &Vector<Real>) {
+    println!("{} {} {}", vector.x, vector.y, vector.z);
+}
+
 pub fn generate_rotation(
-    buffer: &mut Vec<f64>,
+    buffer: &mut Vec<f32>,
     num: i32,
     result: Vec<i32>,
-    translations: Vec<f64>,
-    rotations: Vec<f64>,
+    translations: Vec<f32>,
+    rotations: Vec<f32>,
 ) {
     let num = num as usize;
     let debug = true;
@@ -24,41 +28,48 @@ pub fn generate_rotation(
     let mut collider_set = ColliderSet::new();
 
     let wall_w = 5.35;
-    let wall_h = 4.0;
+    let wall_h = 2.0;
     let wall_d = 0.2;
 
     let friction = 0.5;
     let restitution = 0.6;
+
+    let board_group = InteractionGroups::new(Group::GROUP_2, Group::GROUP_2);
 
     let top = ColliderBuilder::cuboid(wall_w / 2., wall_h, wall_d / 2.)
         .translation(vector![0., wall_h / 2., -wall_w / 2. - wall_d / 2.])
         .friction(friction)
         .friction_combine_rule(CoefficientCombineRule::Max)
         .restitution(restitution)
+        .collision_groups(board_group)
         .build();
     let bottom = ColliderBuilder::cuboid(wall_w / 2., wall_h, wall_d / 2.)
         .translation(vector![0., wall_h / 2., wall_w / 2. + wall_d / 2.])
         .friction(friction)
         .friction_combine_rule(CoefficientCombineRule::Max)
         .restitution(restitution)
+        .collision_groups(board_group)
         .build();
     let left = ColliderBuilder::cuboid(wall_d / 2., wall_h, wall_w / 2.)
         .translation(vector![-wall_w / 2. - wall_d / 2., wall_h / 2., 0.])
         .friction(friction)
         .friction_combine_rule(CoefficientCombineRule::Max)
         .restitution(restitution)
+        .collision_groups(board_group)
         .build();
     let right = ColliderBuilder::cuboid(wall_d / 2., wall_h, wall_w / 2.)
         .translation(vector![wall_w / 2. + wall_d / 2., wall_h / 2., 0.])
         .friction(friction)
         .friction_combine_rule(CoefficientCombineRule::Max)
         .restitution(restitution)
+        .collision_groups(board_group)
         .build();
     let ground = ColliderBuilder::cuboid(10., 1., 10.)
         .translation(vector![0., -1., 0.])
         .friction(friction)
         .friction_combine_rule(CoefficientCombineRule::Max)
         .restitution(restitution)
+        .collision_groups(board_group)
         .build();
 
     collider_set.insert(left);
@@ -69,11 +80,16 @@ pub fn generate_rotation(
 
     let mut dice_handles = Vec::new();
     for _ in 0..num {
-        let rigid_body = RigidBodyBuilder::dynamic().build();
+        let mut rigid_body = RigidBodyBuilder::dynamic().build();
+        rigid_body.set_linvel(vector![0., 0., 0.], true);
+        rigid_body.set_angvel(vector![0., 0., 0.], true);
+        rigid_body.reset_forces(true);
+        rigid_body.reset_torques(true);
         let dice_handle = rigid_body_set.insert(rigid_body);
 
         let mut collider = ColliderBuilder::cuboid(0.4, 0.4, 0.4).build();
         collider.set_mass(0.5);
+        collider.set_collision_groups(board_group);
         collider_set.insert_with_parent(
             collider,
             dice_handle,
@@ -91,30 +107,26 @@ pub fn generate_rotation(
                 translations[3 * i + 1],
                 translations[3 * i + 2],
             ],
-            false,
+            true,
         );
         body.set_rotation(
-            Rotation::from_quaternion(Quaternion::new(
+            Unit::new_unchecked(Quaternion::new(
+                rotations[4 * i + 3],
                 rotations[4 * i],
                 rotations[4 * i + 1],
                 rotations[4 * i + 2],
-                rotations[4 * i + 3],
             )),
-            false,
+            true,
         );
-        body.set_linvel(vector![0., 0., 0.], false);
-        body.set_angvel(vector![0., 0., 0.], false);
-        body.reset_forces(false);
-        body.reset_torques(false);
 
-        println!("{} {}", body.linvel(), body.angvel());
-        println!("{}", body.is_sleeping());
-        println!("{}", body.translation());
-        println!("{}", body.rotation().as_vector());
-        println!("{}", body.mass());
-        println!("{}", body.next_position());
+        println!("===== dice {} ====", i);
+        println!("mass: {}", body.mass());
+        println!("linvel: {}angvel: {}", body.linvel(), body.angvel());
+        println!("translation: {}", body.translation());
+        println!("rotation: {}", body.rotation().quaternion());
+        println!("=================");
 
-        body.add_force(vector![-0.6, -0.1, 0.1], false);
+        // body.add_force(vector![-0.6, -0.1, 0.1], true);
     }
 
     let gravity = vector![0., -8.0, 0.];
@@ -131,6 +143,7 @@ pub fn generate_rotation(
     let event_handler = ();
 
     integration_parameters.dt = 1. / fps;
+    println!("{}", integration_parameters.dt);
 
     loop {
         let dice_body: &RigidBody = &rigid_body_set[dice_handles[0]];
@@ -138,6 +151,7 @@ pub fn generate_rotation(
         let rotation = dice_body.rotation();
         if debug {
             if !dice_body.is_sleeping() {
+                print_vector(dice_body.linvel());
                 println!(
                     "{} {} {} {} {} {} {}",
                     translation.x,

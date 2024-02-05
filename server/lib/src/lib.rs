@@ -1,14 +1,14 @@
 mod simulation;
 
-use libc::{c_double, c_int};
+use libc::{c_float, c_int};
 
 #[no_mangle]
 pub extern "C" fn generate_rotation(
     num: c_int,
     r_result: *const c_int,
-    r_translations: *const c_double,
-    r_rotations: *const c_double,
-) -> *mut c_double {
+    r_translations: *const c_float,
+    r_rotations: *const c_float,
+) -> *mut c_float {
     let mut result = Vec::new();
     let mut translations = Vec::new();
     let mut rotations = Vec::new();
@@ -44,7 +44,7 @@ pub extern "C" fn generate_rotation(
 }
 
 #[no_mangle]
-pub extern "C" fn free_ptr(ptr: *mut c_double) {
+pub extern "C" fn free_ptr(ptr: *mut c_float) {
     unsafe {
         if ptr.is_null() {
             return;

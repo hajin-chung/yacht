@@ -1,11 +1,10 @@
-import { RigidBodyDesc, World } from "@dimforge/rapier3d-compat";
+import { World } from "@dimforge/rapier3d-compat";
 import * as THREE from "three";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { Board, Cup, Dice, Ground } from "./component";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { rollAnimation } from "./animation";
-import { getRotations } from "./api";
 import { fps } from "./constants";
+import { getRotations } from "./api";
 type RAPIER = typeof import("@dimforge/rapier3d-compat");
 
 export class Yacht {
@@ -23,9 +22,6 @@ export class Yacht {
   boardCollisionGroup: number;
   cupCollisionGroup: number;
 
-  cupRolling: boolean;
-  fetched: boolean;
-
   isDebug: boolean;
   lines?: THREE.LineSegments;
   controls?: OrbitControls;
@@ -41,7 +37,7 @@ export class Yacht {
     this.isDebug = false;
 
     this.world = new rapier.World(
-      { x: 0, y: -8, z: 0 },
+      { x: 0.0, y: -8.0, z: 0.0 },
     );
     this.world.timestep = 1 / fps;
 
@@ -72,96 +68,47 @@ export class Yacht {
     this.boardCollisionGroup = 0x00020002;
 
     this.diceList = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 1; i++) {
       const dice = new Dice(rapier, this.world, this.scene, diceGltf, i);
-      dice.setCollisionGroup(this.cupCollisionGroup);
+
+      dice.setCollisionGroup(this.boardCollisionGroup);
       this.diceList.push(dice);
     }
 
     this.cup = new Cup(rapier, this.world, this.scene, cupGltf);
-    this.cup.setCollisionGroup(this.cupCollisionGroup);
+    this.cup.setCollisionGroup(this.boardCollisionGroup);
     this.board = new Board(rapier, this.world, this.scene, boardGltf);
     this.board.setCollisionGroup(this.boardCollisionGroup);
     this.ground = new Ground(this.scene, groundTexture);
-
-    // const testModel = diceGltf.scene.clone();
-    // testModel.translateY(2);
-    // this.scene.add(testModel);
-
-    this.cupRolling = false;
-    this.fetched = false;
   }
 
   update() {
     this.diceList.forEach((dice) => dice.update());
     this.cup.update();
-
-    if (this.cupRolling && this.cup.rollFrames.length === 0)
-      this.cupRolling = false;
-
-    if (this.cupRolling && this.cup.rollFrames.length === rollAnimation.length / 2) {
-      const num = this.diceList.length;
-      const translations: number[] = [];
-      const rotations: number[] = [];
-
-      this.diceList.forEach((dice) => {
-        const translation = dice.rigidBody.translation();
-        translations.push(translation.x);
-        translations.push(translation.y);
-        translations.push(translation.z);
-
-        const rotation = dice.rigidBody.rotation();
-        rotations.push(rotation.w);
-        rotations.push(rotation.x);
-        rotations.push(rotation.y);
-        rotations.push(rotation.z);
-
-        dice.reset();
-        dice.setCollisionGroup(this.boardCollisionGroup);
-
-        dice.rigidBody.setTranslation(translation, false);
-        dice.rigidBody.setRotation(rotation, false);
-        dice.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, false);
-        dice.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, false);
-        dice.rigidBody.resetForces();
-        dice.rigidBody.resetTorques();
-
-        console.log(dice.rigidBody.linvel());
-        console.log(dice.rigidBody.angvel());
-        console.log(dice.rigidBody.isSleeping());
-        console.log(dice.rigidBody.translation());
-        console.log(dice.rigidBody.rotation());
-        console.log(dice.rigidBody.mass());
-        console.log(dice.rigidBody.nextTranslation());
-
-        dice.rigidBody.addForce({ x: -0.6, y: -0.1, z: 0.1 }, false);
-      })
-
-      console.log(translations)
-      console.log(rotations)
-
-      this.fetched = true;
-      getRotations(num, translations, rotations)
-      //   .then((data) => {
-      //   for (let i = 0; i < this.diceList.length; i++) {
-      //     const diceBody = this.diceList[i].rigidBody;
-      //     diceBody.setRotation({
-      //       x: data.rotations[4 * i],
-      //       y: data.rotations[4 * i + 1],
-      //       z: data.rotations[4 * i + 2],
-      //       w: data.rotations[4 * i + 3],
-      //     }, false);
-      //   }
-      // })
-    }
-
-    if (this.fetched && !this.diceList[0].rigidBody.isSleeping()) {
-      const dice = this.diceList[0].rigidBody;
-      const t = dice.translation();
-      const r = dice.rotation();
-      console.log(`${t.x} ${t.y} ${t.z} ${r.x} ${r.y} ${r.z} ${r.w}`);
-    }
     this.world.step();
+
+    if (this.cup.didMove && this.diceList[0].rigidBody.isMoving()) {
+      console.log(this.diceList[0].rigidBody.translation(),
+        this.diceList[0].rigidBody.rotation());
+    }
+
+    if (this.cup.didRoll && !this.cup.didMove && this.cup.frames.length === 0) {
+      this.cup.move();
+
+      this.world.removeCollider(this.cup.topCollider, false)
+      this.world.removeCollider(this.cup.cupCollider, false)
+
+      for (let i = 0; i < this.diceList.length; i++) {
+        const dice = this.diceList[i];
+        this.getRotations();
+        dice.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+        dice.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
+        dice.rigidBody.resetForces(true);
+        dice.rigidBody.resetTorques(true);
+        dice.setCollisionGroup(this.boardCollisionGroup);
+        dice.rigidBody.addForce({ x: -0.6, y: -0.1, z: 0.1 }, true);
+      }
+    }
   }
 
   draw() {
@@ -193,8 +140,34 @@ export class Yacht {
     this.scene.add(this.lines);
   }
 
-  roll() {
-    this.cup.roll();
-    this.cupRolling = true;
+  rotationBuffer(): number[] {
+    const rotations: number[] = []
+    for (let i = 0; i < this.diceList.length; i++) {
+      const rotation = this.diceList[i].rigidBody.rotation();
+      rotations.push(rotation.x)
+      rotations.push(rotation.y)
+      rotations.push(rotation.z)
+      rotations.push(rotation.w)
+    }
+    return rotations;
+  }
+
+  translationBuffer(): number[] {
+    const translations: number[] = []
+    for (let i = 0; i < this.diceList.length; i++) {
+      const translation = this.diceList[i].rigidBody.translation();
+      translations.push(translation.x)
+      translations.push(translation.y)
+      translations.push(translation.z)
+    }
+    return translations;
+  }
+
+  getRotations() {
+    const num = this.diceList.length;
+    const translations = this.translationBuffer();
+    const rotations = this.rotationBuffer();
+    console.log(translations, rotations);
+    getRotations(num, translations, rotations);
   }
 }

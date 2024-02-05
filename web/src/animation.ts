@@ -29,9 +29,8 @@ function generateCupShake(): Frame[] {
 export const shakeAnimation = generateCupShake();
 
 function generateCupRoll(): Frame[] {
-  const steps = 100;
+  const steps = 50;
   const dt = (Math.PI * 3) / 4;
-  const dx = 3;
 
   const frames: Frame[] = [];
   for (let i = 1; i <= steps; i++) {
@@ -40,12 +39,22 @@ function generateCupRoll(): Frame[] {
     frames.push({ rotation: quat });
   }
 
+  frames.reverse();
+  return frames;
+}
+
+export const rollAnimation = generateCupRoll();
+
+function generateCupMove(): Frame[] {
+  const steps = 50;
+  const dz = 3;
+  const frames: Frame[] = [];
   for (let i = 1; i <= steps; i++) {
-    frames.push({ translation: { x: dx / steps, y: 0, z: 0 }, rotation: frames[steps - i].rotation });
+    frames.push({ translation: {x: dz / steps, y: 0, z: 0} });
   }
 
   frames.reverse();
   return frames;
 }
 
-export const rollAnimation = generateCupRoll();
+export const moveAnimation = generateCupMove();

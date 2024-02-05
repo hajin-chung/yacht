@@ -1,9 +1,9 @@
-import { Collider, RigidBody, RigidBodyDesc, World } from "@dimforge/rapier3d-compat";
+import { Collider, RigidBody, World } from "@dimforge/rapier3d-compat";
 import { cupX, cupY } from "./constants";
 import { random, vectorAdd } from "./utils";
 import * as THREE from "three";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { Frame, rollAnimation, shakeAnimation } from "./animation";
+import { Frame, moveAnimation, rollAnimation, shakeAnimation } from "./animation";
 type RAPIER = typeof import("@dimforge/rapier3d-compat");
 
 class Component {
@@ -40,9 +40,8 @@ class Dice extends Component {
       0.8 * random(),
     );
     this.rigidBody = world.createRigidBody(rigidBodyDesc);
-    const colliderDesc = rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4);
+    const colliderDesc = this.rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4).setMass(0.5);
     this.collider = world.createCollider(colliderDesc, this.rigidBody);
-    this.collider.setMass(0.5);
 
     this.model = gltf.scene.clone();
     scene.add(this.model);
@@ -58,26 +57,6 @@ class Dice extends Component {
   setCollisionGroup(collisionGroup: number) {
     this.collider.setCollisionGroups(collisionGroup);
   }
-
-  reset() {
-    const translation = this.rigidBody.translation();
-    const rotation = this.rigidBody.rotation();
-
-    this.world.removeRigidBody(this.rigidBody);
-    this.world.removeCollider(this.collider);
-
-    console.log(translation);
-    const rigidBodyDesc = this.rapier
-      .RigidBodyDesc
-      .dynamic()
-      .setTranslation(translation.x, translation.y, translation.z)
-      .setRotation(rotation);
-    this.rigidBody = this.world.createRigidBody(rigidBodyDesc);
-
-    const colliderDesc = this.rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4);
-    this.collider = this.world.createCollider(colliderDesc, this.rigidBody);
-    this.collider.setMass(0.5);
-  }
 }
 
 class Cup extends Component {
@@ -85,9 +64,11 @@ class Cup extends Component {
   cupCollider: Collider;
   topCollider: Collider;
   model: THREE.Group<THREE.Object3DEventMap>;
-  shakeFrames: Frame[] = [];
-  rollFrames: Frame[] = [];
-  shake: boolean;
+  frames: Frame[] = [];
+  shake: boolean = false;
+  shouldRoll: boolean = false;
+  didRoll: boolean = false;
+  didMove: boolean = false;
 
   constructor(rapier: RAPIER, world: World, scene: THREE.Scene, gltf: GLTF) {
     super();
@@ -109,8 +90,6 @@ class Cup extends Component {
 
     this.model = gltf.scene;
     scene.add(this.model);
-
-    this.shake = false;
   }
 
   update() {
@@ -119,32 +98,26 @@ class Cup extends Component {
     this.model.position.set(translation.x, translation.y, translation.z);
     this.model.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
 
-    if (this.shake && this.shakeFrames.length === 0 && this.rollFrames.length === 0) {
-      this.shakeFrames.push(...shakeAnimation);
+    if (!this.shouldRoll && this.shake && this.frames.length === 0) {
+      this.frames.push(...shakeAnimation);
     }
 
-    if (this.shakeFrames.length !== 0) {
-      const frame = this.shakeFrames.pop();
+    if (!this.didRoll && this.shouldRoll && this.frames.length === 0) {
+      this.frames.push(...rollAnimation);
+      this.shouldRoll = false;
+      this.didRoll = true;
+    }
+
+    if (this.frames.length !== 0) {
+      const frame = this.frames.pop();
       if (frame?.translation !== undefined) {
         this.rigidBody.setTranslation(
           vectorAdd(this.rigidBody.translation(), frame.translation),
-          false,
+          true,
         );
       }
       if (frame?.rotation !== undefined)
-        this.rigidBody.setRotation(frame.rotation, false);
-    }
-
-    if (this.shakeFrames.length === 0 && this.rollFrames.length !== 0) {
-      const frame = this.rollFrames.pop();
-      if (frame?.translation !== undefined) {
-        this.rigidBody.setTranslation(
-          vectorAdd(this.rigidBody.translation(), frame.translation),
-          false,
-        );
-      }
-      if (frame?.rotation !== undefined)
-        this.rigidBody.setRotation(frame.rotation, false);
+        this.rigidBody.setRotation(frame.rotation, true);
     }
   }
 
@@ -157,7 +130,12 @@ class Cup extends Component {
   }
 
   roll() {
-    this.rollFrames.push(...rollAnimation);
+    this.shouldRoll = true;
+  }
+
+  move() {
+    this.didMove = true;
+    this.frames.push(...moveAnimation);
   }
 
   setCollisionGroup(collisionGroup: number) {
@@ -178,7 +156,7 @@ class Board extends Component {
     super();
 
     const wallW = 5.35;
-    const wallH = 4;
+    const wallH = 3.0;
     const wallD = 0.2;
 
     const friction = 0.5;
@@ -186,36 +164,36 @@ class Board extends Component {
 
     const top = rapier
       .ColliderDesc
-      .cuboid(wallW / 2, wallH, wallD / 2)
-      .setTranslation(0, wallH / 2, -wallW / 2 - wallD / 2)
+      .cuboid(wallW / 2.0, wallH, wallD / 2.0)
+      .setTranslation(0.0, wallH / 2.0, -wallW / 2.0 - wallD / 2.0)
       .setFriction(friction)
       .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
       .setRestitution(restitution);
     const bottom = rapier
       .ColliderDesc
-      .cuboid(wallW / 2, wallH, wallD / 2)
-      .setTranslation(0, wallH / 2, wallW / 2 + wallD / 2)
+      .cuboid(wallW / 2.0, wallH, wallD / 2.0)
+      .setTranslation(0.0, wallH / 2.0, wallW / 2.0 + wallD / 2.0)
       .setFriction(friction)
       .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
       .setRestitution(restitution);
     const left = rapier
       .ColliderDesc
-      .cuboid(wallD / 2, wallH, wallW / 2)
-      .setTranslation(-wallW / 2 - wallD / 2, wallH / 2, 0)
+      .cuboid(wallD / 2.0, wallH, wallW / 2.0)
+      .setTranslation(-wallW / 2.0 - wallD / 2.0, wallH / 2.0, 0.0)
       .setFriction(friction)
       .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
       .setRestitution(restitution);
     const right = rapier
       .ColliderDesc
-      .cuboid(wallD / 2, wallH, wallW / 2)
-      .setTranslation(wallW / 2 + wallD / 2, wallH / 2, 0)
+      .cuboid(wallD / 2.0, wallH, wallW / 2.0)
+      .setTranslation(wallW / 2.0 + wallD / 2.0, wallH / 2.0, 0.0)
       .setFriction(friction)
       .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
       .setRestitution(restitution);
     const ground = rapier
       .ColliderDesc
-      .cuboid(10, 1, 10)
-      .setTranslation(0, -1, 0)
+      .cuboid(10.0, 1.0, 10.0)
+      .setTranslation(0, -1.0, 0)
       .setFriction(friction)
       .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
       .setRestitution(restitution);

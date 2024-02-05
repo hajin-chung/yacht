@@ -31,7 +31,7 @@ async function main() {
     boardGltf,
     groundTexture,
   );
-  // yacht.debug();
+  yacht.debug();
 
   setInterval(() => {
     yacht.update();
@@ -53,8 +53,8 @@ async function main() {
   shakeButton.ontouchend = () => yacht.cup.stopShake();
 
   const rollButton = document.getElementById("roll")!;
-  rollButton.onmousedown = () => yacht.roll(); 
-  rollButton.ontouchstart = () => yacht.roll(); 
+  rollButton.onclick = () => yacht.cup.roll(); 
+  rollButton.ontouchstart = () => yacht.cup.roll(); 
 }
 
 main();
