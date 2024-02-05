@@ -16,13 +16,13 @@ import (
 // returns each dice's initial rotation to achieve dice result
 // translations are array of each position vector(3) concatenated
 // rotations are array of each quaternion(4) concatenated
-// returned []float32 are initial rotation quaternions(4) concatenated
+// returned []float64 are initial rotation quaternions(4) concatenated
 func GenerateRotation(
 	num int,
 	result []int32,
-	translations []float32,
-	rotations []float32,
-) ([]float32, error) {
+	translations []float64,
+	rotations []float64,
+) ([]float64, error) {
 	if len(result) != num || len(translations) != num*3 || len(rotations) != num*4 {
 		return nil, errors.New("incorrect arguments size")
 	}
@@ -31,11 +31,11 @@ func GenerateRotation(
 	fmt.Printf("rotations: %+v\n", rotations)
 
 	r_result := (*C.int)(unsafe.Pointer(&result[0]))
-	r_translations := (*C.float)(unsafe.Pointer(&translations[0]))
-	r_rotations := (*C.float)(unsafe.Pointer(&rotations[0]))
+	r_translations := (*C.double)(unsafe.Pointer(&translations[0]))
+	r_rotations := (*C.double)(unsafe.Pointer(&rotations[0]))
 	ptr := C.generate_rotation(C.int(num), r_result, r_translations, r_rotations)
 
-	buffer := unsafe.Slice((*float32)(unsafe.Pointer(ptr)), num*4)
+	buffer := unsafe.Slice((*float64)(unsafe.Pointer(ptr)), num*4)
 
 	return buffer, nil
 }

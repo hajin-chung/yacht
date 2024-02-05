@@ -13,8 +13,8 @@ func IndexHandler(c *fiber.Ctx) error {
 
 type RotationPayload struct {
 	Num          int       `json:"num"`
-	Translations []float32 `json:"translations"`
-	Rotations    []float32 `json:"rotations"`
+	Translations []float64 `json:"translations"`
+	Rotations    []float64 `json:"rotations"`
 }
 
 func TestHandler(c *fiber.Ctx) error {

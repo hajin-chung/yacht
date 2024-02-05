@@ -1,14 +1,14 @@
-use rapier3d::{
+use rapier3d_f64::{
     na::{Quaternion, Unit, UnitQuaternion},
     prelude::*,
 };
 
 pub fn generate_rotation(
-    buffer: &mut Vec<f32>,
+    buffer: &mut Vec<f64>,
     num: i32,
     result: Vec<i32>,
-    translations: Vec<f32>,
-    rotations: Vec<f32>,
+    translations: Vec<f64>,
+    rotations: Vec<f64>,
 ) {
     let num = num as usize;
     let debug = true;
