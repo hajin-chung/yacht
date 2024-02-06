@@ -2,3 +2,5 @@ server
 Cargo.lock
 target
 physics/libyacht.a
+db/*
+tmp

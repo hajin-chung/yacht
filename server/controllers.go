@@ -2,13 +2,23 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/rand"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func IndexHandler(c *fiber.Ctx) error {
-	return c.SendString("hello from yacht server")
+	id := c.Locals("id").(string)
+	msg := fmt.Sprintf("hello from yacht server\nyour id is: %s\n", id);
+
+	if id[0] == '#' {
+		msg += "you are not logged in"
+	} else {
+		msg += "you are logged in"
+	}
+
+	return c.SendString(msg)
 }
 
 type RotationPayload struct {

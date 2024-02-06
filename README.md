@@ -12,7 +12,7 @@ realtime 3d secure yacht dice game
 - [x] board texture
 - [x] cup texture
 - [x] client side 3d physics simulation
-- [ ] authorization
+- [ ] authorization & authentication
 - [ ] match making
 - [ ] private & public room
 - [ ] server side game logic
@@ -28,3 +28,6 @@ realtime 3d secure yacht dice game
 
 1. implement basic websocket pub sub hub.
 2. try docker, k8s, rabbitMQ, ...
+
+for database seperate user and game datas
+one sqlite3 user.db and for game datas use redis or memcached
