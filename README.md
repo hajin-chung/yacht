@@ -30,4 +30,4 @@ realtime 3d secure yacht dice game
 2. try docker, k8s, rabbitMQ, ...
 
 for database seperate user and game datas
-one sqlite3 user.db and for game datas use redis or memcached
+one sqlite3 user db and redis for game data
