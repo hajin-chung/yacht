@@ -10,7 +10,7 @@ import (
 
 func IndexHandler(c *fiber.Ctx) error {
 	id := c.Locals("id").(string)
-	msg := fmt.Sprintf("hello from yacht server\nyour id is: %s\n", id);
+	msg := fmt.Sprintf("hello from yacht server\nyour id is: %s\n", id)
 
 	if id[0] == '#' {
 		msg += "you are not logged in"
@@ -22,9 +22,7 @@ func IndexHandler(c *fiber.Ctx) error {
 }
 
 type RotationPayload struct {
-	Num          int       `json:"num"`
-	Translations []float32 `json:"translations"`
-	Rotations    []float32 `json:"rotations"`
+	Num int `json:"num"`
 }
 
 func TestHandler(c *fiber.Ctx) error {
@@ -41,11 +39,9 @@ func TestHandler(c *fiber.Ctx) error {
 		result = append(result, int32(rand.Intn(6))+1)
 	}
 
-	rotations, err := GenerateRotation(
+	buffer, err := GenerateSimulation(
 		payload.Num,
 		result,
-		payload.Translations,
-		payload.Rotations,
 	)
 
 	if err != nil {
@@ -53,7 +49,7 @@ func TestHandler(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{
-		"result":    result,
-		"rotations": rotations,
+		"result": result,
+		"buffer": buffer,
 	})
 }

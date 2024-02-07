@@ -4,3 +4,4 @@ target
 physics/libyacht.a
 db/*
 tmp
+lib/libyacht.a

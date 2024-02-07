@@ -3,17 +3,18 @@ package main
 import (
 	"fmt"
 	"testing"
+	"time"
 )
 
 func TestGenerateRotation(t *testing.T) {
-	num := 1
-	result := []int{1}
-	translations := []float32{0, 2, 0}
-	rotations := []float32{0, 0, 0, 1}
+	num := 5 
+	result := []int32{1, 2, 3, 5, 6}
 
-	buffer, err := GenerateRotation(num, result, translations, rotations)
+	startTime := time.Now()
+	buffer, err := GenerateSimulation(num, result)
+	elapsedTime := time.Since(startTime)
 	if err == nil {
-		fmt.Printf("%+v\n", buffer);
+		fmt.Printf("buffer length: %d, took: %s\n", len(buffer), elapsedTime)
 	} else {
 		t.Error(err)
 	}

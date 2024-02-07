@@ -7,35 +7,23 @@ package main
 import "C"
 import (
 	"errors"
-	"fmt"
 	"unsafe"
 )
 
-// generates rotations of each dice based on number of dice,
-// translation and rotation of each dice and dice result
-// returns each dice's initial rotation to achieve dice result
-// translations are array of each position vector(3) concatenated
-// rotations are array of each quaternion(4) concatenated
-// returned []float32 are initial rotation quaternions(4) concatenated
-func GenerateRotation(
-	num int,
-	result []int32,
-	translations []float32,
-	rotations []float32,
-) ([]float32, error) {
-	if len(result) != num || len(translations) != num*3 || len(rotations) != num*4 {
+func GenerateSimulation(num int, result []int32) ([]float32, error) {
+	if len(result) != num {
 		return nil, errors.New("incorrect arguments size")
 	}
-
-	fmt.Printf("translations: %+v\n", translations)
-	fmt.Printf("rotations: %+v\n", rotations)
-
 	r_result := (*C.int)(unsafe.Pointer(&result[0]))
-	r_translations := (*C.float)(unsafe.Pointer(&translations[0]))
-	r_rotations := (*C.float)(unsafe.Pointer(&rotations[0]))
-	ptr := C.generate_rotation(C.int(num), r_result, r_translations, r_rotations)
 
-	buffer := unsafe.Slice((*float32)(unsafe.Pointer(ptr)), num*4)
+	ptr := C.generate_simulation(C.int(num), r_result)
+	if ptr == nil {
+		return nil, errors.New("simulation generation failed")
+	}
+	defer C.free_buffer(ptr)
+
+	length := int(ptr.length)
+	buffer := unsafe.Slice((*float32)(unsafe.Pointer(ptr.buffer)), length)
 
 	return buffer, nil
 }

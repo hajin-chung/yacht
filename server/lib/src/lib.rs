@@ -1,57 +1,50 @@
 mod simulation;
 
-use libc::{c_float, c_int};
-
-#[no_mangle]
-pub extern "C" fn generate_rotation(
-    num: c_int,
-    r_result: *const c_int,
-    r_translations: *const c_float,
-    r_rotations: *const c_float,
-) -> *mut c_float {
-    let mut result = Vec::new();
-    let mut translations = Vec::new();
-    let mut rotations = Vec::new();
-
-    unsafe {
-        for i in 0..num {
-            result.push(*r_result.add(i as usize));
-        }
-
-        for i in 0..num * 3 {
-            translations.push(*r_translations.add(i as usize));
-        }
-
-        for i in 0..num * 4 {
-            rotations.push(*r_rotations.add(i as usize));
-        }
-    }
-
-    let mut buffer = Vec::with_capacity(4 * 5);
-
-    // calculate initial rotations
-    simulation::generate_rotation(
-        &mut buffer,
-        num,
-        result,
-        translations,
-        rotations,
-    );
-
-    let ptr = buffer.as_mut_ptr();
-    std::mem::forget(buffer);
-    ptr
+#[repr(C)]
+pub struct Buffer {
+    length: i32,
+    buffer: *mut f32,
 }
 
 #[no_mangle]
-pub extern "C" fn free_ptr(ptr: *mut c_float) {
+pub extern "C" fn generate_simulation(
+    num: i32,
+    r_result: *const i32,
+) -> *mut Buffer {
+    let mut buffer = Vec::new();
+    let mut result = Vec::new();
+
+    unsafe {
+        for i in 0..num {
+            result.push(*r_result.add(i as usize))
+        }
+    }
+
+    simulation::simulate(&mut buffer, &result, num);
+    let ptr = buffer.as_mut_ptr();
+
+    let result = Box::new(Buffer {
+        buffer: ptr,
+        length: buffer.len() as i32,
+    });
+
+    std::mem::forget(buffer);
+    Box::into_raw(result)
+}
+
+#[no_mangle]
+pub extern "C" fn free_buffer(ptr: *mut Buffer) {
     unsafe {
         if ptr.is_null() {
             return;
         }
 
-        let size = 4 * 5;
-        let _buffer = Vec::from_raw_parts(ptr, size, size);
+        let buffer = Box::from_raw(ptr);
+        Vec::from_raw_parts(
+            buffer.buffer,
+            buffer.length as usize,
+            buffer.length as usize,
+        );
     }
 }
 
@@ -59,20 +52,27 @@ pub extern "C" fn free_ptr(ptr: *mut c_float) {
 pub mod test {
 
     use super::*;
+    use std::time::Instant;
 
     #[test]
     fn simulated_main_function() {
-        let ptr = generate_rotation(
-            1,
-            vec![1].as_mut_ptr(),
-            vec![0.1, 0.1, 0.1].as_mut_ptr(),
-            vec![0.1, 0.1, 0.1, 0.1].as_mut_ptr(),
-        );
+        let start = Instant::now();
+        let ptr = generate_simulation(5, vec![1, 2, 3, 5, 6].as_mut_ptr());
+        let duration = start.elapsed();
 
         unsafe {
-            println!("first value: {}", *ptr);
+            let length = (*ptr).length as usize;
+            println!("took {:?}\n", duration);
+            println!(
+                "buffer: {} {} {} {} {}",
+                (*ptr).length,
+                *(*ptr).buffer.add(length - 4),
+                *(*ptr).buffer.add(length - 3),
+                *(*ptr).buffer.add(length - 2),
+                *(*ptr).buffer.add(length - 1),
+            );
         }
 
-        free_ptr(ptr);
+        free_buffer(ptr);
     }
 }

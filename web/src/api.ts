@@ -1,14 +1,10 @@
-interface RotationData {
+interface SimulationData {
   result: number[];
-  rotations: number[];
+  buffer: number[];
 }
 
-export async function getRotations(
-  num: number,
-  translations: number[],
-  rotations: number[],
-): Promise<RotationData> {
-  const payload = { num, translations, rotations };
+export async function getSimulation(num: number,): Promise<SimulationData> {
+  const payload = { num };
 
   // FIXME: currently test endpoint
   const res = await fetch("http://localhost:4434/test", {
@@ -16,7 +12,7 @@ export async function getRotations(
     body: JSON.stringify(payload),
   });
 
-  const data = (await res.json()) as RotationData;
+  const data = (await res.json()) as SimulationData;
 
   return data;
 }
