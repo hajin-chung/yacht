@@ -7,7 +7,7 @@ import (
 )
 
 func TestGenerateRotation(t *testing.T) {
-	num := 5 
+	num := 5
 	result := []int32{1, 2, 3, 5, 6}
 
 	startTime := time.Now()

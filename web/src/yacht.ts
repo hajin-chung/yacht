@@ -92,7 +92,7 @@ export class Yacht {
       this.getSimulation();
       for (let i = 0; i < this.diceList.length; i++) {
         const dice = this.diceList[i];
-        console.log(dice.rigidBody.translation())
+        console.log(dice.rigidBody.translation());
         dice.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
         dice.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
         dice.rigidBody.resetForces(true);
@@ -103,7 +103,11 @@ export class Yacht {
 
     if (this.showSimulation) this.idx++;
 
-    if (this.showSimulation && this.animation.length !== 0 && 7 * this.diceList.length * this.idx < this.animation.length) {
+    if (
+      this.showSimulation &&
+      this.animation.length !== 0 &&
+      7 * this.diceList.length * this.idx < this.animation.length
+    ) {
       for (let i = 0; i < this.diceList.length; i++) {
         const dice = this.diceList[i];
         const start = 7 * this.diceList.length * this.idx + 7 * i;
@@ -154,6 +158,8 @@ export class Yacht {
 
   getSimulation() {
     const num = this.diceList.length;
-    getSimulation(num).then((simulation) => this.animation = simulation.buffer);
+    getSimulation(num).then(
+      (simulation) => (this.animation = simulation.buffer),
+    );
   }
 }

@@ -3,7 +3,7 @@ interface SimulationData {
   buffer: number[];
 }
 
-export async function getSimulation(num: number,): Promise<SimulationData> {
+export async function getSimulation(num: number): Promise<SimulationData> {
   const payload = { num };
 
   // FIXME: currently test endpoint

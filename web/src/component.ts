@@ -12,9 +12,9 @@ import {
 type RAPIER = typeof import("@dimforge/rapier3d-compat");
 
 class Component {
-  constructor() { }
+  constructor() {}
 
-  draw() { }
+  draw() {}
 }
 
 class Dice extends Component {
@@ -54,7 +54,7 @@ class Dice extends Component {
 
   update(showAnimation: boolean) {
     if (showAnimation) {
-      return
+      return;
     }
     const translation = this.rigidBody.translation();
     const rotation = this.rigidBody.rotation();

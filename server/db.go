@@ -11,7 +11,7 @@ type Database struct {
 var userDB Database
 
 func InitDB() error {
-	userDB = Database{}	
+	userDB = Database{}
 	err := userDB.New("./db/user.db")
 	return err
 }
@@ -22,7 +22,7 @@ func (db *Database) New(dataSourceName string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	db.DB = sqlDB
 	return nil
 }
