@@ -35,7 +35,7 @@ one sqlite3 user db and redis for game data
 
 # game state
 
-```json
+```typescript
 {
     "id": string,
     "playerId": [string, string],
@@ -61,7 +61,7 @@ one sqlite3 user db and redis for game data
 
 ## client sent messages
 
-```json
+```typescript
 { "type": "ping" }
 
 { "type": "queue" }
@@ -116,7 +116,7 @@ one sqlite3 user db and redis for game data
 
 1. json messages
 
-```json
+```typescript
 { "type": "ping", "error": true | false }
 
 { "type": "queue", "error": true | false }
