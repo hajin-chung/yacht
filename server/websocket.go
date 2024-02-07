@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
@@ -20,31 +19,37 @@ func WebSocketHandler(c *websocket.Conn) {
 	socket := WebSocket{
 		Conn: c,
 	}
-	log.Printf("%+v", socket.Conn)
 	hub.Add(id, &socket)
+	for {
+	}
 }
 
 type WebSocket struct {
 	*websocket.Conn
 }
 
-func (ws *WebSocket) Read() (string, error) {
-	log.Printf("hihi %+v", ws.Conn)
-
+func (ws *WebSocket) Read() (interface{}, error) {
 	mt, msg, err := ws.ReadMessage()
 	if err != nil {
-		log.Printf("hihi err: %s", err)
 		return "", err
 	}
-	if mt != websocket.TextMessage {
-		return "", errors.New("message is not text")
+	if mt == websocket.TextMessage {
+		return string(msg[:]), nil
+	} else if mt == websocket.BinaryMessage {
+		return msg, nil
 	}
-
-	return string(msg[:]), nil
+	return nil, errors.New("unknown message type")
 }
 
-func (ws *WebSocket) Write(content string) error {
-	err := ws.WriteMessage(websocket.TextMessage, []byte(content))
+func (ws *WebSocket) Write(content interface{}) (err error) {
+	switch content.(type) {
+	case []byte:
+		err = ws.WriteMessage(websocket.BinaryMessage, content.([]byte))
+	case string:
+		err = ws.WriteMessage(websocket.TextMessage, []byte(content.(string)))
+	default:
+		err = errors.New("content is neither []byte nor string")
+	}
 	return err
 }
 
@@ -54,8 +59,4 @@ func (ws *WebSocket) Close() {
 
 func (ws *WebSocket) Type() string {
 	return "websocket"
-}
-
-func (ws *WebSocket) Info() {
-	log.Printf("%+v", ws.Conn)
 }

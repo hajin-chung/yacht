@@ -4,25 +4,20 @@ import "log"
 
 type Message struct {
 	Id      string
-	Content string
+	Content interface{}
 }
 
 type Socket interface {
-	Read() (string, error)
-	Write(content string) error
+	Read() (interface{}, error)
+	Write(interface{}) error
 	Close()
 	Type() string
-	Info()
 }
 
 type Hub struct {
 	Sockets map[string]map[Socket]bool
-
-	// every message passing internally should be done via go channels
-	// incomming message
-	In chan *Message
-	// outgoing message
-	Out chan *Message
+	In      chan *Message
+	Out     chan *Message
 }
 
 var hub Hub
@@ -43,9 +38,6 @@ func (h *Hub) Add(id string, socket Socket) {
 		h.Sockets[id] = map[Socket]bool{}
 	}
 	h.Sockets[id][socket] = true
-	socket.Info()
-
-	log.Printf("ADD %s %s", socket.Type(), id)
 	go h.SocketReader(id, socket)
 }
 
@@ -59,11 +51,9 @@ func (h *Hub) Remove(id string, socket Socket) {
 }
 
 func (h *Hub) SocketReader(id string, socket Socket) {
-	log.Printf("SocketReader %s %+v", id, socket)
-	socket.Info()
 	for {
 		if socket == nil {
-			log.Printf("ERR Socket is nil for id: %s", id)
+			log.Printf("ERR SocketReader Socket is nil for id: %s", id)
 			return
 		}
 
@@ -80,7 +70,6 @@ func (h *Hub) SocketReader(id string, socket Socket) {
 
 func (h *Hub) SocketWriter() {
 	for message := range h.Out {
-		log.Printf("SocketWriter new message to write")
 		for socket := range h.Sockets[message.Id] {
 			err := socket.Write(message.Content)
 			if err != nil {
@@ -88,11 +77,5 @@ func (h *Hub) SocketWriter() {
 				h.Remove(message.Id, socket)
 			}
 		}
-	}
-}
-
-func (h *Hub) Worker() {
-	for message := range h.In {
-		log.Printf("RECV %s: %s", message.Id, message.Content)
 	}
 }
