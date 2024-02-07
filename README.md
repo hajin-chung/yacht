@@ -2,7 +2,7 @@
 
 realtime 3d secure yacht dice game
 
-# goals
+## goals
 
 - [x] basic 3d rendering structure
 - [x] basic box rendering
@@ -24,7 +24,7 @@ realtime 3d secure yacht dice game
 - [ ] various game effects
 - [ ] frontend stuff
 
-# server architecture 
+## server architecture 
 
 1. implement basic websocket hub.
 2. try docker, k8s, rabbitMQ, ...
@@ -33,7 +33,7 @@ for database seperate user and game datas
 
 one sqlite3 user db and redis for game data
 
-# game state
+### game state
 
 ```typescript
 {
@@ -57,9 +57,9 @@ one sqlite3 user db and redis for game data
 }
 ```
 
-# messages
+## messages
 
-## client sent messages
+### client sent messages
 
 ```typescript
 { "type": "ping" }
@@ -112,7 +112,7 @@ one sqlite3 user db and redis for game data
 }
 ```
 
-## server sent messages
+### server sent messages
 
 1. json messages
 
