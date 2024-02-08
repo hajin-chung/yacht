@@ -28,28 +28,20 @@ type WebSocket struct {
 	*websocket.Conn
 }
 
-func (ws *WebSocket) Read() (interface{}, error) {
+func (ws *WebSocket) Read() ([]byte, error) {
 	mt, msg, err := ws.ReadMessage()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	if mt == websocket.TextMessage {
-		return string(msg[:]), nil
-	} else if mt == websocket.BinaryMessage {
+
+	if mt == websocket.BinaryMessage {
 		return msg, nil
 	}
 	return nil, errors.New("unknown message type")
 }
 
-func (ws *WebSocket) Write(content interface{}) (err error) {
-	switch content.(type) {
-	case []byte:
-		err = ws.WriteMessage(websocket.BinaryMessage, content.([]byte))
-	case string:
-		err = ws.WriteMessage(websocket.TextMessage, []byte(content.(string)))
-	default:
-		err = errors.New("content is neither []byte nor string")
-	}
+func (ws *WebSocket) Write(content []byte) (err error) {
+	err = ws.WriteMessage(websocket.BinaryMessage, content)
 	return err
 }
 

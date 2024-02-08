@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.12.0",
-    "gl-matrix": "^3.4.3",
+    "@msgpack/msgpack": "3.0.0-beta2",
     "three": "^0.161.0"
   },
   "devDependencies": {

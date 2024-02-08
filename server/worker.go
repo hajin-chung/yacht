@@ -1,55 +1,73 @@
 package main
 
 import (
-	"encoding/json"
-	"log"
+	"errors"
+	"fmt"
+
+	"github.com/vmihailenco/msgpack/v5"
 )
 
+type Message interface{}
+
+type InMessage struct {
+	Type string `msgpack:"type"`
+}
+
+type OutMessage struct {
+	Type  string `msgpack:"type"`
+	Error bool   `msgpack:"error"`
+}
+
+type InPingMessage struct {
+	InMessage
+}
+
+type OutErrorMessage struct {
+	OutMessage
+}
+
 func (h *Hub) Worker() {
-	for message := range h.In {
-		switch message.Content.(type) {
-		case string:
-			h.handleStringMessage(message)
-		case []byte:
-			h.handleBinaryMessage(message)
-		default:
-			log.Printf("ERR Worker: unkown message content type")
+	for packet := range h.In {
+		inMessage := &InMessage{}
+		err := msgpack.Unmarshal(packet.Message, inMessage)
+		if err != nil {
+			h.handleError(packet.Id, err)
 			continue
 		}
+
+		outMessage, err := h.handleInMessage(packet.Id, inMessage)
+		if err != nil {
+			h.handleError(packet.Id, err)
+			continue
+		}
+		buffer, err := msgpack.Marshal(&outMessage)
+		if err != nil {
+			h.handleError(packet.Id, err)
+			continue
+		}
+		h.Out <- &Packet{Id: packet.Id, Message: buffer}
 	}
 }
 
-type MessageContent struct {
-	Type string      `json:"type"`
-	Data interface{} `json:"data"`
-}
-
-func (h *Hub) handleStringMessage(message *Message) {
-	id := message.Id
-	content, err := ParseContent(message.Content.(string))
-
-	if err != nil {
-		h.Out <- &Message{Id: id, Content: ErrorMessage}
-		return
-	}
-
-	switch content.Type {
+func (h *Hub) handleInMessage(id string, inMessage *InMessage) (*OutMessage, error) {
+	var msg Message
+	switch inMessage.Type {
 	case "ping":
-		h.Out <- &Message{Id: id, Content: PingMessage}
+		msg = &InPingMessage{}
 	default:
-		h.Out <- &Message{Id: id, Content: ErrorMessage}
+		return nil, errors.New(fmt.Sprintf("unknown message type: %s", inMessage.Type))
 	}
+
+	err :=msgpack.Unmarshal()
 }
 
-func (h *Hub) handleBinaryMessage(message *Message) {
-	message.Content = message.Content.([]byte)
-}
-
-func ParseContent(content string) (*MessageContent, error) {
-	data := &MessageContent{}
-	err := json.Unmarshal([]byte(content), data)
-	if err != nil {
-		return nil, err
+func (h *Hub) handleError(id string, err error) {
+	msg := OutErrorMessage{
+		OutMessage: OutMessage{
+			Type:  "error",
+			Error: true,
+		},
 	}
-	return data, err
+	buffer, err := msgpack.Marshal(&msg)
+	h.Out <- &Packet{Id: id, Message: buffer}
 }

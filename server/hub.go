@@ -2,22 +2,22 @@ package main
 
 import "log"
 
-type Message struct {
+type Packet struct {
 	Id      string
-	Content interface{}
+	Message []byte
 }
 
 type Socket interface {
-	Read() (interface{}, error)
-	Write(interface{}) error
+	Read() ([]byte, error)
+	Write([]byte) error
 	Close()
 	Type() string
 }
 
 type Hub struct {
 	Sockets map[string]map[Socket]bool
-	In      chan *Message
-	Out     chan *Message
+	In      chan *Packet
+	Out     chan *Packet
 }
 
 var hub Hub
@@ -25,8 +25,8 @@ var hub Hub
 func InitHub() {
 	hub = Hub{
 		Sockets: map[string]map[Socket]bool{},
-		In:      make(chan *Message),
-		Out:     make(chan *Message),
+		In:      make(chan *Packet),
+		Out:     make(chan *Packet),
 	}
 
 	go hub.SocketWriter()
@@ -57,24 +57,24 @@ func (h *Hub) SocketReader(id string, socket Socket) {
 			return
 		}
 
-		content, err := socket.Read()
+		message, err := socket.Read()
 		if err != nil {
 			log.Printf("ERR SocketReader: %s", err)
 			h.Remove(id, socket)
 			return
 		} else {
-			h.In <- &Message{Id: id, Content: content}
+			h.In <- &Packet{Id: id, Message: message}
 		}
 	}
 }
 
 func (h *Hub) SocketWriter() {
-	for message := range h.Out {
-		for socket := range h.Sockets[message.Id] {
-			err := socket.Write(message.Content)
+	for packet := range h.Out {
+		for socket := range h.Sockets[packet.Id] {
+			err := socket.Write(packet.Message)
 			if err != nil {
 				log.Printf("ERR SocketWriter: %s", err)
-				h.Remove(message.Id, socket)
+				h.Remove(packet.Id, socket)
 			}
 		}
 	}

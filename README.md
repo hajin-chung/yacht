@@ -12,15 +12,15 @@ realtime 3d secure yacht dice game
 - [x] board texture
 - [x] cup texture
 - [x] client side 3d physics simulation
+- [x] dice result detection
+- [x] server side 3d physics simulation
+- [x] sending server side simulated dice rotations to client side
 - [ ] authorization & authentication
 - [ ] match making
 - [ ] private & public room
 - [ ] server side game logic
 - [ ] database management
-- [ ] dice result detection
 - [ ] client side game logic
-- [ ] server side 3d physics simulation
-- [ ] sending server side simulated dice rotations to client side
 - [ ] various game effects
 - [ ] frontend stuff
 
@@ -41,8 +41,8 @@ one sqlite3 user db and redis for game data
     "playerId": [string, string],
     "status": "PLAYING" | "DONE",
     "scores": [
-        [number],
-        [number],
+        number[],
+        number[],
     ],
 
     // index of player in turn
@@ -50,14 +50,17 @@ one sqlite3 user db and redis for game data
     "leftRolls": number,
 
     // index of dice locked
-    "lockedDice": [number],
+    "lockedDice": number[],
 
     // dice results
-    "dice": [number]
+    "dice": number[]
 }
 ```
 
 ## messages
+
+since we have to send position & rotation buffer which is quite big through websocket
+every message is in a binary message and use MessagePack for serialization and deserialization
 
 ### client sent messages
 
@@ -114,8 +117,6 @@ one sqlite3 user db and redis for game data
 
 ### server sent messages
 
-1. json messages
-
 ```typescript
 { "type": "ping", "error": true | false }
 
@@ -143,10 +144,20 @@ one sqlite3 user db and redis for game data
     "type": "gameState", 
     "data": {
         "state": GameState 
-    }
+    },
+    "error": true | false
 }
 
 { "type": "shake", "error": true | false }
+
+{ 
+    "type": "roll", 
+    "data": {
+        "result": number[],
+        "buffer": Float32Array 
+    },
+    "error": true | false
+}
 
 {
     "type": "lockDice"
@@ -194,8 +205,3 @@ one sqlite3 user db and redis for game data
     "error": true | false
 }
 ```
-
-2. binary messages
-
-for type "roll" message send float32 buffer of rolling animation 
-followed by `n` dice results in float32
