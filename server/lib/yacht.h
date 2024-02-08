@@ -1,3 +1,7 @@
-float *generate_rotation(int num, int *r_result, float *r_translations,
-                         float *r_rotations);
-void free_ptr(float *ptr);
+struct Buffer {
+  int length;
+  float *buffer;
+};
+
+struct Buffer *generate_simulation(int num, int *r_result);
+void free_buffer(struct Buffer *ptr);

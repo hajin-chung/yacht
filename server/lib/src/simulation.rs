@@ -162,6 +162,8 @@ pub fn simulate(buffer: &mut Vec<f32>, result: &Vec<i32>, num: i32) {
     ];
     let up_vector = Vector3::new(0.0, 1.0, 0.0);
 
+    let mut rotations = Vec::new();
+
     for i in 0..num {
         let dice_body = &rigid_body_set[dice_handles[i]];
         let dice_rotation = dice_body.position().rotation;
@@ -177,12 +179,11 @@ pub fn simulate(buffer: &mut Vec<f32>, result: &Vec<i32>, num: i32) {
             }
         }
 
-        if face as i32 == result[i] {
-            continue;
-        }
-
         let rotation_matrix;
-        if face as i32 + result[i] == 7 {
+        if face as i32 == result[i] {
+            rotation_matrix =
+                UnitQuaternion::from_axis_angle(&Vector3::x_axis(), 0.0);
+        } else if face as i32 + result[i] == 7 {
             let axis = Vector3::x_axis();
             rotation_matrix =
                 UnitQuaternion::from_axis_angle(&axis, -std::f32::consts::PI);
@@ -196,22 +197,24 @@ pub fn simulate(buffer: &mut Vec<f32>, result: &Vec<i32>, num: i32) {
                 -std::f32::consts::PI / 2.0,
             );
         }
+        rotations.push(rotation_matrix);
+    }
 
-        let mut j = 7 * i + 3;
-        while j < buffer.len() {
+    for i in 0..buffer.len() / (7 * num) {
+        for j in 0..num {
+            let start = i * 7 * num + 7 * j + 3;
             let existing_quaternion =
                 UnitQuaternion::from_quaternion(Quaternion::new(
-                    buffer[j + 3],
-                    buffer[j],
-                    buffer[j + 1],
-                    buffer[j + 2],
+                    buffer[start + 3],
+                    buffer[start],
+                    buffer[start + 1],
+                    buffer[start + 2],
                 ));
-            let correct_rotation = rotation_matrix * existing_quaternion;
-            buffer[j] = correct_rotation.i;
-            buffer[j + 1] = correct_rotation.j;
-            buffer[j + 2] = correct_rotation.k;
-            buffer[j + 3] = correct_rotation.w;
-            j += 7 * num;
+            let correct_rotation = rotations[j] * existing_quaternion;
+            buffer[start] = correct_rotation.i;
+            buffer[start + 1] = correct_rotation.j;
+            buffer[start + 2] = correct_rotation.k;
+            buffer[start + 3] = correct_rotation.w;
         }
     }
 }
