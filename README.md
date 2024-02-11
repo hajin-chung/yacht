@@ -50,10 +50,10 @@ one sqlite3 user db and redis for game data
     "leftRolls": number,
 
     // index of dice locked
-    "lockedDice": number[],
+    "isLocked": [boolean, boolean, boolean, boolean, boolean],
 
     // dice results
-    "dice": number[]
+    "dice": [number, number, number, number, number]
 }
 ```
 
