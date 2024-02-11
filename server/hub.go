@@ -23,6 +23,7 @@ type Hub struct {
 var hub Hub
 
 func InitHub() {
+	log.Println("Initializing hub")
 	hub = Hub{
 		Sockets: map[string]map[Socket]bool{},
 		In:      make(chan *Packet),
@@ -38,7 +39,15 @@ func (h *Hub) Add(id string, socket Socket) {
 		h.Sockets[id] = map[Socket]bool{}
 	}
 	h.Sockets[id][socket] = true
+	log.Printf("new socket: %s\n", id)
 	go h.SocketReader(id, socket)
+
+	status, err := GetUserStatus(id)
+	if err != nil {
+		log.Printf("error while getting user status on adding socket: %s", err)
+	} else {
+		log.Printf("user %s status: %s", id, status)
+	}
 }
 
 func (h *Hub) Remove(id string, socket Socket) {
@@ -48,6 +57,9 @@ func (h *Hub) Remove(id string, socket Socket) {
 
 	socket.Close()
 	delete(h.Sockets[id], socket)
+	if len(h.Sockets[id]) == 0 {
+		delete(h.Sockets, id)
+	}
 }
 
 func (h *Hub) SocketReader(id string, socket Socket) {
@@ -63,6 +75,7 @@ func (h *Hub) SocketReader(id string, socket Socket) {
 			h.Remove(id, socket)
 			return
 		} else {
+			log.Printf("RECV (%s): %s", id, message)
 			h.In <- &Packet{Id: id, Message: message}
 		}
 	}

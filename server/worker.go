@@ -2,7 +2,7 @@ package main
 
 import (
 	"errors"
-	"fmt"
+	"log"
 
 	"github.com/vmihailenco/msgpack/v5"
 )
@@ -10,64 +10,59 @@ import (
 type Message interface{}
 
 type InMessage struct {
-	Type string `msgpack:"type"`
+	Type string             `msgpack:"type"`
+	Data msgpack.RawMessage `msgpack:"data,omitempty"`
 }
 
 type OutMessage struct {
+	Type  string      `msgpack:"type"`
+	Data  interface{} `msgpack:"data,omitempty"`
+	Error bool        `msgpack:"error"`
+}
+
+type ErrorOutMessage struct {
 	Type  string `msgpack:"type"`
 	Error bool   `msgpack:"error"`
 }
 
-type InPingMessage struct {
-	InMessage
-}
-
-type OutErrorMessage struct {
-	OutMessage
-}
-
 func (h *Hub) Worker() {
+	var err error
 	for packet := range h.In {
 		inMessage := &InMessage{}
-		err := msgpack.Unmarshal(packet.Message, inMessage)
+		err = msgpack.Unmarshal(packet.Message, inMessage)
 		if err != nil {
-			h.handleError(packet.Id, err)
+			h.SendMessage(packet.Id, "error", nil, err)
 			continue
 		}
 
-		outMessage, err := h.handleInMessage(packet.Id, inMessage)
+		switch inMessage.Type {
+		case "ping":
+			h.SendMessage(packet.Id, "ping", nil, nil)
+		case "queue":
+			err = HandleQueue(packet.Id)
+		case "cancelQueue":
+			err = HandleCancelQueue(packet.Id)
+		default:
+			err = errors.New("unknown message type")
+		}
+
 		if err != nil {
-			h.handleError(packet.Id, err)
+			h.SendMessage(packet.Id, "error", nil, err)
 			continue
 		}
-		buffer, err := msgpack.Marshal(&outMessage)
-		if err != nil {
-			h.handleError(packet.Id, err)
-			continue
-		}
-		h.Out <- &Packet{Id: packet.Id, Message: buffer}
 	}
 }
 
-func (h *Hub) handleInMessage(id string, inMessage *InMessage) (*OutMessage, error) {
-	var msg Message
-	switch inMessage.Type {
-	case "ping":
-		msg = &InPingMessage{}
-	default:
-		return nil, errors.New(fmt.Sprintf("unknown message type: %s", inMessage.Type))
+func (h *Hub) SendMessage(id string, messageType string, data interface{}, err error) {
+	isError := false
+	if err != nil {
+		log.Printf("sending error: %s", err)
+		isError = true
 	}
-
-	err :=msgpack.Unmarshal()
-}
-
-func (h *Hub) handleError(id string, err error) {
-	msg := OutErrorMessage{
-		OutMessage: OutMessage{
-			Type:  "error",
-			Error: true,
-		},
-	}
-	buffer, err := msgpack.Marshal(&msg)
-	h.Out <- &Packet{Id: id, Message: buffer}
+	encoded, _ := msgpack.Marshal(OutMessage{
+		Type:  messageType,
+		Data:  data,
+		Error: isError,
+	})
+	h.Out <- &Packet{Id: id, Message: encoded}
 }

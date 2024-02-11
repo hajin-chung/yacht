@@ -45,7 +45,7 @@ one sqlite3 user db and redis for game data
         number[],
     ],
 
-    // index of player in turn
+    // num of current turn
     "turn": number,
     "leftRolls": number,
 
@@ -96,21 +96,21 @@ every message is in a binary message and use MessagePack for serialization and d
 {
     "type": "lockDice"
     "data": {
-        "dice": /* index of dice */
+        "dice": number /* index of dice */
     }
 }
 
 {
     "type": "unlockDice"
     "data": {
-        "dice": /* index of dice */
+        "dice": number /* index of dice */
     }
 }
 
 {
     "type": "selectScore"
     "data": {
-        "selection": /* score name */
+        "selection": string /* score name */
     }
 }
 ```
@@ -118,11 +118,11 @@ every message is in a binary message and use MessagePack for serialization and d
 ### server sent messages
 
 ```typescript
-{ "type": "ping", "error": true | false }
+{ "type": "ping", "error": boolean }
 
-{ "type": "queue", "error": true | false }
+{ "type": "queue", "error": boolean }
 
-{ "type": "cancelQueue", "error": true | false }
+{ "type": "cancelQueue", "error": boolean }
 
 { 
     "type": "createRoom", 

@@ -18,7 +18,10 @@ func main() {
 	if err != nil {
 		return
 	}
+	InitRedis()
 	InitHub()
+	InitQueue()
+	InitGame()
 
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{

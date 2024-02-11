@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/jmoiron/sqlx"
 )
 
@@ -11,6 +13,7 @@ type Database struct {
 var userDB Database
 
 func InitDB() error {
+	log.Println("Initializing db")
 	userDB = Database{}
 	err := userDB.New("./db/user.db")
 	return err
