@@ -1,4 +1,5 @@
-<input id="input"></input>
+<input id="type"></input>
+<input id="data"></input>
 <div id="log">
 
 </div>
@@ -9,6 +10,14 @@
   
   body {
     padding: 24px;
+    background: black;
+    color: white;
+  }
+
+  input {
+    border: 1px solid white;
+    background: black;
+    color: white;
   }
 
   #log {
@@ -23,11 +32,11 @@
   }
 
   #log>pre:nth-child(even) {
-    background: #eee;
+    background: #111;
   }
 
   #log>pre:nth-child(odd) {
-    background: #fff;
+    background: #000;
   }
 </style>
 <script crossorigin src="https://unpkg.com/@msgpack/msgpack"></script>

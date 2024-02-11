@@ -179,7 +179,6 @@ every message is in a binary message and use MessagePack for serialization and d
     "type": "selectScore"
     "data": {
         "selection": /* score name */
-        "state": GameState
     },
     "error": true | false
 }

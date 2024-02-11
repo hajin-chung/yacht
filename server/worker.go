@@ -14,6 +14,18 @@ type InMessage struct {
 	Data msgpack.RawMessage `msgpack:"data,omitempty"`
 }
 
+type LockDiceData struct {
+	Dice int `msgpack:"dice"`
+}
+
+type UnlockDiceData struct {
+	Dice int `msgpack:"dice"`
+}
+
+type SelectScoreData struct {
+	Selection int `msgpack:"selection"`
+}
+
 type OutMessage struct {
 	Type  string      `msgpack:"type"`
 	Data  interface{} `msgpack:"data,omitempty"`
@@ -48,6 +60,27 @@ func (h *Hub) Worker() {
 			err = HandleShake(packet.Id)
 		case "roll":
 			err = HandleRoll(packet.Id)
+		case "lockDice":
+			data := &LockDiceData{}
+			err = msgpack.Unmarshal(inMessage.Data, data)
+			if err != nil {
+				break
+			}
+			err = HandleLockDice(packet.Id, data.Dice)
+		case "unlockDice":
+			data := &UnlockDiceData{}
+			err = msgpack.Unmarshal(inMessage.Data, data)
+			if err != nil {
+				break
+			}
+			err = HandleUnlockDice(packet.Id, data.Dice)
+		case "selectScore":
+			data := &SelectScoreData{}
+			err = msgpack.Unmarshal(inMessage.Data, data)
+			if err != nil {
+				break
+			}
+			err = HandleSelectScore(packet.Id, data.Selection)
 		default:
 			err = errors.New("unknown message type")
 		}

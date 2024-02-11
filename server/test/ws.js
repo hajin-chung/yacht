@@ -1,20 +1,25 @@
 const msgpack = MessagePack;
 const logOutput = document.getElementById("log");
-const input = document.getElementById("input")
+const typeInput = document.getElementById("type")
+const dataInput = document.getElementById("data")
 
 function log(message) {
   const row = document.createElement("pre")
-  row.innerText = message
+  if (message.length > 1000) {
+    row.innerText = message.slice(0, 100) + "\n...";
+  } else {
+    row.innerText = message;
+  }
   logOutput.prepend(row)
 }
 
 const socket = new WebSocket("ws://localhost:4434/ws");
 
-socket.addEventListener("open", (evt) => {
+socket.addEventListener("open", () => {
   log("socket open")
 })
 
-socket.addEventListener("close", (evt) => {
+socket.addEventListener("close", () => {
   log("socket close")
 })
 
@@ -28,13 +33,23 @@ socket.addEventListener("error", (evt) => {
   log(`socket error: ${JSON.stringify(evt)}`)
 })
 
-input.addEventListener("keydown", (evt) => {
-  if (evt.key == "Enter") {
-    const msg = msgpack.encode({ type: input.value })
-    socket.send(msg)
-    input.value = ""
-  }
+type.addEventListener("keydown", (evt) => {
+  if (evt.key == "Enter") sendMessage()
 })
+
+data.addEventListener("keydown", (evt) => {
+  if (evt.key == "Enter") sendMessage()
+})
+
+function sendMessage() {
+  const msg = msgpack.encode({
+    type: type.value,
+    data: data.value && JSON.parse("{" + data.value + "}")
+  })
+  socket.send(msg)
+  type.value = ""
+  data.value = ""
+}
 
 function formatJson(json) {
   let formattedJson = JSON.stringify(json, null, 2);
