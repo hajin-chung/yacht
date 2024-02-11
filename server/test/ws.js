@@ -5,7 +5,7 @@ const input = document.getElementById("input")
 function log(message) {
   const row = document.createElement("pre")
   row.innerText = message
-  logOutput.appendChild(row)
+  logOutput.prepend(row)
 }
 
 const socket = new WebSocket("ws://localhost:4434/ws");

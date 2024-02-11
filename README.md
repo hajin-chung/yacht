@@ -110,7 +110,7 @@ every message is in a binary message and use MessagePack for serialization and d
 {
     "type": "selectScore"
     "data": {
-        "selection": string /* score name */
+        "selection": number /* score index */
     }
 }
 ```
