@@ -16,7 +16,7 @@ realtime 3d secure yacht dice game
 - [x] server side 3d physics simulation
 - [x] sending server side simulated dice rotations to client side
 - [ ] authorization & authentication
-- [ ] match making
+- [x] match making
 - [ ] private & public room
 - [ ] server side game logic
 - [ ] database management

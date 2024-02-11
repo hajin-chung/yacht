@@ -20,7 +20,7 @@ socket.addEventListener("close", (evt) => {
 
 socket.addEventListener("message", async (evt) => {
   const msg = await evt.data.arrayBuffer();
-  const decoded = JSON.stringify(msgpack.decode(msg))
+  const decoded = formatJson(msgpack.decode(msg))
   log(`recv: ${decoded}`)
 })
 
@@ -35,3 +35,15 @@ input.addEventListener("keydown", (evt) => {
     input.value = ""
   }
 })
+
+function formatJson(json) {
+  let formattedJson = JSON.stringify(json, null, 2);
+
+  // Regex to match arrays that should be in a single line
+  // Note: This is a simple example and might need to be adapted based on your specific JSON structure
+  formattedJson = formattedJson.replace(/(\[[\d,\s]+?\])/g, function(match) {
+    return match.replace(/\s+/g, ' ');
+  });
+
+  return formattedJson;
+}

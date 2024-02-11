@@ -32,7 +32,6 @@ const (
 func GetUserStatus(userId string) (UserStatus, error) {
 	status, err := rdb.HGet(c, fmt.Sprintf("user:%s", userId), "status").Result()
 	if err == redis.Nil {
-		// TODO: maybe send current status?
 		SetUserStatus(userId, USER_IDLE)
 		return USER_IDLE, nil
 	} else if err != nil {
@@ -66,6 +65,14 @@ func SetUserGameId(userId string, gameId string) error {
 		"gameId": gameId,
 	}).Result()
 	return err
+}
+
+func GetUserGameId(userId string) (string, error) {
+	gameId, err := rdb.HGet(c, fmt.Sprintf("user:%s", userId), "gameId").Result()
+	if err != nil {
+		return "", err
+	}
+	return gameId, nil
 }
 
 func GetQueue() ([]string, error) {

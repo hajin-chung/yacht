@@ -42,6 +42,8 @@ func (h *Hub) Worker() {
 			err = HandleQueue(packet.Id)
 		case "cancelQueue":
 			err = HandleCancelQueue(packet.Id)
+		case "gameState":
+			err = HandleGameState(packet.Id)
 		default:
 			err = errors.New("unknown message type")
 		}
