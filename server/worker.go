@@ -32,11 +32,6 @@ type OutMessage struct {
 	Error bool        `msgpack:"error"`
 }
 
-type ErrorOutMessage struct {
-	Type  string `msgpack:"type"`
-	Error bool   `msgpack:"error"`
-}
-
 func (h *Hub) Worker() {
 	var err error
 	for packet := range h.In {
