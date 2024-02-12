@@ -50,6 +50,8 @@ func (h *Hub) Worker() {
 		switch inMessage.Type {
 		case "ping":
 			h.SendMessage(packet.Id, "ping", nil, nil)
+		case "me":
+			err = HandleMe(packet.Id)
 		case "queue":
 			err = HandleQueue(packet.Id)
 		case "cancelQueue":
@@ -104,4 +106,29 @@ func (h *Hub) SendMessage(id string, messageType string, data interface{}, err e
 		Error: isError,
 	})
 	h.Out <- &Packet{Id: id, Message: encoded}
+}
+
+func HandleMe(userId string) error {
+	status, err := GetUserStatus(userId)
+	if err != nil {
+		return err
+	}
+
+	if status == USER_PLAYING {
+		gameId, err := GetUserGameId(userId)
+		if err != nil {
+			return err
+		}
+		hub.SendMessage(userId, "me", map[string]interface{}{
+			"id":     userId,
+			"status": status,
+			"gameId": gameId,
+		}, nil)
+	} else {
+		hub.SendMessage(userId, "me", map[string]interface{}{
+			"id":     userId,
+			"status": status,
+		}, nil)
+	}
+	return nil
 }

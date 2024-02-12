@@ -6,9 +6,6 @@ import (
 	"math/rand"
 )
 
-// TODO: game
-// handle gameState, shake, lockDice, unlockDice, roll, selectScore,
-// gameStart, gameEnd
 type GameStatus string
 
 const (
@@ -33,15 +30,18 @@ const (
 	YACHT               = 11
 )
 
+const MAX_TURN = 2 * 12
+
 type GameState struct {
-	Id        string     `msgpack:"id"`
-	PlayerId  [2]string  `msgpack:"playerId"`
-	Status    GameStatus `msgpack:"status"`
-	Scores    [2][12]int `msgpack:"scores"`
-	Turn      uint8      `msgpack:"turn"`
-	LeftRolls uint8      `msgpack:"leftRolls"`
-	IsLocked  [5]bool    `msgpack:"isLocked"`
-	Dice      [5]int     `msgpack:"dice"`
+	Id        string      `msgpack:"id"`
+	PlayerId  [2]string   `msgpack:"playerId"`
+	Status    GameStatus  `msgpack:"status"`
+	Selected  [2][12]bool `msgpack:"Selected"`
+	Scores    [2][12]int  `msgpack:"scores"`
+	Turn      uint8       `msgpack:"turn"`
+	LeftRolls uint8       `msgpack:"leftRolls"`
+	IsLocked  [5]bool     `msgpack:"isLocked"`
+	Dice      [5]int      `msgpack:"dice"`
 }
 
 func (game *GameState) Next() {
@@ -51,6 +51,22 @@ func (game *GameState) Next() {
 	}
 	game.LeftRolls = 3
 	game.Turn++
+
+	if game.Turn == MAX_TURN {
+		game.Status = GAME_DONE
+
+		SetUserStatus(game.PlayerId[0], USER_IDLE)
+		SetUserStatus(game.PlayerId[1], USER_IDLE)
+		RemoveUserGameId(game.PlayerId[0])
+		RemoveUserGameId(game.PlayerId[1])
+
+		hub.SendMessage(game.PlayerId[0], "gameEnd", map[string]interface{}{
+			"gameId": game.Id,
+		}, nil)
+		hub.SendMessage(game.PlayerId[1], "gameEnd", map[string]interface{}{
+			"gameId": game.Id,
+		}, nil)
+	}
 }
 
 var games map[string]*GameState
@@ -65,28 +81,28 @@ func InitGame() {
 func StartGame(player1Id string, player2Id string) {
 	gameId := CreateId()
 	gameState := &GameState{
-		Id:       gameId,
-		PlayerId: [2]string{player1Id, player2Id},
-		Status:   GAME_PLAYING,
-		Scores: [2][12]int{
-			{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-			{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		},
+		Id:        gameId,
+		PlayerId:  [2]string{player1Id, player2Id},
+		Status:    GAME_PLAYING,
+		Selected:  [2][12]bool{},
+		Scores:    [2][12]int{},
 		Turn:      0,
 		LeftRolls: 3,
-		IsLocked:  [5]bool{false, false, false, false, false},
-		Dice:      [5]int{0, 0, 0, 0, 0},
+		IsLocked:  [5]bool{},
+		Dice:      [5]int{},
 	}
 	games[gameId] = gameState
+
 	SetUserStatus(player1Id, USER_PLAYING)
 	SetUserStatus(player2Id, USER_PLAYING)
 	SetUserGameId(player1Id, gameId)
 	SetUserGameId(player2Id, gameId)
-	hub.SendMessage(player1Id, "gameState", map[string]interface{}{
-		"state": gameState,
+
+	hub.SendMessage(player1Id, "gameStart", map[string]interface{}{
+		"gameId": gameId,
 	}, nil)
-	hub.SendMessage(player2Id, "gameState", map[string]interface{}{
-		"state": gameState,
+	hub.SendMessage(player2Id, "gameStart", map[string]interface{}{
+		"gameId": gameId,
 	}, nil)
 }
 
@@ -257,10 +273,13 @@ func HandleSelectScore(userId string, selection int) error {
 	if selection < 0 || 12 <= selection {
 		return errors.New("selection out of bounds")
 	}
+	if game.Selected[game.Turn%2][selection] == true {
+		return errors.New("score already selected")
+	}
 
 	score := CalculateScore(game.Dice, selection)
+	game.Selected[game.Turn%2][selection] = true
 	game.Scores[game.Turn%2][selection] = score
-	game.Next()
 
 	hub.SendMessage(game.PlayerId[0], "selectScore", map[string]interface{}{
 		"selection": selection,
@@ -268,6 +287,8 @@ func HandleSelectScore(userId string, selection int) error {
 	hub.SendMessage(game.PlayerId[1], "selectScore", map[string]interface{}{
 		"selection": selection,
 	}, nil)
+
+	game.Next()
 
 	return nil
 }
