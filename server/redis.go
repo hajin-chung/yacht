@@ -75,6 +75,11 @@ func GetUserGameId(userId string) (string, error) {
 	return gameId, nil
 }
 
+func RemoveUserGameId(userId string) error {
+	_, err := rdb.HDel(c, fmt.Sprintf("user:%s", userId), "gameId").Result()
+	return err
+}
+
 func GetQueue() ([]string, error) {
 	res, err := rdb.ZRange(c, "queue", 0, -1).Result()
 	return res, err

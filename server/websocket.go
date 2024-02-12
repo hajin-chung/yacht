@@ -16,16 +16,19 @@ func WebsocketUpgrade(c *fiber.Ctx) error {
 
 func WebSocketHandler(c *websocket.Conn) {
 	id := c.Locals("id").(string)
+	done := make(chan bool)
 	socket := WebSocket{
 		Conn: c,
+		Done: done,
 	}
 	hub.Add(id, &socket)
-	for {
+	for <-done {
 	}
 }
 
 type WebSocket struct {
 	*websocket.Conn
+	Done chan bool
 }
 
 func (ws *WebSocket) Read() ([]byte, error) {
@@ -46,6 +49,7 @@ func (ws *WebSocket) Write(content []byte) (err error) {
 }
 
 func (ws *WebSocket) Close() {
+	ws.Done <- true
 	ws.Conn.Close()
 }
 
