@@ -15,10 +15,10 @@ realtime 3d secure yacht dice game
 - [x] dice result detection
 - [x] server side 3d physics simulation
 - [x] sending server side simulated dice rotations to client side
-- [ ] authorization & authentication
 - [x] match making
+- [x] server side game logic
+- [ ] authorization & authentication
 - [ ] private & public room
-- [ ] server side game logic
 - [ ] database management
 - [ ] client side game logic
 - [ ] various game effects
@@ -66,6 +66,8 @@ every message is in a binary message and use MessagePack for serialization and d
 
 ```typescript
 { "type": "ping" }
+
+{ "type": "me" }
 
 { "type": "queue" }
 
@@ -119,6 +121,15 @@ every message is in a binary message and use MessagePack for serialization and d
 
 ```typescript
 { "type": "ping", "error": boolean }
+
+{ 
+    "type": "me", 
+    "data": {
+        "id": string,
+        "status": string,
+        "gameId": string | undefined
+    }
+}
 
 { "type": "queue", "error": boolean }
 
@@ -186,7 +197,7 @@ every message is in a binary message and use MessagePack for serialization and d
 {
     "type": "gameStart",
     "data": {
-        "state": GameState,
+        "gameId": string
     },
     "error": true | false
 }
@@ -194,7 +205,7 @@ every message is in a binary message and use MessagePack for serialization and d
 {
     "type": "gameEnd",
     "data": {
-        "state": GameState,
+        "gameId": string
     },
     "error": true | false
 }
