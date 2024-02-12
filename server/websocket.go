@@ -22,8 +22,7 @@ func WebSocketHandler(c *websocket.Conn) {
 		Done: done,
 	}
 	hub.Add(id, &socket)
-	for <-done {
-	}
+	<-done
 }
 
 type WebSocket struct {
