@@ -4,6 +4,8 @@
 
 body {
   overflow: clip;
+  font-family: "Jost", sans-serif;
+  font-style: normal;
 }
 
 #root {
@@ -11,20 +13,106 @@ body {
   height: 100vh;
 }
 
+#loading {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+#loading>.title {
+  font-size: 48px;
+}
+
+#spinner {
+  display: flex;
+  gap: 20px;
+}
+
+.dice-spinner {
+  width: 32px;
+  height: 32px;
+}
+
+#game {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#lobby {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border-radius: 8px;
+  transition: all 1s ease-in-out;
+  gap: 20px;
+  align-items: center;
+}
+
+#lobby.hide {
+  transform: translateY(calc(-50vh - 50%));
+}
+
+#lobby .title {
+  font-size: 24px;
+}
+
+#lobby #top {
+  display: flex;
+  justify-content: space-between;
+  gap: 32px;
+  align-items: start;
+}
+
+#userState {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+#badge {
+  width: 6px;
+  height: 6px;
+  border-radius: 100%;
+  background-color: #16a34a;
+}
+
+#userId {
+  font-size: 12px;
+}
+
+#queueButton {
+  padding: 8px;
+  font-weight: bold;
+  border-radius: 8px;
+  border: 2px solid black;
+}
+
+#queueLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
 #canvas {
+  z-index: -10;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
 }
 
-#controls {
-  position: absolute;
-  bottom: 20px;
-  display: flex;
-  width: 100%;
-  justify-content: center;
-}
-
-#controls > button {
-  padding: 12px;
-  background-color: white;
+.title {
+  font-weight: bold;
+  border-bottom: 4px solid #16a34a;
 }

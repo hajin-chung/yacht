@@ -12,6 +12,7 @@
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.12.0",
     "@msgpack/msgpack": "3.0.0-beta2",
+    "messagepack": "^1.1.12",
     "three": "^0.161.0"
   },
   "devDependencies": {

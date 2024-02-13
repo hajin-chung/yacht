@@ -1,31 +1,25 @@
-import { createSignal } from "solid-js";
-import msgpack from "messagepack";
-
-const SOCKET_OPEN = "OPEN";
-const SOCKET_CLOSE = "CLOSE";
-
-const [socketStatus, setSocketStatus] = createSignal(SOCKET_CLOSE);
-export { socketStatus };
+import { decode, encode } from "messagepack";
+import { formatJson, log } from "./utils";
+import { GameState, UserState, handleCancelQueue, handleGameState, handleMe, handleQueue } from "./state";
 
 export let socket: WebSocket;
 
-export async function initWebsocket() {
+export function initWebsocket() {
   socket = new WebSocket("ws://localhost:4434/ws");
 
   socket.addEventListener("open", () => {
-    setSocketStatus(SOCKET_OPEN)
     log("socket open")
   })
 
   socket.addEventListener("close", () => {
-    setSocketStatus(SOCKET_CLOSE)
     log("socket closed")
   })
 
   socket.addEventListener("message", async (evt) => {
     const msg = await evt.data.arrayBuffer();
-    const decoded = formatJson(msgpack.decode(msg))
-    log(`recv: ${decoded}`)
+    const decoded = decode(msg)
+    handleMessage(decoded)
+    log(`recv: ${formatJson(decoded)}`)
   })
 
   socket.addEventListener("error", (evt) => {
@@ -33,16 +27,41 @@ export async function initWebsocket() {
   })
 }
 
-function log(msg: string) {
-  console.log(msg);
+export function sendMessage(type: string, data?: any) {
+  const message = { type, data };
+  const encoded = encode(message);
+  socket.send(encoded)
 }
 
-function formatJson(json: any) {
-  let formattedJson = JSON.stringify(json, null, 2);
+function handleMessage(message: any) {
+  if (typeof message.type !== "string") {
+    log("unknown message type");
+    return;
+  }
 
-  formattedJson = formattedJson.replace(/(\[[\d,\s]+?\])/g, function(match) {
-    return match.replace(/\s+/g, ' ');
-  });
-
-  return formattedJson;
+  switch (message.type) {
+    case "ping":
+      log("recieved ping")
+      break;
+    case "me": {
+      const data: UserState = message.data
+      handleMe(data)
+      break;
+    }
+    case "queue":
+      handleQueue()
+      break;
+    case "cancelQueue":
+      handleCancelQueue()
+      break;
+    case "gameStart":
+      // TODO:
+    case "gameState": {
+      const data: GameState = message.data
+      handleGameState(data)
+      break;
+    }
+    default:
+      // TODO: handle error
+  }
 }

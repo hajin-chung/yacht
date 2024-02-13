@@ -7,14 +7,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Yacht Dice</title>
   <link rel="stylesheet" href="/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap"
+    rel="stylesheet">
 </head>
 
 <body>
   <div id="root">
-    <canvas id="canvas"></canvas>
-    <div id="controls">
-      <button id="shake">shake</button>
-      <button id="roll">roll</button>
+    <div id="loading">
+      <p class="title">Yachty Yachta</p>
+      <div id="spinner">
+        <img class="dice-spinner" src="/images/dice_1.png" />
+        <img class="dice-spinner" src="/images/dice_2.png" />
+        <img class="dice-spinner" src="/images/dice_3.png" />
+        <img class="dice-spinner" src="/images/dice_4.png" />
+        <img class="dice-spinner" src="/images/dice_5.png" />
+      </div>
+      <p>Loading assets...</p>
+    </div>
+    <div id="game" class="hide">
+      <div id="lobby">
+        <div id="top">
+          <p class="title">Yachty Yachta</p>
+          <div id="userState">
+            <div id="badge"></div>
+            <p id="userId"></p>
+          </div>
+        </div>
+        <div id="queueLoading">
+          <img class="dice-spinner" src="/images/dice_1.png" />
+          <p>Waiting for opponent</p>
+        </div>
+        <button id="queueButton">PLAY</button>
+      </div>
+      <canvas id="canvas" />
     </div>
   </div>
   <script type="module" src="/src/main.ts"></script>
