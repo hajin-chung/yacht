@@ -3,7 +3,6 @@ import * as THREE from "three";
 import { Board, Cup, Dice, Ground } from "./component";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { fps } from "./constants";
-import { getSimulation } from "./api";
 import { rapier } from "./rapier";
 
 export class Yacht {
@@ -21,10 +20,6 @@ export class Yacht {
   isDebug: boolean;
   lines?: THREE.LineSegments;
   controls?: OrbitControls;
-
-  showSimulation: boolean = false;
-  animation: number[] = [];
-  idx: number = 0;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -51,18 +46,17 @@ export class Yacht {
     this.camera.rotateX((Math.PI * 3) / 2);
 
     this.scene = new THREE.Scene();
-
-    const light = new THREE.AmbientLight(0xeeeeff);
-    this.scene.add(light);
-    const directionalLight = new THREE.DirectionalLight(0xffffee, 2);
-    directionalLight.position.set(1, 1, 1);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    this.scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
+    directionalLight.position.set(4, 10, 4);
     this.scene.add(directionalLight);
-    const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x080820, 0.8);
+    const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x080820, 0.5);
     this.scene.add(hemisphereLight);
 
     this.diceList = [];
     for (let i = 0; i < 5; i++) {
-      const dice = new Dice(this.world, this.scene,i);
+      const dice = new Dice(this.world, this.scene, i);
       this.diceList.push(dice);
     }
 
@@ -72,53 +66,9 @@ export class Yacht {
   }
 
   update() {
-    this.diceList.forEach((dice) => dice.update(this.showSimulation));
-    this.cup.update();
+    this.diceList.forEach((dice) => dice.step());
+    this.cup.step();
     this.world.step();
-
-    if (this.cup.didRoll && !this.cup.didMove && this.cup.frames.length === 0) {
-      this.showSimulation = true;
-      this.cup.move();
-
-      this.world.removeCollider(this.cup.topCollider, false);
-      this.world.removeCollider(this.cup.cupCollider, false);
-
-      this.getSimulation();
-      for (let i = 0; i < this.diceList.length; i++) {
-        const dice = this.diceList[i];
-        console.log(dice.rigidBody.translation());
-        dice.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
-        dice.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
-        dice.rigidBody.resetForces(true);
-        dice.rigidBody.resetTorques(true);
-        dice.rigidBody.addForce({ x: -0.6, y: -0.1, z: 0.1 }, true);
-      }
-    }
-
-    if (this.showSimulation) this.idx++;
-
-    if (
-      this.showSimulation &&
-      this.animation.length !== 0 &&
-      7 * this.diceList.length * this.idx < this.animation.length
-    ) {
-      for (let i = 0; i < this.diceList.length; i++) {
-        const dice = this.diceList[i];
-        const start = 7 * this.diceList.length * this.idx + 7 * i;
-        dice.model.position.set(
-          this.animation[start],
-          this.animation[start + 1],
-          this.animation[start + 2],
-        );
-
-        dice.model.quaternion.set(
-          this.animation[start + 3],
-          this.animation[start + 4],
-          this.animation[start + 5],
-          this.animation[start + 6],
-        );
-      }
-    }
   }
 
   draw() {
@@ -148,12 +98,5 @@ export class Yacht {
     let geometry = new THREE.BufferGeometry();
     this.lines = new THREE.LineSegments(geometry, material);
     this.scene.add(this.lines);
-  }
-
-  getSimulation() {
-    const num = this.diceList.length;
-    getSimulation(num).then(
-      (simulation) => (this.animation = simulation.buffer),
-    );
   }
 }
