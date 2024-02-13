@@ -9,16 +9,17 @@ import {
   rollAnimation,
   shakeAnimation,
 } from "./animation";
+import { rapier } from "./rapier";
+import { boardModel, cupModel, diceModel, groundTexture } from "./assets";
 type RAPIER = typeof import("@dimforge/rapier3d-compat");
 
 class Component {
-  constructor() {}
+  constructor() { }
 
-  draw() {}
+  draw() { }
 }
 
 class Dice extends Component {
-  rapier: RAPIER;
   world: World;
   num: number;
   rigidBody: RigidBody;
@@ -26,15 +27,12 @@ class Dice extends Component {
   model: THREE.Group<THREE.Object3DEventMap>;
 
   constructor(
-    rapier: RAPIER,
     world: World,
     scene: THREE.Scene,
-    gltf: GLTF,
     num: number,
   ) {
     super();
 
-    this.rapier = rapier;
     this.world = world;
     this.num = num;
     const rigidBodyDesc = rapier.RigidBodyDesc.dynamic().setTranslation(
@@ -43,12 +41,12 @@ class Dice extends Component {
       0.8 * random(),
     );
     this.rigidBody = world.createRigidBody(rigidBodyDesc);
-    const colliderDesc = this.rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4).setMass(
+    const colliderDesc = rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4).setMass(
       0.5,
     );
     this.collider = world.createCollider(colliderDesc, this.rigidBody);
 
-    this.model = gltf.scene.clone();
+    this.model = diceModel.scene.clone();
     scene.add(this.model);
   }
 
@@ -74,10 +72,10 @@ class Cup extends Component {
   didRoll: boolean = false;
   didMove: boolean = false;
 
-  constructor(rapier: RAPIER, world: World, scene: THREE.Scene, gltf: GLTF) {
+  constructor(world: World, scene: THREE.Scene) {
     super();
 
-    const geometry: any = (gltf.scene.children[0].children[0] as any).geometry;
+    const geometry: any = (cupModel.scene.children[0].children[0] as any).geometry;
     const vertex: Float32Array = geometry.attributes.position.array;
     const index: Uint32Array = Uint32Array.from(geometry.index.array);
 
@@ -92,7 +90,7 @@ class Cup extends Component {
     this.cupCollider = world.createCollider(colliderDesc, this.rigidBody);
     this.topCollider = world.createCollider(topColliderDesc, this.rigidBody);
 
-    this.model = gltf.scene;
+    this.model = cupModel.scene;
     scene.add(this.model);
   }
 
@@ -144,69 +142,21 @@ class Cup extends Component {
 }
 
 class Board extends Component {
-  model: THREE.Group<THREE.Object3DEventMap>;
-  leftCollider: Collider;
-  rightCollider: Collider;
-  topCollider: Collider;
-  bottomCollider: Collider;
-  groundCollider: Collider;
-
-  constructor(rapier: RAPIER, world: World, scene: THREE.Scene, gltf: GLTF) {
+  constructor(scene: THREE.Scene) {
     super();
-
-    const wallW = 5.35;
-    const wallH = 3.0;
-    const wallD = 0.2;
-
-    const friction = 0.5;
-    const restitution = 0.6;
-
-    const top = rapier.ColliderDesc.cuboid(wallW / 2.0, wallH, wallD / 2.0)
-      .setTranslation(0.0, wallH / 2.0, -wallW / 2.0 - wallD / 2.0)
-      .setFriction(friction)
-      .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
-      .setRestitution(restitution);
-    const bottom = rapier.ColliderDesc.cuboid(wallW / 2.0, wallH, wallD / 2.0)
-      .setTranslation(0.0, wallH / 2.0, wallW / 2.0 + wallD / 2.0)
-      .setFriction(friction)
-      .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
-      .setRestitution(restitution);
-    const left = rapier.ColliderDesc.cuboid(wallD / 2.0, wallH, wallW / 2.0)
-      .setTranslation(-wallW / 2.0 - wallD / 2.0, wallH / 2.0, 0.0)
-      .setFriction(friction)
-      .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
-      .setRestitution(restitution);
-    const right = rapier.ColliderDesc.cuboid(wallD / 2.0, wallH, wallW / 2.0)
-      .setTranslation(wallW / 2.0 + wallD / 2.0, wallH / 2.0, 0.0)
-      .setFriction(friction)
-      .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
-      .setRestitution(restitution);
-    const ground = rapier.ColliderDesc.cuboid(10.0, 1.0, 10.0)
-      .setTranslation(0, -1.0, 0)
-      .setFriction(friction)
-      .setFrictionCombineRule(rapier.CoefficientCombineRule.Max)
-      .setRestitution(restitution);
-
-    this.leftCollider = world.createCollider(left);
-    this.rightCollider = world.createCollider(right);
-    this.topCollider = world.createCollider(top);
-    this.bottomCollider = world.createCollider(bottom);
-    this.groundCollider = world.createCollider(ground);
-
-    this.model = gltf.scene;
-    scene.add(this.model);
+    scene.add(boardModel.scene);
   }
 }
 
 class Ground extends Component {
   model: THREE.Mesh;
 
-  constructor(scene: THREE.Scene, texture: THREE.Texture) {
+  constructor(scene: THREE.Scene) {
     super();
 
-    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(10, 10);
-    const material = new THREE.MeshStandardMaterial({ map: texture });
+    groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
+    groundTexture.repeat.set(10, 10);
+    const material = new THREE.MeshStandardMaterial({ map: groundTexture });
     this.model = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), material);
     this.model.rotateX((Math.PI * 3) / 2);
     this.model.position.set(0, -2, 0);

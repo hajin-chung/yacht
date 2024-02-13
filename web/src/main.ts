@@ -1,36 +1,21 @@
-import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { Yacht } from "./yacht";
 import { fps } from "./constants";
+import { initRapier } from "./rapier";
+import { loadAssets } from "./assets";
 
-function getRapier() {
-  return import("@dimforge/rapier3d-compat");
+async function init() {
+  await loadAssets();
+  await initRapier();
 }
 
 async function main() {
-  const rapier = await getRapier();
-  await rapier.init();
-
-  const loader = new GLTFLoader();
-  const diceGltf = await loader.loadAsync("/models/dice.glb");
-  const boardGltf = await loader.loadAsync("/models/board.glb");
-  const cupGltf = await loader.loadAsync("/models/cup.glb");
-  const groundTexture = await new THREE.TextureLoader().loadAsync(
-    "/textures/wood.jpg",
-  );
+  await init();
 
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
   canvas.width = canvas.clientWidth;
   canvas.height = canvas.clientHeight;
 
-  const yacht = new Yacht(
-    rapier,
-    canvas,
-    diceGltf,
-    cupGltf,
-    boardGltf,
-    groundTexture,
-  );
+  const yacht = new Yacht(canvas);
   // yacht.debug();
 
   setInterval(() => {

@@ -1,11 +1,10 @@
 import { World } from "@dimforge/rapier3d-compat";
 import * as THREE from "three";
-import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { Board, Cup, Dice, Ground } from "./component";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { fps } from "./constants";
 import { getSimulation } from "./api";
-type RAPIER = typeof import("@dimforge/rapier3d-compat");
+import { rapier } from "./rapier";
 
 export class Yacht {
   world: World;
@@ -28,12 +27,7 @@ export class Yacht {
   idx: number = 0;
 
   constructor(
-    rapier: RAPIER,
     canvas: HTMLCanvasElement,
-    diceGltf: GLTF,
-    cupGltf: GLTF,
-    boardGltf: GLTF,
-    groundTexture: THREE.Texture,
   ) {
     this.isDebug = false;
 
@@ -68,13 +62,13 @@ export class Yacht {
 
     this.diceList = [];
     for (let i = 0; i < 5; i++) {
-      const dice = new Dice(rapier, this.world, this.scene, diceGltf, i);
+      const dice = new Dice(this.world, this.scene,i);
       this.diceList.push(dice);
     }
 
-    this.cup = new Cup(rapier, this.world, this.scene, cupGltf);
-    this.board = new Board(rapier, this.world, this.scene, boardGltf);
-    this.ground = new Ground(this.scene, groundTexture);
+    this.cup = new Cup(this.world, this.scene);
+    this.board = new Board(this.scene);
+    this.ground = new Ground(this.scene);
   }
 
   update() {
