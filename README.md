@@ -59,8 +59,8 @@ one sqlite3 user db and redis for game data
 
 ## messages
 
-since we have to send position & rotation buffer which is quite big through websocket
-every message is in a binary message and use MessagePack for serialization and deserialization
+since we have to send position & rotation buffer which is quite big through websocket,
+every message is in a binary using MessagePack for serialization and deserialization
 
 ### client sent messages
 
@@ -159,6 +159,14 @@ every message is in a binary message and use MessagePack for serialization and d
     "error": true | false
 }
 
+{
+    "type": "gameStart",
+    "data": {
+        "gameId": string
+    },
+    "error": true | false
+}
+
 { "type": "shake", "error": true | false }
 
 { 
@@ -190,14 +198,6 @@ every message is in a binary message and use MessagePack for serialization and d
     "type": "selectScore"
     "data": {
         "selection": /* score name */
-    },
-    "error": true | false
-}
-
-{
-    "type": "gameStart",
-    "data": {
-        "gameId": string
     },
     "error": true | false
 }

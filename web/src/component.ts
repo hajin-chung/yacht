@@ -1,9 +1,10 @@
 import { Collider, RigidBody, World } from "@dimforge/rapier3d-compat";
 import { cupX, cupY } from "./constants";
-import { random } from "./utils";
+import { random, vectorAdd } from "./utils";
 import * as THREE from "three";
 import { rapier } from "./rapier";
 import { boardModel, cupModel, diceModel, groundTexture } from "./assets";
+import { Frame, rollAnimation, shakeAnimation } from "./animation";
 
 class Dice {
   world: World;
@@ -47,6 +48,8 @@ class Cup {
   cupCollider: Collider;
   topCollider: Collider;
   model: THREE.Group<THREE.Object3DEventMap>;
+  shakeCount: number = 0;
+  frame: Frame[] = [];
 
   constructor(world: World, scene: THREE.Scene) {
     const geometry: any = (cupModel.scene.children[0].children[0] as any).geometry;
@@ -73,6 +76,26 @@ class Cup {
     const rotation = this.rigidBody.rotation();
     this.model.position.set(translation.x, translation.y, translation.z);
     this.model.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
+
+    if (this.frame.length > 0) {
+      const frame = this.frame.shift()!;
+      if (frame.translation) {
+        this.rigidBody.setTranslation(
+          vectorAdd(this.rigidBody.translation(), frame.translation), false);
+      }
+      if (frame.rotation) {
+        this.rigidBody.setRotation(frame.rotation, false);
+      }
+    }
+
+    if (this.shakeCount > 0) {
+      this.shakeCount--
+      this.frame.push(...shakeAnimation)
+    }
+  }
+
+  roll() {
+    this.frame.push(...rollAnimation);
   }
 }
 

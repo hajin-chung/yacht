@@ -4,6 +4,19 @@ import { Board, Cup, Dice, Ground } from "./component";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { fps } from "./constants";
 import { rapier } from "./rapier";
+import { GameState, state } from "./state";
+import { RollData, sendMessage } from "./websocket";
+import { Frame } from "./animation";
+
+export let yacht: Yacht;
+
+export function initYacht() {
+  const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
+
+  yacht = new Yacht(canvas);
+}
 
 export class Yacht {
   world: World;
@@ -20,6 +33,9 @@ export class Yacht {
   isDebug: boolean;
   lines?: THREE.LineSegments;
   controls?: OrbitControls;
+
+  diceRollFrames: Frame[] = [];
+  pressingShake: boolean = false;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -63,12 +79,32 @@ export class Yacht {
     this.cup = new Cup(this.world, this.scene);
     this.board = new Board(this.scene);
     this.ground = new Ground(this.scene);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === " ") {
+        this.pressingShake = true;
+      }
+    })
+
+    document.addEventListener("keyup", (e) => {
+      if (e.key === " ") {
+        this.pressingShake = false;
+      }
+    })
   }
 
   update() {
     this.diceList.forEach((dice) => dice.step());
     this.cup.step();
     this.world.step();
+
+    if (!state.game) return
+    if (!state.user) return
+    if (state.game.playerId[state.game.turn % 2] !== state.user.id) return
+    console.log(this.pressingShake)
+    if (this.pressingShake && this.cup.frame.length === 0) {
+      sendMessage("shake")
+    }
   }
 
   draw() {
@@ -98,5 +134,16 @@ export class Yacht {
     let geometry = new THREE.BufferGeometry();
     this.lines = new THREE.LineSegments(geometry, material);
     this.scene.add(this.lines);
+  }
+
+  updateState(state: GameState) {
+  }
+
+  shake() {
+    this.cup.shakeCount++;
+  }
+
+  roll(data: RollData) {
+    this.cup.roll();
   }
 }

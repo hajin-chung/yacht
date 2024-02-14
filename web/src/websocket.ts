@@ -1,6 +1,6 @@
 import { decode, encode } from "messagepack";
 import { formatJson, log } from "./utils";
-import { GameState, UserState, handleCancelQueue, handleGameState, handleMe, handleQueue } from "./state";
+import { GameState, UserState, handleCancelQueue, handleGameStart, handleGameState, handleMe, handleQueue, handleRoll, handleShake } from "./state";
 
 export let socket: WebSocket;
 
@@ -33,6 +33,11 @@ export function sendMessage(type: string, data?: any) {
   socket.send(encoded)
 }
 
+export type RollData = {
+  result: number[],
+  buffer: Float32Array,
+};
+
 function handleMessage(message: any) {
   if (typeof message.type !== "string") {
     log("unknown message type");
@@ -55,12 +60,21 @@ function handleMessage(message: any) {
       handleCancelQueue()
       break;
     case "gameStart":
-      // TODO:
+      const gameId: string = message.data.gameId
+      handleGameStart(gameId)
+      break;
     case "gameState": {
-      const data: GameState = message.data
+      const data: GameState = message.data.state
       handleGameState(data)
       break;
     }
+    case "shake": 
+      handleShake();
+      break;
+    case "roll":
+      const data:RollData = message.data
+      handleRoll(data)
+      break;
     default:
       // TODO: handle error
   }

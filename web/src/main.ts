@@ -1,4 +1,4 @@
-import { Yacht } from "./yacht";
+import { initYacht, yacht } from "./yacht";
 import { fps } from "./constants";
 import { initRapier } from "./rapier";
 import { loadAssets } from "./assets";
@@ -10,6 +10,7 @@ async function init() {
   showLoading();
   await loadAssets();
   await initRapier();
+  initYacht();
   initWebsocket();
   socket.addEventListener("open", () => {
     sendMessage("me")
@@ -21,11 +22,6 @@ async function main() {
   await init();
 
   di("game").classList.remove("hide");
-  const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-  canvas.width = canvas.clientWidth;
-  canvas.height = canvas.clientHeight;
-
-  const yacht = new Yacht(canvas);
   // yacht.debug();
 
   setInterval(() => {

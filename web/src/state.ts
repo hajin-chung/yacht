@@ -1,5 +1,6 @@
-import { setUserId, showIdle, showQueue } from "./ui";
-import { sendMessage } from "./websocket";
+import { hideLoading, hideLobby, setUserId, showIdle, showQueue } from "./ui";
+import { RollData, sendMessage } from "./websocket";
+import { yacht } from "./yacht";
 
 type UserStatus = "IDLE" | "QUEUE" | "PLAYING";
 
@@ -30,7 +31,7 @@ type State = {
   game?: GameState,
 }
 
-const state: State = {};
+export const state: State = {};
 
 export function handleMe(userState: UserState) {
   state.user = userState;
@@ -46,16 +47,70 @@ export function handleMe(userState: UserState) {
 }
 
 export function handleQueue() {
-  if (state.user) state.user.status = "QUEUE";
+  if (!state.user) {
+    sendMessage("me")
+    return
+  }
+
+  state.user.status = "QUEUE";
   showQueue();
 }
 
 export function handleCancelQueue() {
-  if (state.user) state.user.status = "IDLE";
+  if (!state.user) {
+    sendMessage("me")
+    return
+  }
+
+  state.user.status = "IDLE";
   showIdle();
 }
 
 export function handleGameState(gameState: GameState) {
+  if (!state.user) {
+    sendMessage("me");
+    return
+  }
+
   state.game = gameState;
-  // TODO:
+  yacht.updateState(gameState);
+  hideLobby();
+}
+
+export function handleGameStart(gameId: string) {
+  if (!state.user) {
+    sendMessage("me");
+    return
+  }
+
+  state.user.status = "PLAYING";
+  state.user.gameId = gameId;
+  hideLobby();
+  sendMessage("gameState")
+}
+
+export function handleShake() {
+  if (!state.user) {
+    sendMessage("me");
+    return
+  }
+  if (!state.game) {
+    sendMessage("gameState");
+    return
+  }
+
+  yacht.shake();
+}
+
+export function handleRoll(data: RollData) {
+  if (!state.user) {
+    sendMessage("me");
+    return
+  }
+  if (!state.game) {
+    sendMessage("gameState");
+    return
+  }
+
+  yacht.roll(data);
 }

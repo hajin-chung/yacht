@@ -51,3 +51,7 @@ export function showQueue() {
     console.log(dice.src)
   }, 1000);
 }
+
+export function hideLobby() {
+  di("lobby").classList.add("hide")
+}
