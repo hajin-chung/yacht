@@ -1,7 +1,7 @@
 import { di, dq, dqs } from "./utils";
 import { sendMessage } from "./websocket";
 
-let spinnerInterval: number;
+let spinnerInterval: number | undefined;
 
 export function showLoading() {
   di("loading").style.display = "null";
@@ -14,6 +14,7 @@ export function showLoading() {
 }
 
 export async function hideLoading() {
+  spinnerInterval = undefined;
   return new Promise<void>((resolve) => {
     setTimeout(() => {
       clearInterval(spinnerInterval);
@@ -23,11 +24,9 @@ export async function hideLoading() {
   })
 }
 
-export function setUserId(userId: string) {
+export function showUserId(userId: string) {
   di("userId").innerText = userId;
 }
-
-let spinnerId: number;
 
 export function showIdle() {
   di("queueLoading").style.display = "none";
@@ -36,7 +35,10 @@ export function showIdle() {
     sendMessage("queue")
   }
 
-  if (spinnerId !== undefined) clearInterval(spinnerId);
+  if (spinnerInterval !== undefined) {
+    spinnerInterval = undefined;
+    clearInterval(spinnerInterval);
+  }
 }
 
 export function showQueue() {
@@ -45,7 +47,7 @@ export function showQueue() {
   di("queueButton").onclick = () => {
     sendMessage("cancelQueue")
   }
-  spinnerId = setInterval(() => {
+  spinnerInterval = setInterval(() => {
     const dice = dq("#queueLoading .dice-spinner") as HTMLImageElement
     dice.src = `/images/dice_${Math.ceil(6 * Math.random())}.png`;
     console.log(dice.src)

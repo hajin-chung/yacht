@@ -1,6 +1,5 @@
-import { hideLoading, hideLobby, setUserId, showIdle, showQueue } from "./ui";
-import { RollData, sendMessage } from "./websocket";
-import { yacht } from "./yacht";
+import { hideLobby, showIdle, showQueue, showUserId } from "./view";
+import { sendMessage } from "./websocket";
 
 type UserStatus = "IDLE" | "QUEUE" | "PLAYING";
 
@@ -36,13 +35,13 @@ export const state: State = {};
 export function handleMe(userState: UserState) {
   state.user = userState;
 
-  setUserId(state.user.id)
+  showUserId(userState.id)
   if (userState.status === "IDLE") {
     showIdle();
   } else if (userState.status === "QUEUE") {
     showQueue();
   } else if (userState.status === "PLAYING") {
-    sendMessage("gameState")
+    sendMessage("gameState");
   }
 }
 
@@ -86,7 +85,7 @@ export function handleGameStart(gameId: string) {
   state.user.status = "PLAYING";
   state.user.gameId = gameId;
   hideLobby();
-  sendMessage("gameState")
+  sendMessage("gameState");
 }
 
 export function handleShake() {

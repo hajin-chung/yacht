@@ -1,6 +1,16 @@
 import { decode, encode } from "messagepack";
 import { formatJson, log } from "./utils";
-import { GameState, UserState, handleCancelQueue, handleGameStart, handleGameState, handleMe, handleQueue, handleRoll, handleShake } from "./state";
+import {
+  GameState,
+  UserState,
+  handleCancelQueue,
+  handleGameStart,
+  handleGameState,
+  handleMe,
+  handleQueue,
+  handleRoll,
+  handleShake
+} from "./controller";
 
 export let socket: WebSocket;
 
@@ -68,14 +78,14 @@ function handleMessage(message: any) {
       handleGameState(data)
       break;
     }
-    case "shake": 
+    case "shake":
       handleShake();
       break;
     case "roll":
-      const data:RollData = message.data
+      const data: RollData = message.data
       handleRoll(data)
       break;
     default:
-      // TODO: handle error
+    // TODO: handle error
   }
 }

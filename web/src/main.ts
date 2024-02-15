@@ -3,8 +3,8 @@ import { fps } from "./constants";
 import { initRapier } from "./rapier";
 import { loadAssets } from "./assets";
 import { initWebsocket, sendMessage, socket } from "./websocket";
-import { hideLoading, showLoading } from "./ui";
 import { di } from "./utils";
+import { hideLoading, showLoading } from "./view";
 
 async function init() {
   showLoading();
