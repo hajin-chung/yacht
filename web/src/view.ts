@@ -55,5 +55,30 @@ export function showQueue() {
 }
 
 export function hideLobby() {
+  if (spinnerInterval !== undefined) clearInterval(spinnerInterval);
   di("lobby").classList.add("hide")
+}
+
+export function showLobby() {
+  di("lobby").classList.remove("hide")
+}
+
+export function showPlayers(playerId: string[]) {
+  di("player1").innerText = playerId[0];
+  di("player2").innerText = playerId[1];
+}
+
+export function showScores(
+  scores: [number[], number[]], selected: [boolean[], boolean[]]) {
+  console.log(scores, selected);
+  dqs(".scoreButton").forEach((scoreButton, idx) => {
+    const playerIdx = idx % 2;
+    const scoreIdx = Math.floor(idx / 2);
+    if (selected[playerIdx][scoreIdx])
+      scoreButton.innerText = scores[playerIdx][scoreIdx].toString();
+  })
+}
+
+export function showLeftRolls(leftRolls: number) {
+  di("leftRolls").innerText = `Left Rolls: ${leftRolls}`;
 }

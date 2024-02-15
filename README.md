@@ -40,6 +40,10 @@ one sqlite3 user db and redis for game data
     "id": string,
     "playerId": [string, string],
     "status": "PLAYING" | "DONE",
+    "selected": [
+        boolean[],
+        boolean[],
+    ],
     "scores": [
         number[],
         number[],
@@ -215,3 +219,18 @@ every message is in a binary using MessagePack for serialization and deserializa
     "error": true | false
 }
 ```
+
+### client implementations
+
+based on user state there are largely three status IDLE, QUEUE, PLAYING
+so handle that.
+
+when user is in PLAYING state handle game related messages
+if current turn is the player's turn,
+the player can either roll, shake, lockDice, unlockDice, selectScore.
+if roll update stage to ROLL, if shake, lockDice or unlockDice broadcast and 
+if selectScore update turn.
+else if current turn is not the player's,
+just show roll, shake, lockDice, unlockDice animations
+
+based on this idea we can handle server sent messages accordingly.

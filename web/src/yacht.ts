@@ -4,8 +4,7 @@ import { Board, Cup, Dice, Ground } from "./component";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { fps } from "./constants";
 import { rapier } from "./rapier";
-import { GameState, state } from "./state";
-import { RollData, sendMessage } from "./websocket";
+import { RollData } from "./websocket";
 import { Frame } from "./animation";
 
 export let yacht: Yacht;
@@ -97,14 +96,6 @@ export class Yacht {
     this.diceList.forEach((dice) => dice.step());
     this.cup.step();
     this.world.step();
-
-    if (!state.game) return
-    if (!state.user) return
-    if (state.game.playerId[state.game.turn % 2] !== state.user.id) return
-    console.log(this.pressingShake)
-    if (this.pressingShake && this.cup.frame.length === 0) {
-      sendMessage("shake")
-    }
   }
 
   draw() {
@@ -136,14 +127,12 @@ export class Yacht {
     this.scene.add(this.lines);
   }
 
-  updateState(state: GameState) {
-  }
-
   shake() {
     this.cup.shakeCount++;
   }
 
   roll(data: RollData) {
+    { data }
     this.cup.roll();
   }
 }

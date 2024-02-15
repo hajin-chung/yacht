@@ -36,7 +36,7 @@ type GameState struct {
 	Id        string      `msgpack:"id"`
 	PlayerId  [2]string   `msgpack:"playerId"`
 	Status    GameStatus  `msgpack:"status"`
-	Selected  [2][12]bool `msgpack:"Selected"`
+	Selected  [2][12]bool `msgpack:"selected"`
 	Scores    [2][12]int  `msgpack:"scores"`
 	Turn      uint8       `msgpack:"turn"`
 	LeftRolls uint8       `msgpack:"leftRolls"`

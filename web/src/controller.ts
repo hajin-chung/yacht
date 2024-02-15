@@ -1,5 +1,6 @@
-import { hideLobby, showIdle, showQueue, showUserId } from "./view";
-import { sendMessage } from "./websocket";
+import { hideLobby, showIdle, showLeftRolls, showPlayers, showQueue, showScores, showUserId } from "./view";
+import { RollData, sendMessage } from "./websocket";
+import { yacht } from "./yacht";
 
 type UserStatus = "IDLE" | "QUEUE" | "PLAYING";
 
@@ -15,6 +16,10 @@ export type GameState = {
   id: string,
   playerId: [string, string],
   status: GameStatus,
+  selected: [
+    boolean[],
+    boolean[]
+  ],
   scores: [
     number[],
     number[]
@@ -72,7 +77,18 @@ export function handleGameState(gameState: GameState) {
   }
 
   state.game = gameState;
-  yacht.updateState(gameState);
+
+  console.log(gameState)
+  showPlayers(gameState.playerId);
+  showScores(gameState.scores, gameState.selected);
+  showLeftRolls(gameState.leftRolls);
+
+  if (gameState.leftRolls === 3) {
+    // show dice in cup
+  } else {
+    // show dice result and locked dice
+  }
+
   hideLobby();
 }
 
@@ -112,4 +128,12 @@ export function handleRoll(data: RollData) {
   }
 
   yacht.roll(data);
+}
+
+export function onShake() {
+  if (!state) return
+  if (!state.user) return
+  if (!state.game) return
+
+  sendMessage("shake");
 }
