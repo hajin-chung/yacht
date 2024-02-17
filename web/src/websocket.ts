@@ -1,5 +1,4 @@
 import { decode, encode } from "messagepack";
-import { formatJson, log } from "./utils";
 import {
   GameState,
   UserState,
@@ -9,6 +8,7 @@ import {
   handleMe,
   handleQueue,
   handleRoll,
+  handleSelectScore,
   handleShake
 } from "./controller";
 
@@ -18,22 +18,22 @@ export function initWebsocket() {
   socket = new WebSocket("ws://localhost:4434/ws");
 
   socket.addEventListener("open", () => {
-    log("socket open")
+    console.log("socket open")
   })
 
   socket.addEventListener("close", () => {
-    log("socket closed")
+    console.log("socket closed")
   })
 
   socket.addEventListener("message", async (evt) => {
     const msg = await evt.data.arrayBuffer();
     const decoded = decode(msg)
     handleMessage(decoded)
-    log(`recv: ${formatJson(decoded)}`)
+    console.log("recv", decoded);
   })
 
   socket.addEventListener("error", (evt) => {
-    log(`socket error: ${JSON.stringify(evt)}`)
+    console.log(`socket error: ${JSON.stringify(evt)}`)
   })
 }
 
@@ -48,15 +48,19 @@ export type RollData = {
   buffer: Float32Array,
 };
 
+export type SelectScoreData = {
+  dice: number,
+};
+
 function handleMessage(message: any) {
   if (typeof message.type !== "string") {
-    log("unknown message type");
+    console.log("unknown message type");
     return;
   }
 
   switch (message.type) {
     case "ping":
-      log("recieved ping")
+      console.log("recieved ping")
       break;
     case "me": {
       const data: UserState = message.data
@@ -81,10 +85,16 @@ function handleMessage(message: any) {
     case "shake":
       handleShake();
       break;
-    case "roll":
+    case "roll": {
       const data: RollData = message.data
       handleRoll(data)
       break;
+    }
+    case "selectScore": {
+      const data: SelectScoreData = message.data
+      handleSelectScore(data.dice);
+      break;
+    }
     default:
     // TODO: handle error
   }

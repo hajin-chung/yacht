@@ -1,5 +1,17 @@
+import { onRoll, onScoreSelect, onShake } from "./controller";
 import { di, dq, dqs } from "./utils";
 import { sendMessage } from "./websocket";
+
+export function initView() {
+  di("shake").onclick = onShake;
+  di("roll").onclick = onRoll;
+
+  dqs(".scoreButton").forEach((scoreButton, i) => {
+    const playerIdx = i % 2;
+    const scoreIdx = Math.floor(i / 2);
+    scoreButton.onclick = () => onScoreSelect(playerIdx, scoreIdx);
+  })
+}
 
 let spinnerInterval: number | undefined;
 

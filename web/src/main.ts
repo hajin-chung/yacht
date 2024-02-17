@@ -4,7 +4,7 @@ import { initRapier } from "./rapier";
 import { loadAssets } from "./assets";
 import { initWebsocket, sendMessage, socket } from "./websocket";
 import { di } from "./utils";
-import { hideLoading, showLoading } from "./view";
+import { hideLoading, initView, showLoading } from "./view";
 
 async function init() {
   showLoading();
@@ -16,6 +16,7 @@ async function init() {
     sendMessage("me")
   })
   await hideLoading();
+  initView();
 }
 
 async function main() {

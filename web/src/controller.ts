@@ -127,13 +127,66 @@ export function handleRoll(data: RollData) {
     return
   }
 
+  state.game.leftRolls--;
+  showLeftRolls(state.game.leftRolls);
+
   yacht.roll(data);
 }
 
+export function handleSelectScore(scoreIdx: number) {
+  if (!state.user) {
+    sendMessage("me");
+    return
+  }
+  if (!state.game) {
+    sendMessage("gameState");
+    return
+  }
+
+  { scoreIdx }
+  sendMessage("gameState");
+}
+
 export function onShake() {
-  if (!state) return
-  if (!state.user) return
-  if (!state.game) return
+  if (!state.user) {
+    sendMessage("me");
+    return
+  }
+  if (!state.game) {
+    sendMessage("gameState");
+    return
+  }
+  if (state.game.playerId[state.game.turn % 2] !== state.user.id) return
 
   sendMessage("shake");
+}
+
+export function onRoll() {
+  if (!state.user) {
+    sendMessage("me");
+    return
+  }
+  if (!state.game) {
+    sendMessage("gameState");
+    return
+  }
+  if (state.game.playerId[state.game.turn % 2] !== state.user.id) return
+
+  console.log("hi");
+  sendMessage("roll");
+}
+
+export function onScoreSelect(playerIdx: number, scoreIdx: number) {
+  if (!state.user) {
+    sendMessage("me");
+    return
+  }
+  if (!state.game) {
+    sendMessage("gameState");
+    return
+  }
+  if (state.game.turn % 2 !== playerIdx) return;
+  if (state.game.playerId[state.game.turn % 2] !== state.user.id) return
+
+  sendMessage("selectScore", { selection: scoreIdx })
 }
