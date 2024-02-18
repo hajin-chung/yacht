@@ -12,6 +12,9 @@ export type UserState = {
 
 type GameStatus = "PLAYING" | "DONE";
 
+export type IsLocked = [boolean, boolean, boolean, boolean, boolean];
+export type DiceResult = [number, number, number, number, number];
+
 export type GameState = {
   id: string,
   playerId: [string, string],
@@ -26,8 +29,8 @@ export type GameState = {
   ],
   turn: number,
   leftRolls: number,
-  isLocked: [boolean, boolean, boolean, boolean, boolean],
-  dice: [number, number, number, number, number]
+  isLocked: IsLocked,
+  dice: DiceResult,
 }
 
 type State = {
@@ -130,11 +133,14 @@ export function handleRoll(data: RollData) {
   showLeftRolls(state.game.leftRolls);
   let resultIdx = 0;
   for (let i = 0; i < 5; i++) {
-    if (!state.game.isLocked[i]) state.game.dice[i] = data.result[resultIdx];
+    if (!state.game.isLocked[i]) {
+      state.game.dice[i] = data.result[resultIdx];
+      resultIdx++;
+    }
   }
+  console.log(state);
 
-  console.log(data);
-  yacht.roll(data.buffer, data.result.length, state.game.dice);
+  yacht.roll(data.buffer, data.result.length, state.game.isLocked);
 }
 
 export function handleSelectScore(scoreIdx: number) {
@@ -149,6 +155,36 @@ export function handleSelectScore(scoreIdx: number) {
 
   { scoreIdx }
   sendMessage("gameState");
+}
+
+export function handleLockDice(dice: number) {
+  if (!state.user) {
+    sendMessage("me");
+    return
+  }
+  if (!state.game) {
+    sendMessage("gameState");
+    return
+  }
+
+  state.game.isLocked[dice] = true;
+
+  // yacht.lockDice(dice);
+}
+
+export function handleUnlockDice(dice: number) {
+  if (!state.user) {
+    sendMessage("me");
+    return
+  }
+  if (!state.game) {
+    sendMessage("gameState");
+    return
+  }
+
+  state.game.isLocked[dice] = false;
+
+  // yacht.unlockDice(dice);
 }
 
 export function onShake() {

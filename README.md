@@ -233,4 +233,6 @@ if selectScore update turn.
 else if current turn is not the player's,
 just show roll, shake, lockDice, unlockDice animations
 
-based on this idea we can handle server sent messages accordingly.
+SHAKE -> ROLL -> RESULT
+
+in RESULT player can lock, unlock,  

@@ -5,11 +5,13 @@ import {
   handleCancelQueue,
   handleGameStart,
   handleGameState,
+  handleLockDice,
   handleMe,
   handleQueue,
   handleRoll,
   handleSelectScore,
-  handleShake
+  handleShake,
+  handleUnlockDice
 } from "./controller";
 
 export let socket: WebSocket;
@@ -28,8 +30,8 @@ export function initWebsocket() {
   socket.addEventListener("message", async (evt) => {
     const msg = await evt.data.arrayBuffer();
     const decoded = decode(msg)
-    handleMessage(decoded)
     console.log("recv", decoded);
+    handleMessage(decoded)
   })
 
   socket.addEventListener("error", (evt) => {
@@ -49,6 +51,10 @@ export type RollData = {
 };
 
 export type SelectScoreData = {
+  selection: number,
+};
+
+export type DiceSelectData = {
   dice: number,
 };
 
@@ -92,7 +98,17 @@ function handleMessage(message: any) {
     }
     case "selectScore": {
       const data: SelectScoreData = message.data
-      handleSelectScore(data.dice);
+      handleSelectScore(data.selection);
+      break;
+    }
+    case "lockDice": {
+      const data: DiceSelectData = message.data
+      handleLockDice(data.dice);
+      break;
+    }
+    case "unlockDice": {
+      const data: DiceSelectData = message.data
+      handleUnlockDice(data.dice);
       break;
     }
     default:

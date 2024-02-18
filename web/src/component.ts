@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { rapier } from "./rapier";
 import { boardModel, cupModel, diceModel, groundTexture } from "./assets";
 import { Frame, rollAnimation, shakeAnimation } from "./animation";
+import { state } from "./controller";
 
 class Dice {
   world: World;
@@ -14,6 +15,8 @@ class Dice {
   model: THREE.Group<THREE.Object3DEventMap>;
   scene: THREE.Scene;
   isLock: boolean;
+  frames: Frame[] = [];
+  simulate: boolean = true;
 
   constructor(
     world: World,
@@ -40,40 +43,42 @@ class Dice {
   }
 
   step() {
-    const translation = this.rigidBody.translation();
-    const rotation = this.rigidBody.rotation();
-    this.model.position.set(translation.x, translation.y, translation.z);
-    this.model.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
-  }
-
-  setFrame(frame: Frame) {
-    if (frame.translation) {
-      this.rigidBody.setTranslation(frame.translation, true);
-      this.model.position.set(
-        frame.translation.x,
-        frame.translation.y,
-        frame.translation.z
-      );
+    if (this.frames.length === 0 && this.simulate) {
+      const translation = this.rigidBody.translation();
+      const rotation = this.rigidBody.rotation();
+      this.model.position.set(translation.x, translation.y, translation.z);
+      this.model.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
+    } else if (this.frames.length > 0) {
+      const frame = this.frames.shift()!;
+      if (frame.translation) {
+        this.model.position.set(
+          frame.translation.x,
+          frame.translation.y,
+          frame.translation.z
+        );
+      }
+      if (frame.rotation) {
+        this.model.quaternion.set(
+          frame.rotation.x,
+          frame.rotation.y,
+          frame.rotation.z,
+          frame.rotation.w,
+        );
+      }
     }
-    if (frame.rotation) {
-      this.rigidBody.setRotation(frame.rotation, true);
-      this.model.quaternion.set(
-        frame.rotation.x,
-        frame.rotation.y,
-        frame.rotation.z,
-        frame.rotation.w,
-      );
-    }
   }
 
-  remove() {
-    this.removeWorld();
-    this.scene.remove(this.model);
+  animate(frames: Frame[]) {
+    this.frames.push(...frames);
   }
 
-  removeWorld() {
-    this.world.removeCollider(this.collider, false);
-    this.world.removeRigidBody(this.rigidBody);
+  onMouseEnter() {
+  }
+
+  onMouseLeave() {
+  }
+
+  onClick() {
   }
 }
 
