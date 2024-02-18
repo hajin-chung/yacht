@@ -12,9 +12,9 @@ pub fn simulate(buffer: &mut Vec<f32>, result: &Vec<i32>, num: i32) {
     let mut rigid_body_set = RigidBodySet::new();
     let mut collider_set = ColliderSet::new();
 
-    let wall_w = 5.35;
-    let wall_h = 2.0;
-    let wall_d = 0.2;
+    let wall_w = 5.65;
+    let wall_h = 3.0;
+    let wall_d = 0.16;
 
     let friction = 0.5;
     let restitution = 0.6;
@@ -44,7 +44,7 @@ pub fn simulate(buffer: &mut Vec<f32>, result: &Vec<i32>, num: i32) {
         .restitution(restitution)
         .build();
     let ground = ColliderBuilder::cuboid(100., 1., 100.)
-        .translation(vector![0., -1., 0.])
+        .translation(vector![0., -0.8, 0.])
         .friction(friction)
         .friction_combine_rule(CoefficientCombineRule::Max)
         .restitution(restitution)

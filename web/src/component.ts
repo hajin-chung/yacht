@@ -12,13 +12,17 @@ class Dice {
   rigidBody: RigidBody;
   collider: Collider;
   model: THREE.Group<THREE.Object3DEventMap>;
+  scene: THREE.Scene;
+  isLock: boolean;
 
   constructor(
     world: World,
     scene: THREE.Scene,
     num: number,
   ) {
+    this.isLock = false;
     this.world = world;
+    this.scene = scene;
     this.num = num;
     const rigidBodyDesc = rapier.RigidBodyDesc.dynamic().setTranslation(
       cupX + 0.8 * random(),
@@ -41,6 +45,36 @@ class Dice {
     this.model.position.set(translation.x, translation.y, translation.z);
     this.model.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
   }
+
+  setFrame(frame: Frame) {
+    if (frame.translation) {
+      this.rigidBody.setTranslation(frame.translation, true);
+      this.model.position.set(
+        frame.translation.x,
+        frame.translation.y,
+        frame.translation.z
+      );
+    }
+    if (frame.rotation) {
+      this.rigidBody.setRotation(frame.rotation, true);
+      this.model.quaternion.set(
+        frame.rotation.x,
+        frame.rotation.y,
+        frame.rotation.z,
+        frame.rotation.w,
+      );
+    }
+  }
+
+  remove() {
+    this.removeWorld();
+    this.scene.remove(this.model);
+  }
+
+  removeWorld() {
+    this.world.removeCollider(this.collider, false);
+    this.world.removeRigidBody(this.rigidBody);
+  }
 }
 
 class Cup {
@@ -50,6 +84,7 @@ class Cup {
   model: THREE.Group<THREE.Object3DEventMap>;
   shakeCount: number = 0;
   frame: Frame[] = [];
+  callback?: () => void;
 
   constructor(world: World, scene: THREE.Scene) {
     const geometry: any = (cupModel.scene.children[0].children[0] as any).geometry;
@@ -77,6 +112,10 @@ class Cup {
     this.model.position.set(translation.x, translation.y, translation.z);
     this.model.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
 
+    if (this.frame.length < 90 && this.callback) {
+      this.callback();
+      this.callback = undefined;
+    }
     if (this.frame.length > 0) {
       const frame = this.frame.shift()!;
       if (frame.translation) {
@@ -96,6 +135,10 @@ class Cup {
 
   roll() {
     this.frame.push(...rollAnimation);
+  }
+
+  onRoll(callback: () => void) {
+    this.callback = callback;
   }
 }
 

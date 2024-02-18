@@ -15,6 +15,7 @@ func TestGenerateRotation(t *testing.T) {
 	elapsedTime := time.Since(startTime)
 	if err == nil {
 		fmt.Printf("buffer length: %d, took: %s\n", len(buffer), elapsedTime)
+		fmt.Printf("%+v\n", buffer[:100])
 	} else {
 		t.Error(err)
 	}

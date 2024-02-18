@@ -62,7 +62,6 @@ export function showQueue() {
   spinnerInterval = setInterval(() => {
     const dice = dq("#queueLoading .dice-spinner") as HTMLImageElement
     dice.src = `/images/dice_${Math.ceil(6 * Math.random())}.png`;
-    console.log(dice.src)
   }, 1000);
 }
 
@@ -82,7 +81,6 @@ export function showPlayers(playerId: string[]) {
 
 export function showScores(
   scores: [number[], number[]], selected: [boolean[], boolean[]]) {
-  console.log(scores, selected);
   dqs(".scoreButton").forEach((scoreButton, idx) => {
     const playerIdx = idx % 2;
     const scoreIdx = Math.floor(idx / 2);

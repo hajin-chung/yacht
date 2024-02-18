@@ -23,7 +23,7 @@ async function main() {
   await init();
 
   di("game").classList.remove("hide");
-  // yacht.debug();
+  yacht.debug();
 
   setInterval(() => {
     yacht.update();

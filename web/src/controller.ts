@@ -78,13 +78,12 @@ export function handleGameState(gameState: GameState) {
 
   state.game = gameState;
 
-  console.log(gameState)
   showPlayers(gameState.playerId);
   showScores(gameState.scores, gameState.selected);
   showLeftRolls(gameState.leftRolls);
 
   if (gameState.leftRolls === 3) {
-    // show dice in cup
+    // yacht.initDice(state.game.isLocked);
   } else {
     // show dice result and locked dice
   }
@@ -129,8 +128,13 @@ export function handleRoll(data: RollData) {
 
   state.game.leftRolls--;
   showLeftRolls(state.game.leftRolls);
+  let resultIdx = 0;
+  for (let i = 0; i < 5; i++) {
+    if (!state.game.isLocked[i]) state.game.dice[i] = data.result[resultIdx];
+  }
 
-  yacht.roll(data);
+  console.log(data);
+  yacht.roll(data.buffer, data.result.length, state.game.dice);
 }
 
 export function handleSelectScore(scoreIdx: number) {
@@ -172,7 +176,6 @@ export function onRoll() {
   }
   if (state.game.playerId[state.game.turn % 2] !== state.user.id) return
 
-  console.log("hi");
   sendMessage("roll");
 }
 

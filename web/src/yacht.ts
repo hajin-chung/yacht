@@ -4,7 +4,6 @@ import { Board, Cup, Dice, Ground } from "./component";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { fps } from "./constants";
 import { rapier } from "./rapier";
-import { RollData } from "./websocket";
 import { Frame } from "./animation";
 
 export let yacht: Yacht;
@@ -16,6 +15,8 @@ export function initYacht() {
 
   yacht = new Yacht(canvas);
 }
+
+type YachtStage = "SHAKE" | "ROLL" | "RESULT";
 
 export class Yacht {
   world: World;
@@ -33,8 +34,9 @@ export class Yacht {
   lines?: THREE.LineSegments;
   controls?: OrbitControls;
 
-  diceRollFrames: Frame[] = [];
+  diceRollFrames: Frame[][] = [];
   pressingShake: boolean = false;
+  stage: YachtStage;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -79,21 +81,43 @@ export class Yacht {
     this.board = new Board(this.scene);
     this.ground = new Ground(this.scene);
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key === " ") {
-        this.pressingShake = true;
-      }
-    })
+    this.stage = "SHAKE";
+  }
 
-    document.addEventListener("keyup", (e) => {
-      if (e.key === " ") {
-        this.pressingShake = false;
+  showDice(isLocked: [boolean, boolean, boolean, boolean, boolean]) {
+    for (let i = 0; i < 5; i++) {
+      if (isLocked[i]) {
+        // this.diceList[i].showLock();
+      } else {
+        this.diceList[i].remove();
+        const dice = new Dice(this.world, this.scene, i);
+        this.diceList[i] = dice;
       }
-    })
+    }
   }
 
   update() {
-    this.diceList.forEach((dice) => dice.step());
+    if (this.stage === "ROLL") {
+      if (this.diceRollFrames.length === 0 || this.diceRollFrames[0].length === 0) {
+        this.stage = "RESULT";
+        return;
+      }
+
+      let frameIdx = 0;
+      for (let i = 0; i < 5; i++) {
+        const dice = this.diceList[i];
+        if (dice.isLock) continue;
+
+        const frame = this.diceRollFrames[frameIdx].shift()!;
+        dice.setFrame(frame);
+
+        frameIdx++;
+      }
+    } else if (this.stage === "SHAKE") {
+      this.diceList.forEach((dice) => dice.step());
+    } else if (this.stage === "RESULT") {
+      // show result;
+    }
     this.cup.step();
     this.world.step();
   }
@@ -131,8 +155,21 @@ export class Yacht {
     this.cup.shakeCount++;
   }
 
-  roll(data: RollData) {
-    { data }
+  roll(buffer: Float32Array, diceNum: number, result: number[]) {
     this.cup.roll();
+    this.cup.callback = () => {
+      this.diceRollFrames = [];
+      for (let i = 0; i < diceNum; i++) this.diceRollFrames.push([]);
+      for (let i = 0; i < buffer.length / (7 * diceNum); i++) {
+        for (let j = 0; j < diceNum; j++) {
+          const start = i * 7 * diceNum + 7 * j;
+          this.diceRollFrames[j].push({
+            translation: { x: buffer[start], y: buffer[start + 1], z: buffer[start + 2] },
+            rotation: { x: buffer[start + 3], y: buffer[start + 4], z: buffer[start + 5], w: buffer[start + 6] },
+          })
+        }
+      }
+      this.stage = "ROLL";
+    }
   }
 }
