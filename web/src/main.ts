@@ -13,8 +13,8 @@ async function init() {
   await hideLoading();
   initWebsocket();
   socket.addEventListener("open", () => {
-    sendMessage("me")
-  })
+    sendMessage("me");
+  });
   initView();
 }
 
@@ -24,7 +24,7 @@ async function main() {
   di("game").classList.remove("hide");
   yacht.debug();
 
-  requestAnimationFrame(loop)
+  requestAnimationFrame(loop);
 }
 
 let lastTime: number | undefined;
@@ -34,7 +34,7 @@ function loop(currentTime: number) {
   else {
     const delta = currentTime - lastTime;
     const fps = 1000 / delta;
-    di("fps").innerText = `${fps.toPrecision(2)}`;
+    di("fps").innerText = `${fps.toPrecision(4)}`;
     lastTime = currentTime;
 
     acc += delta;
@@ -43,7 +43,7 @@ function loop(currentTime: number) {
       yacht.step();
     }
   }
-  requestAnimationFrame(loop)
+  requestAnimationFrame(loop);
   yacht.update();
   yacht.draw();
 }

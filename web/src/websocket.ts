@@ -11,7 +11,7 @@ import {
   handleRoll,
   handleSelectScore,
   handleShake,
-  handleUnlockDice
+  handleUnlockDice,
 } from "./controller";
 
 export let socket: WebSocket;
@@ -20,42 +20,42 @@ export function initWebsocket() {
   socket = new WebSocket("ws://localhost:4434/ws");
 
   socket.addEventListener("open", () => {
-    console.log("socket open")
-  })
+    console.log("socket open");
+  });
 
   socket.addEventListener("close", () => {
-    console.log("socket closed")
-  })
+    console.log("socket closed");
+  });
 
   socket.addEventListener("message", async (evt) => {
     const msg = await evt.data.arrayBuffer();
-    const decoded = decode(msg)
+    const decoded = decode(msg);
     console.log("recv", decoded);
-    handleMessage(decoded)
-  })
+    handleMessage(decoded);
+  });
 
   socket.addEventListener("error", (evt) => {
-    console.log(`socket error: ${JSON.stringify(evt)}`)
-  })
+    console.log(`socket error: ${JSON.stringify(evt)}`);
+  });
 }
 
 export function sendMessage(type: string, data?: any) {
   const message = { type, data };
   const encoded = encode(message);
-  socket.send(encoded)
+  socket.send(encoded);
 }
 
 export type RollData = {
-  result: number[],
-  buffer: Float32Array,
+  result: number[];
+  buffer: Float32Array;
 };
 
 export type SelectScoreData = {
-  selection: number,
+  selection: number;
 };
 
 export type DiceSelectData = {
-  dice: number,
+  dice: number;
 };
 
 function handleMessage(message: any) {
@@ -66,34 +66,34 @@ function handleMessage(message: any) {
 
   switch (message.type) {
     case "ping":
-      console.log("recieved ping")
+      console.log("recieved ping");
       break;
     case "me": {
-      const data: UserState = message.data
-      handleMe(data)
+      const data: UserState = message.data;
+      handleMe(data);
       break;
     }
     case "queue":
-      handleQueue()
+      handleQueue();
       break;
     case "cancelQueue":
-      handleCancelQueue()
+      handleCancelQueue();
       break;
     case "gameStart":
-      const gameId: string = message.data.gameId
-      handleGameStart(gameId)
+      const gameId: string = message.data.gameId;
+      handleGameStart(gameId);
       break;
     case "gameState": {
-      const data: GameState = message.data.state
-      handleGameState(data)
+      const data: GameState = message.data.state;
+      handleGameState(data);
       break;
     }
     case "shake":
       handleShake();
       break;
     case "roll": {
-      const data: RollData = message.data
-      handleRoll(data)
+      const data: RollData = message.data;
+      handleRoll(data);
       break;
     }
     case "selectScore": {
@@ -102,12 +102,12 @@ function handleMessage(message: any) {
       break;
     }
     case "lockDice": {
-      const data: DiceSelectData = message.data
+      const data: DiceSelectData = message.data;
       handleLockDice(data.dice);
       break;
     }
     case "unlockDice": {
-      const data: DiceSelectData = message.data
+      const data: DiceSelectData = message.data;
       handleUnlockDice(data.dice);
       break;
     }

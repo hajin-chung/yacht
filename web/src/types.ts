@@ -1,1 +1,1 @@
-export type Callback = Function; 
+export type Callback = Function;

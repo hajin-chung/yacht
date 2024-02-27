@@ -4,7 +4,17 @@ import { randomDicePosition } from "./utils";
 import * as THREE from "three";
 import { rapier } from "./rapier";
 import { boardModel, cupModel, diceModel, groundTexture } from "./assets";
-import { Frame, rollAnimation, shakeAnimation, Animation, generateResult, generateLock, generateEncup, generateCupReset, generateCupMove } from "./animation";
+import {
+  Frame,
+  rollAnimation,
+  shakeAnimation,
+  Animation,
+  generateResult,
+  generateLock,
+  generateCupReset,
+  generateCupMove,
+  interpolate,
+} from "./animation";
 import { Callback } from "./types";
 
 class Dice {
@@ -20,22 +30,18 @@ class Dice {
   isLock: boolean = false;
   result: number = 1;
 
-  constructor(
-    world: World,
-    scene: THREE.Scene,
-    num: number,
-  ) {
+  constructor(world: World, scene: THREE.Scene, num: number) {
     this.world = world;
     this.scene = scene;
     this.num = num;
     const pos = randomDicePosition();
     const rigidBodyDesc = rapier.RigidBodyDesc.dynamic().setTranslation(
-      pos.x, pos.y, pos.z
+      pos.x,
+      pos.y,
+      pos.z,
     );
     this.rigidBody = world.createRigidBody(rigidBodyDesc);
-    const colliderDesc = rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4).setMass(
-      10
-    );
+    const colliderDesc = rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4).setMass(10);
     this.collider = world.createCollider(colliderDesc, this.rigidBody);
 
     this.model = diceModel.scene.clone();
@@ -48,9 +54,14 @@ class Dice {
         const translation = this.rigidBody.translation();
         const rotation = this.rigidBody.rotation();
         this.model.position.set(translation.x, translation.y, translation.z);
-        this.model.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
+        this.model.quaternion.set(
+          rotation.x,
+          rotation.y,
+          rotation.z,
+          rotation.w,
+        );
       }
-      return
+      return;
     }
 
     const animation = this.animations[0];
@@ -63,7 +74,7 @@ class Dice {
         this.model.position.set(
           frame.translation.x,
           frame.translation.y,
-          frame.translation.z
+          frame.translation.z,
         );
       }
       if (frame.rotation) {
@@ -83,6 +94,7 @@ class Dice {
   }
 
   showResult() {
+    this.removeCollider();
     this.simulate = false;
     if (this.isLock) this.lock();
     else this.unlock();
@@ -92,15 +104,28 @@ class Dice {
     const currentFrame: Frame = {
       translation: this.model.position,
       rotation: this.model.quaternion,
-    }
-    const frames = generateEncup(currentFrame, this.result);
+    };
+    const pos = randomDicePosition();
+    const resultFrame: Frame = {
+      translation: pos,
+      rotation: this.model.quaternion,
+    };
+    const frames = interpolate(currentFrame, resultFrame);
     this.animations.push({
       frames,
-      callback: () => this.simulate = true,
-    })
+      callback: () => (this.simulate = true),
+    });
 
-    const pos = randomDicePosition();
     this.rigidBody.setTranslation(pos, false);
+  }
+
+  roll(frames: Frame[], callback?: Callback) {
+    this.animations.push({ frames, callback });
+    this.removeCollider();
+  }
+
+  removeCollider() {
+    this.rigidBody.setTranslation({ x: 10 + this.num * 2, y: 1, z: 0 }, false);
   }
 
   lock() {
@@ -109,9 +134,9 @@ class Dice {
     const currentFrame: Frame = {
       translation: this.model.position,
       rotation: this.model.quaternion,
-    }
+    };
     const frames = generateLock(currentFrame, this.result, this.num);
-    this.animations.push({ frames })
+    this.animations.push({ frames });
   }
 
   unlock() {
@@ -120,19 +145,16 @@ class Dice {
     const currentFrame: Frame = {
       translation: this.model.position,
       rotation: this.model.quaternion,
-    }
+    };
     const frames = generateResult(currentFrame, this.result, this.num);
     this.animations.push({ frames: frames });
   }
 
-  onMouseEnter() {
-  }
+  onMouseEnter() {}
 
-  onMouseLeave() {
-  }
+  onMouseLeave() {}
 
-  onClick() {
-  }
+  onClick() {}
 }
 
 class Cup {
@@ -144,7 +166,8 @@ class Cup {
   animations: Animation[] = [];
 
   constructor(world: World, scene: THREE.Scene) {
-    const geometry: any = (cupModel.scene.children[0].children[0] as any).geometry;
+    const geometry: any = (cupModel.scene.children[0].children[0] as any)
+      .geometry;
     const vertex: Float32Array = geometry.attributes.position.array;
     const index: Uint32Array = Uint32Array.from(geometry.index.array);
 
@@ -169,7 +192,7 @@ class Cup {
     this.model.position.set(translation.x, translation.y, translation.z);
     this.model.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
 
-    if (this.animations.length === 0) return
+    if (this.animations.length === 0) return;
 
     const animation = this.animations[0];
     if (animation.frames.length === 0) {
@@ -193,14 +216,14 @@ class Cup {
         callback();
         this.move();
       },
-    })
+    });
   }
 
   shake(callback?: Callback) {
     this.animations.push({
       frames: [...shakeAnimation],
       callback,
-    })
+    });
   }
 
   move() {
@@ -209,19 +232,19 @@ class Cup {
       rotation: this.model.quaternion,
     };
     const frames = generateCupMove(currentFrame);
-    this.animations.push({ frames })
+    this.animations.push({ frames });
   }
 
   reset(callback?: Callback) {
     const currentFrame: Frame = {
       translation: this.model.position,
       rotation: this.model.quaternion,
-    }
+    };
     const frames = generateCupReset(currentFrame);
     this.animations.push({
       frames,
       callback,
-    })
+    });
   }
 }
 
@@ -234,14 +257,18 @@ class Board {
 class Ground {
   model: THREE.Mesh;
 
-  constructor(scene: THREE.Scene) {
+  constructor(world: World, scene: THREE.Scene) {
     groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
     groundTexture.repeat.set(10, 10);
     const material = new THREE.MeshStandardMaterial({ map: groundTexture });
-    this.model = new THREE.Mesh(new THREE.PlaneGeometry(10000, 10000), material);
+    this.model = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), material);
     this.model.rotateX((Math.PI * 3) / 2);
     this.model.position.set(0, -2, 0);
     scene.add(this.model);
+
+    const colliderDesc = rapier.ColliderDesc.cuboid(50, 2, 50);
+    const collider = world.createCollider(colliderDesc);
+    collider.setTranslation({ x: 0, y: -2, z: 0 });
   }
 }
 

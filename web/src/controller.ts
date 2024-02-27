@@ -1,14 +1,22 @@
-import { hideLobby, showIdle, showLeftRolls, showPlayers, showQueue, showScores, showUserId } from "./view";
+import {
+  hideLobby,
+  showIdle,
+  showLeftRolls,
+  showPlayers,
+  showQueue,
+  showScores,
+  showUserId,
+} from "./view";
 import { RollData, sendMessage } from "./websocket";
 import { yacht } from "./yacht";
 
 type UserStatus = "IDLE" | "QUEUE" | "PLAYING";
 
 export type UserState = {
-  id: string,
-  status: UserStatus,
-  gameId: string,
-}
+  id: string;
+  status: UserStatus;
+  gameId: string;
+};
 
 type GameStatus = "PLAYING" | "DONE";
 
@@ -16,34 +24,28 @@ export type IsLocked = [boolean, boolean, boolean, boolean, boolean];
 export type DiceResult = [number, number, number, number, number];
 
 export type GameState = {
-  id: string,
-  playerId: [string, string],
-  status: GameStatus,
-  selected: [
-    boolean[],
-    boolean[]
-  ],
-  scores: [
-    number[],
-    number[]
-  ],
-  turn: number,
-  leftRolls: number,
-  isLocked: IsLocked,
-  dice: DiceResult,
-}
+  id: string;
+  playerId: [string, string];
+  status: GameStatus;
+  selected: [boolean[], boolean[]];
+  scores: [number[], number[]];
+  turn: number;
+  leftRolls: number;
+  isLocked: IsLocked;
+  dice: DiceResult;
+};
 
 type State = {
-  user?: UserState,
-  game?: GameState,
-}
+  user?: UserState;
+  game?: GameState;
+};
 
 export const state: State = {};
 
 export function handleMe(userState: UserState) {
   state.user = userState;
 
-  showUserId(userState.id)
+  showUserId(userState.id);
   if (userState.status === "IDLE") {
     showIdle();
   } else if (userState.status === "QUEUE") {
@@ -55,8 +57,8 @@ export function handleMe(userState: UserState) {
 
 export function handleQueue() {
   if (!state.user) {
-    sendMessage("me")
-    return
+    sendMessage("me");
+    return;
   }
 
   state.user.status = "QUEUE";
@@ -65,8 +67,8 @@ export function handleQueue() {
 
 export function handleCancelQueue() {
   if (!state.user) {
-    sendMessage("me")
-    return
+    sendMessage("me");
+    return;
   }
 
   state.user.status = "IDLE";
@@ -76,7 +78,7 @@ export function handleCancelQueue() {
 export function handleGameState(gameState: GameState) {
   if (!state.user) {
     sendMessage("me");
-    return
+    return;
   }
 
   state.game = gameState;
@@ -97,7 +99,7 @@ export function handleGameState(gameState: GameState) {
 export function handleGameStart(gameId: string) {
   if (!state.user) {
     sendMessage("me");
-    return
+    return;
   }
 
   state.user.status = "PLAYING";
@@ -108,11 +110,11 @@ export function handleGameStart(gameId: string) {
 export function handleShake() {
   if (!state.user) {
     sendMessage("me");
-    return
+    return;
   }
   if (!state.game) {
     sendMessage("gameState");
-    return
+    return;
   }
 
   yacht.shake();
@@ -121,11 +123,11 @@ export function handleShake() {
 export function handleRoll(data: RollData) {
   if (!state.user) {
     sendMessage("me");
-    return
+    return;
   }
   if (!state.game) {
     sendMessage("gameState");
-    return
+    return;
   }
 
   state.game.leftRolls--;
@@ -138,17 +140,22 @@ export function handleRoll(data: RollData) {
     }
   }
 
-  yacht.roll(data.buffer, data.result.length, state.game.isLocked, state.game.dice);
+  yacht.roll(
+    data.buffer,
+    data.result.length,
+    state.game.isLocked,
+    state.game.dice,
+  );
 }
 
 export function handleSelectScore() {
   if (!state.user) {
     sendMessage("me");
-    return
+    return;
   }
   if (!state.game) {
     sendMessage("gameState");
-    return
+    return;
   }
 
   sendMessage("gameState");
@@ -157,11 +164,11 @@ export function handleSelectScore() {
 export function handleLockDice(dice: number) {
   if (!state.user) {
     sendMessage("me");
-    return
+    return;
   }
   if (!state.game) {
     sendMessage("gameState");
-    return
+    return;
   }
 
   state.game.isLocked[dice] = true;
@@ -171,11 +178,11 @@ export function handleLockDice(dice: number) {
 export function handleUnlockDice(dice: number) {
   if (!state.user) {
     sendMessage("me");
-    return
+    return;
   }
   if (!state.game) {
     sendMessage("gameState");
-    return
+    return;
   }
 
   state.game.isLocked[dice] = false;
@@ -185,13 +192,13 @@ export function handleUnlockDice(dice: number) {
 export function onShake() {
   if (!state.user) {
     sendMessage("me");
-    return
+    return;
   }
   if (!state.game) {
     sendMessage("gameState");
-    return
+    return;
   }
-  if (state.game.playerId[state.game.turn % 2] !== state.user.id) return
+  if (state.game.playerId[state.game.turn % 2] !== state.user.id) return;
 
   sendMessage("shake");
 }
@@ -199,13 +206,13 @@ export function onShake() {
 export function onRoll() {
   if (!state.user) {
     sendMessage("me");
-    return
+    return;
   }
   if (!state.game) {
     sendMessage("gameState");
-    return
+    return;
   }
-  if (state.game.playerId[state.game.turn % 2] !== state.user.id) return
+  if (state.game.playerId[state.game.turn % 2] !== state.user.id) return;
 
   sendMessage("roll");
 }
@@ -213,11 +220,11 @@ export function onRoll() {
 export function onCup() {
   if (!state.user) {
     sendMessage("me");
-    return
+    return;
   }
   if (!state.game) {
     sendMessage("gameState");
-    return
+    return;
   }
 
   if (yacht.diceState === "RESULT") {
@@ -230,14 +237,14 @@ export function onCup() {
 export function onScoreSelect(playerIdx: number, scoreIdx: number) {
   if (!state.user) {
     sendMessage("me");
-    return
+    return;
   }
   if (!state.game) {
     sendMessage("gameState");
-    return
+    return;
   }
   if (state.game.turn % 2 !== playerIdx) return;
-  if (state.game.playerId[state.game.turn % 2] !== state.user.id) return
+  if (state.game.playerId[state.game.turn % 2] !== state.user.id) return;
 
-  sendMessage("selectScore", { selection: scoreIdx })
+  sendMessage("selectScore", { selection: scoreIdx });
 }

@@ -25,7 +25,7 @@ export function initYacht() {
       if (state.game!.isLocked[key]) sendMessage("unlockDice", { dice: key });
       else sendMessage("lockDice", { dice: key });
     }
-  })
+  });
 }
 
 type DiceState = "RESULT" | "CUP";
@@ -48,13 +48,11 @@ export class Yacht {
 
   diceState: DiceState = "CUP";
 
-  constructor(
-    canvas: HTMLCanvasElement,
-  ) {
+  constructor(canvas: HTMLCanvasElement) {
     this.isDebug = false;
 
     this.world = new rapier.World({ x: 0.0, y: -16.0, z: 0.0 });
-    this.world.timestep = 1 / (fps / 2) ; 
+    this.world.timestep = 1 / fps;
 
     this.canvas = canvas;
     this.renderer = new THREE.WebGLRenderer({
@@ -89,20 +87,20 @@ export class Yacht {
 
     this.cup = new Cup(this.world, this.scene);
     this.board = new Board(this.scene);
-    this.ground = new Ground(this.scene);
+    this.ground = new Ground(this.world, this.scene);
   }
 
   reset() {
     this.diceState = "CUP";
     this.cup.reset(() => {
-      this.diceList.forEach((dice) => dice.encup())
+      this.diceList.forEach((dice) => dice.encup());
     });
   }
 
   showResult(isLocked: IsLocked, result: DiceResult) {
     this.diceState = "RESULT";
     for (let i = 0; i < 5; i++) {
-      const dice = this.diceList[i]
+      const dice = this.diceList[i];
       dice.setState(isLocked[i], result[i]);
       dice.showResult();
     }
@@ -114,7 +112,7 @@ export class Yacht {
     this.cup.reset(() => {
       this.diceList.forEach((dice) => {
         if (!dice.isLock) dice.encup();
-      })
+      });
     });
   }
 
@@ -160,7 +158,12 @@ export class Yacht {
     this.cup.shake();
   }
 
-  roll(buffer: Float32Array, diceNum: number, isLocked: IsLocked, result: DiceResult) {
+  roll(
+    buffer: Float32Array,
+    diceNum: number,
+    isLocked: IsLocked,
+    result: DiceResult,
+  ) {
     this.cup.roll(() => {
       const diceFrames: Frame[][] = [];
       for (let i = 0; i < diceNum; i++) diceFrames.push([]);
@@ -168,22 +171,32 @@ export class Yacht {
         for (let j = 0; j < diceNum; j++) {
           const start = i * 7 * diceNum + 7 * j;
           diceFrames[j].push({
-            translation: { x: buffer[start], y: buffer[start + 1], z: buffer[start + 2] },
-            rotation: { x: buffer[start + 3], y: buffer[start + 4], z: buffer[start + 5], w: buffer[start + 6] },
-          })
+            translation: {
+              x: buffer[start],
+              y: buffer[start + 1],
+              z: buffer[start + 2],
+            },
+            rotation: {
+              x: buffer[start + 3],
+              y: buffer[start + 4],
+              z: buffer[start + 5],
+              w: buffer[start + 6],
+            },
+          });
         }
       }
       let frameIdx = 0;
       for (let i = 0; i < 5; i++) {
         const dice = this.diceList[i];
-        dice.setState(isLocked[i], result[i])
+        dice.setState(isLocked[i], result[i]);
         if (!isLocked[i]) {
           if (frameIdx === 0) {
-            dice.animations.push({
-              frames: diceFrames[frameIdx],
-              callback: () => this.showResult(isLocked, result)
-            })
-          } else dice.animations.push({ frames: diceFrames[frameIdx] })
+            dice.roll(diceFrames[frameIdx], () =>
+              this.showResult(isLocked, result),
+            );
+          } else {
+            dice.roll(diceFrames[frameIdx]);
+          }
           frameIdx++;
         }
       }

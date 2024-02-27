@@ -48,7 +48,7 @@ button {
   gap: 20px;
 }
 
-#loading>.title {
+#loading > .title {
   font-size: 48px;
 }
 
