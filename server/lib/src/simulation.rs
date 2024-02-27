@@ -7,7 +7,7 @@ use std::f32::consts::PI;
 pub fn simulate(buffer: &mut Vec<f32>, result: &Vec<i32>, num: i32) {
     let num = num as usize;
 
-    let fps = 60.0;
+    let fps = 30.0;
 
     let mut rigid_body_set = RigidBodySet::new();
     let mut collider_set = ColliderSet::new();

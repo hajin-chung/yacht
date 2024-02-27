@@ -21,7 +21,7 @@ function generateCupShake(): Frame[] {
   const leftFrame: Frame = { translation: { x: cupX - dx, y: cupY - dy, z: -dz } }
   const rightFrame: Frame = { translation: { x: cupX + dx, y: cupY - dy, z: dz } }
   const originalFrame: Frame = { translation: { x: cupX, y: cupY, z: 0 } }
-  const steps = 15;
+  const steps = 4;
   const frames: Frame[] = [];
 
   frames.push(...interpolate(originalFrame, leftFrame, steps));
@@ -94,9 +94,8 @@ function interpolateQuat(a: Rotation, b: Rotation, t: number): Rotation {
 
 export function interpolate(current: Frame, result: Frame, steps?: number): Frame[] {
   const frames: Frame[] = [];
-  if (!steps) steps = 100;
+  if (!steps) steps = 40;
 
-  console.log(current);
   for (let i = 1; i <= steps; i++) {
     const t = i / steps;
     frames.push({});

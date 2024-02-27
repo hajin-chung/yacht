@@ -86,10 +86,9 @@ export function handleGameState(gameState: GameState) {
   showLeftRolls(gameState.leftRolls);
 
   if (gameState.leftRolls === 3) {
-    // yacht.initDice(state.game.isLocked);
+    yacht.reset();
   } else {
     yacht.showResult(gameState.isLocked, gameState.dice);
-    // show dice result and locked dice
   }
 
   hideLobby();
@@ -166,8 +165,7 @@ export function handleLockDice(dice: number) {
   }
 
   state.game.isLocked[dice] = true;
-
-  // yacht.lockDice(dice);
+  yacht.diceList[dice].lock();
 }
 
 export function handleUnlockDice(dice: number) {
@@ -181,8 +179,7 @@ export function handleUnlockDice(dice: number) {
   }
 
   state.game.isLocked[dice] = false;
-
-  // yacht.unlockDice(dice);
+  yacht.diceList[dice].unlock();
 }
 
 export function onShake() {
@@ -226,7 +223,6 @@ export function onCup() {
   if (yacht.diceState === "RESULT") {
     yacht.encup();
   } else {
-    console.log(state.game.isLocked, state.game.dice);
     yacht.showResult(state.game.isLocked, state.game.dice);
   }
 }

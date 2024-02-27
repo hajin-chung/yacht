@@ -5,16 +5,27 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { fps } from "./constants";
 import { rapier } from "./rapier";
 import { Frame } from "./animation";
-import { DiceResult, IsLocked } from "./controller";
+import { DiceResult, IsLocked, state } from "./controller";
+import { di } from "./utils";
+import { sendMessage } from "./websocket";
 
 export let yacht: Yacht;
 
 export function initYacht() {
-  const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+  const canvas = di("canvas") as HTMLCanvasElement;
   canvas.width = canvas.clientWidth;
   canvas.height = canvas.clientHeight;
 
   yacht = new Yacht(canvas);
+
+  /** */
+  document.addEventListener("keydown", (e) => {
+    const key = parseInt(e.key) - 1;
+    if (0 <= key && key < 5) {
+      if (state.game!.isLocked[key]) sendMessage("unlockDice", { dice: key });
+      else sendMessage("lockDice", { dice: key });
+    }
+  })
 }
 
 type DiceState = "RESULT" | "CUP";
@@ -42,8 +53,8 @@ export class Yacht {
   ) {
     this.isDebug = false;
 
-    this.world = new rapier.World({ x: 0.0, y: -8.0, z: 0.0 });
-    this.world.timestep = 1 / fps;
+    this.world = new rapier.World({ x: 0.0, y: -16.0, z: 0.0 });
+    this.world.timestep = 1 / (fps / 2) ; 
 
     this.canvas = canvas;
     this.renderer = new THREE.WebGLRenderer({
@@ -81,6 +92,13 @@ export class Yacht {
     this.ground = new Ground(this.scene);
   }
 
+  reset() {
+    this.diceState = "CUP";
+    this.cup.reset(() => {
+      this.diceList.forEach((dice) => dice.encup())
+    });
+  }
+
   showResult(isLocked: IsLocked, result: DiceResult) {
     this.diceState = "RESULT";
     for (let i = 0; i < 5; i++) {
@@ -103,6 +121,9 @@ export class Yacht {
   update() {
     this.diceList.forEach((dice) => dice.step());
     this.cup.step();
+  }
+
+  step() {
     this.world.step();
   }
 

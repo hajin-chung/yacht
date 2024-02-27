@@ -1,5 +1,4 @@
 import { initYacht, yacht } from "./yacht";
-import { fps } from "./constants";
 import { initRapier } from "./rapier";
 import { loadAssets } from "./assets";
 import { initWebsocket, sendMessage, socket } from "./websocket";
@@ -23,12 +22,30 @@ async function main() {
   await init();
 
   di("game").classList.remove("hide");
-  // yacht.debug();
+  yacht.debug();
 
-  setInterval(() => {
-    yacht.update();
-    yacht.draw();
-  }, 1 / fps);
+  requestAnimationFrame(loop)
+}
+
+let lastTime: number | undefined;
+let acc = 0;
+function loop(currentTime: number) {
+  if (lastTime === undefined) lastTime = currentTime;
+  else {
+    const delta = currentTime - lastTime;
+    const fps = 1000 / delta;
+    di("fps").innerText = `${fps.toPrecision(2)}`;
+    lastTime = currentTime;
+
+    acc += delta;
+    while (acc > 1000 / fps) {
+      acc -= 1000 / fps;
+      yacht.step();
+    }
+  }
+  requestAnimationFrame(loop)
+  yacht.update();
+  yacht.draw();
 }
 
 main();

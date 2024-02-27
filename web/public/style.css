@@ -23,6 +23,15 @@ button {
   height: 100vh;
 }
 
+#debug {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #ccc;
+  padding: 8px;
+  z-index: 100;
+}
+
 #loading {
   position: absolute;
   z-index: 20;

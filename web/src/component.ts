@@ -1,6 +1,6 @@
 import { Collider, RigidBody, World } from "@dimforge/rapier3d-compat";
 import { cupX, cupY } from "./constants";
-import { random } from "./utils";
+import { randomDicePosition } from "./utils";
 import * as THREE from "three";
 import { rapier } from "./rapier";
 import { boardModel, cupModel, diceModel, groundTexture } from "./assets";
@@ -28,14 +28,13 @@ class Dice {
     this.world = world;
     this.scene = scene;
     this.num = num;
+    const pos = randomDicePosition();
     const rigidBodyDesc = rapier.RigidBodyDesc.dynamic().setTranslation(
-      cupX + 0.8 * random(),
-      cupY + 1.5 + 0.4 * random(),
-      0.8 * random(),
+      pos.x, pos.y, pos.z
     );
     this.rigidBody = world.createRigidBody(rigidBodyDesc);
     const colliderDesc = rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4).setMass(
-      0.5,
+      10
     );
     this.collider = world.createCollider(colliderDesc, this.rigidBody);
 
@@ -85,13 +84,8 @@ class Dice {
 
   showResult() {
     this.simulate = false;
-
-    const currentFrame: Frame = {
-      translation: this.model.position,
-      rotation: this.model.quaternion,
-    }
-    const frames = generateResult(currentFrame, this.result, this.num);
-    this.animations.push({ frames: frames });
+    if (this.isLock) this.lock();
+    else this.unlock();
   }
 
   encup() {
@@ -104,17 +98,31 @@ class Dice {
       frames,
       callback: () => this.simulate = true,
     })
+
+    const pos = randomDicePosition();
+    this.rigidBody.setTranslation(pos, false);
   }
 
   lock() {
     this.simulate = false;
-
+    this.isLock = true;
     const currentFrame: Frame = {
       translation: this.model.position,
       rotation: this.model.quaternion,
     }
     const frames = generateLock(currentFrame, this.result, this.num);
     this.animations.push({ frames })
+  }
+
+  unlock() {
+    this.simulate = false;
+    this.isLock = false;
+    const currentFrame: Frame = {
+      translation: this.model.position,
+      rotation: this.model.quaternion,
+    }
+    const frames = generateResult(currentFrame, this.result, this.num);
+    this.animations.push({ frames: frames });
   }
 
   onMouseEnter() {
@@ -204,7 +212,7 @@ class Cup {
     this.animations.push({ frames })
   }
 
-  reset(callback: Callback) {
+  reset(callback?: Callback) {
     const currentFrame: Frame = {
       translation: this.model.position,
       rotation: this.model.quaternion,
@@ -230,7 +238,7 @@ class Ground {
     groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
     groundTexture.repeat.set(10, 10);
     const material = new THREE.MeshStandardMaterial({ map: groundTexture });
-    this.model = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), material);
+    this.model = new THREE.Mesh(new THREE.PlaneGeometry(10000, 10000), material);
     this.model.rotateX((Math.PI * 3) / 2);
     this.model.position.set(0, -2, 0);
     scene.add(this.model);
