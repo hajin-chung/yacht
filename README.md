@@ -222,17 +222,9 @@ every message is in a binary using MessagePack for serialization and deserializa
 
 ### client implementations
 
-based on user state there are largely three status IDLE, QUEUE, PLAYING
-so handle that.
+It is tough to think about a elegant way to implement / envision a elegant way
+to handle multiple stages of the game. After many hours of careful thought and
+many trials I think the best way is to focus on the dice rather than the entire
+game state.
 
-when user is in PLAYING state handle game related messages
-if current turn is the player's turn,
-the player can either roll, shake, lockDice, unlockDice, selectScore.
-if roll update stage to ROLL, if shake, lockDice or unlockDice broadcast and 
-if selectScore update turn.
-else if current turn is not the player's,
-just show roll, shake, lockDice, unlockDice animations
-
-SHAKE -> ROLL -> RESULT
-
-in RESULT player can lock, unlock,  
+the dice can be showing the result, locked, rolling, shaking(in cup)

@@ -88,6 +88,7 @@ export function handleGameState(gameState: GameState) {
   if (gameState.leftRolls === 3) {
     // yacht.initDice(state.game.isLocked);
   } else {
+    yacht.showResult(gameState.isLocked, gameState.dice);
     // show dice result and locked dice
   }
 
@@ -102,7 +103,6 @@ export function handleGameStart(gameId: string) {
 
   state.user.status = "PLAYING";
   state.user.gameId = gameId;
-  hideLobby();
   sendMessage("gameState");
 }
 
@@ -138,12 +138,11 @@ export function handleRoll(data: RollData) {
       resultIdx++;
     }
   }
-  console.log(state);
 
-  yacht.roll(data.buffer, data.result.length, state.game.isLocked);
+  yacht.roll(data.buffer, data.result.length, state.game.isLocked, state.game.dice);
 }
 
-export function handleSelectScore(scoreIdx: number) {
+export function handleSelectScore() {
   if (!state.user) {
     sendMessage("me");
     return
@@ -153,7 +152,6 @@ export function handleSelectScore(scoreIdx: number) {
     return
   }
 
-  { scoreIdx }
   sendMessage("gameState");
 }
 
@@ -213,6 +211,24 @@ export function onRoll() {
   if (state.game.playerId[state.game.turn % 2] !== state.user.id) return
 
   sendMessage("roll");
+}
+
+export function onCup() {
+  if (!state.user) {
+    sendMessage("me");
+    return
+  }
+  if (!state.game) {
+    sendMessage("gameState");
+    return
+  }
+
+  if (yacht.diceState === "RESULT") {
+    yacht.encup();
+  } else {
+    console.log(state.game.isLocked, state.game.dice);
+    yacht.showResult(state.game.isLocked, state.game.dice);
+  }
 }
 
 export function onScoreSelect(playerIdx: number, scoreIdx: number) {

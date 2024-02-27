@@ -1,5 +1,6 @@
-import { Vector } from "@dimforge/rapier3d-compat";
+import { Rotation, Vector } from "@dimforge/rapier3d-compat";
 
+/** generate random number between 1.0 and -1.0 */
 export function random() {
   return 2 * Math.random() - 1;
 }
@@ -28,4 +29,8 @@ export function dqs(query: string): HTMLElement[] {
 
 export function dq(query: string): HTMLElement {
   return document.querySelector(query)!
+}
+
+export function isQuatNaN(quat: Rotation) {
+  return isNaN(quat.w) || isNaN(quat.x) || isNaN(quat.y) || isNaN(quat.z)
 }

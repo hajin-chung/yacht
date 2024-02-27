@@ -1,5 +1,13 @@
 import { Rotation, Vector } from "@dimforge/rapier3d-compat";
 import * as THREE from "three";
+import { Callback } from "./types";
+import { cupX, cupY } from "./constants";
+import { isQuatNaN, random } from "./utils";
+
+export interface Animation {
+  frames: Frame[];
+  callback?: Callback;
+};
 
 export interface Frame {
   translation?: Vector;
@@ -10,51 +18,59 @@ function generateCupShake(): Frame[] {
   const dx = 0.4;
   const dy = 1.2;
   const dz = 0.0;
+  const leftFrame: Frame = { translation: { x: cupX - dx, y: cupY - dy, z: -dz } }
+  const rightFrame: Frame = { translation: { x: cupX + dx, y: cupY - dy, z: dz } }
+  const originalFrame: Frame = { translation: { x: cupX, y: cupY, z: 0 } }
   const steps = 15;
   const frames: Frame[] = [];
 
-  for (let i = 1; i <= steps; i++)
-    frames.push({
-      translation: { x: dx / steps, y: dy / steps, z: dz / steps },
-    });
-  for (let i = 1; i <= steps; i++)
-    frames.push({
-      translation: { x: -dx / steps, y: -dy / steps, z: -dz / steps },
-    });
-  for (let i = 1; i <= steps; i++)
-    frames.push({
-      translation: { x: -dx / steps, y: dy / steps, z: dz / steps },
-    });
-  for (let i = 1; i <= steps; i++)
-    frames.push({
-      translation: { x: dx / steps, y: -dy / steps, z: -dz / steps },
-    });
+  frames.push(...interpolate(originalFrame, leftFrame, steps));
+  frames.push(...interpolate(leftFrame, originalFrame, steps));
+  frames.push(...interpolate(originalFrame, rightFrame, steps));
+  frames.push(...interpolate(rightFrame, originalFrame, steps));
 
-  frames.reverse();
   return frames;
 }
 
 export const shakeAnimation = generateCupShake();
 
 function generateCupRoll(): Frame[] {
-  const steps = 100;
   const dt = (Math.PI * 3) / 4;
-  const dz = 3;
 
-  const frames: Frame[] = [];
-  for (let i = 1; i <= steps; i++) {
-    const quat = new THREE.Quaternion();
-    quat.setFromAxisAngle({ x: 0, y: 0, z: 1 }, (i * dt) / steps);
-    frames.push({ rotation: quat });
-  }
-  for (let i = 1; i <= steps; i++) {
-    frames.push({ translation: { x: dz / steps, y: 0, z: 0 } });
-  }
+  const currentFrame: Frame = {
+    translation: { x: cupX, y: cupY, z: 0 },
+    rotation: { w: 1, x: 0, y: 0, z: 0 },
+  };
 
-  return frames;
+  const quat = new THREE.Quaternion();
+  quat.setFromAxisAngle({ x: 0, y: 0, z: 1 }, dt);
+  const rotateFrame: Frame = {
+    translation: { x: cupX, y: cupY, z: 0 },
+    rotation: quat
+  };
+
+  return interpolate(currentFrame, rotateFrame);
 }
 
 export const rollAnimation = generateCupRoll();
+
+export function generateCupMove(currentFrame: Frame) {
+  const dx = 2;
+
+  const movedFrame: Frame = {
+    translation: { x: cupX + dx, y: cupY, z: 0 },
+    rotation: { w: 1, x: 0, y: 0, z: 0 }
+  };
+  return interpolate(currentFrame, movedFrame);
+}
+
+export function generateCupReset(currentFrame: Frame): Frame[] {
+  const resultFrame: Frame = {
+    translation: { x: cupX, y: cupY, z: 0 },
+    rotation: { w: 1, x: 0, y: 0, z: 0 },
+  };
+  return interpolate(currentFrame, resultFrame);
+}
 
 function interpolateVec(a: Vector, b: Vector, t: number): Vector {
   return {
@@ -65,7 +81,8 @@ function interpolateVec(a: Vector, b: Vector, t: number): Vector {
 }
 
 function interpolateQuat(a: Rotation, b: Rotation, t: number): Rotation {
-
+  if (isQuatNaN(a)) a = { w: 1, x: 0, y: 0, z: 0 };
+  if (isQuatNaN(b)) b = { w: 1, x: 0, y: 0, z: 0 };
   const omega = Math.acos(a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w);
   return {
     x: a.x * Math.sin((1 - t) * omega) / Math.sin(omega) + b.x * Math.sin(t * omega) / Math.sin(omega),
@@ -75,10 +92,11 @@ function interpolateQuat(a: Rotation, b: Rotation, t: number): Rotation {
   }
 }
 
-export function interpolate(current: Frame, result: Frame): Frame[] {
+export function interpolate(current: Frame, result: Frame, steps?: number): Frame[] {
   const frames: Frame[] = [];
-  const steps = 100;
+  if (!steps) steps = 100;
 
+  console.log(current);
   for (let i = 1; i <= steps; i++) {
     const t = i / steps;
     frames.push({});
@@ -124,3 +142,16 @@ export function generateLock(current: Frame, result: number, diceIdx: number): F
   };
   return interpolate(current, resultFrame);
 }
+
+export function generateEncup(current: Frame, result: number): Frame[] {
+  const resultFrame: Frame = {
+    translation: {
+      x: cupX + 0.8 * random(),
+      y: cupY + 1.5 + 0.4 * random(),
+      z: 0.8 * random(),
+    },
+    rotation: rotations[result - 1]
+  }
+  return interpolate(current, resultFrame);
+}
+

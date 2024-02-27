@@ -4,8 +4,8 @@ import { Board, Cup, Dice, Ground } from "./component";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { fps } from "./constants";
 import { rapier } from "./rapier";
-import { Frame, generateLock, generateResult } from "./animation";
-import { IsLocked, state } from "./controller";
+import { Frame } from "./animation";
+import { DiceResult, IsLocked } from "./controller";
 
 export let yacht: Yacht;
 
@@ -17,7 +17,7 @@ export function initYacht() {
   yacht = new Yacht(canvas);
 }
 
-type YachtStage = "SHAKE" | "ROLL" | "RESULT";
+type DiceState = "RESULT" | "CUP";
 
 export class Yacht {
   world: World;
@@ -35,8 +35,7 @@ export class Yacht {
   lines?: THREE.LineSegments;
   controls?: OrbitControls;
 
-  pressingShake: boolean = false;
-  stage: YachtStage;
+  diceState: DiceState = "CUP";
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -80,42 +79,31 @@ export class Yacht {
     this.cup = new Cup(this.world, this.scene);
     this.board = new Board(this.scene);
     this.ground = new Ground(this.scene);
-
-    this.stage = "SHAKE";
   }
 
-  showResult() {
+  showResult(isLocked: IsLocked, result: DiceResult) {
+    this.diceState = "RESULT";
     for (let i = 0; i < 5; i++) {
       const dice = this.diceList[i]
-      const currentFrame: Frame = {
-        translation: dice.model.position,
-        rotation: dice.model.quaternion
-      }
-      if (!dice.isLock) {
-        const frames = generateResult(currentFrame, state.game!.dice[i], i);
-        dice.animate(frames);
-      } else {
-        const frames = generateLock(currentFrame, state.game!.dice[i], i);
-        dice.animate(frames);
-      }
+      dice.setState(isLocked[i], result[i]);
+      dice.showResult();
     }
+    this.cup.move();
+  }
+
+  encup() {
+    this.diceState = "CUP";
+    this.cup.reset(() => {
+      this.diceList.forEach((dice) => {
+        if (!dice.isLock) dice.encup();
+      })
+    });
   }
 
   update() {
     this.diceList.forEach((dice) => dice.step());
     this.cup.step();
     this.world.step();
-
-    if (this.stage === "ROLL") {
-      const didRollEnd = this.diceList.reduce(
-        (prev, curr) => prev && curr.frames.length === 0, true)
-      if (didRollEnd) {
-        this.showResult();
-        this.stage = "RESULT";
-      }
-    } else if (this.stage === "RESULT") {
-      // handle mouse events
-    }
   }
 
   draw() {
@@ -148,11 +136,11 @@ export class Yacht {
   }
 
   shake() {
-    this.cup.shakeCount++;
+    this.cup.shake();
   }
 
-  roll(buffer: Float32Array, diceNum: number, isLocked: IsLocked) {
-    this.cup.callback = () => {
+  roll(buffer: Float32Array, diceNum: number, isLocked: IsLocked, result: DiceResult) {
+    this.cup.roll(() => {
       const diceFrames: Frame[][] = [];
       for (let i = 0; i < diceNum; i++) diceFrames.push([]);
       for (let i = 0; i < buffer.length / (7 * diceNum); i++) {
@@ -164,16 +152,20 @@ export class Yacht {
           })
         }
       }
-      this.stage = "ROLL";
       let frameIdx = 0;
       for (let i = 0; i < 5; i++) {
+        const dice = this.diceList[i];
+        dice.setState(isLocked[i], result[i])
         if (!isLocked[i]) {
-          this.diceList[i].simulate = false;
-          this.diceList[i].animate(diceFrames[frameIdx]);
+          if (frameIdx === 0) {
+            dice.animations.push({
+              frames: diceFrames[frameIdx],
+              callback: () => this.showResult(isLocked, result)
+            })
+          } else dice.animations.push({ frames: diceFrames[frameIdx] })
           frameIdx++;
         }
       }
-    }
-    this.cup.roll();
+    });
   }
 }

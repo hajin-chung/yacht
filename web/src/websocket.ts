@@ -97,8 +97,8 @@ function handleMessage(message: any) {
       break;
     }
     case "selectScore": {
-      const data: SelectScoreData = message.data
-      handleSelectScore(data.selection);
+      // const data: SelectScoreData = message.data
+      handleSelectScore();
       break;
     }
     case "lockDice": {

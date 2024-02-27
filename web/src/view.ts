@@ -1,10 +1,11 @@
-import { onRoll, onScoreSelect, onShake } from "./controller";
+import { onRoll, onScoreSelect, onShake, onCup } from "./controller";
 import { di, dq, dqs } from "./utils";
 import { sendMessage } from "./websocket";
 
 export function initView() {
   di("shake").onclick = onShake;
   di("roll").onclick = onRoll;
+  di("cup").onclick = onCup;
 
   dqs(".scoreButton").forEach((scoreButton, i) => {
     const playerIdx = i % 2;
