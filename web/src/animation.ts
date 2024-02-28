@@ -50,7 +50,7 @@ export function interpolate(
   steps?: number,
 ): Frame[] {
   const frames: Frame[] = [];
-  if (!steps) steps = 80;
+  if (!steps) steps = 40;
 
   for (let i = 1; i <= steps; i++) {
     const t = i / steps;
@@ -84,7 +84,7 @@ function generateCupShake(): Frame[] {
     translation: { x: cupX + dx, y: cupY - dy, z: dz },
   };
   const originalFrame: Frame = { translation: { x: cupX, y: cupY, z: 0 } };
-  const steps = 10;
+  const steps = 8;
   const frames: Frame[] = [];
 
   frames.push(...interpolate(originalFrame, leftFrame, steps));

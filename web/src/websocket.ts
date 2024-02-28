@@ -17,7 +17,7 @@ import {
 export let socket: WebSocket;
 
 export function initWebsocket() {
-  socket = new WebSocket("ws://localhost:4434/ws");
+  socket = new WebSocket("ws://158.247.201.176:4434/ws");
 
   socket.addEventListener("open", () => {
     console.log("socket open");

@@ -120,8 +120,9 @@ class Dice {
   }
 
   roll(frames: Frame[], callback?: Callback) {
-    this.animations.push({ frames, callback });
+    this.simulate = false;
     this.removeCollider();
+    this.animations.push({ frames, callback });
   }
 
   removeCollider() {
@@ -150,11 +151,11 @@ class Dice {
     this.animations.push({ frames: frames });
   }
 
-  onMouseEnter() {}
+  onMouseEnter() { }
 
-  onMouseLeave() {}
+  onMouseLeave() { }
 
-  onClick() {}
+  onClick() { }
 }
 
 class Cup {
