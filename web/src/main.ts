@@ -4,6 +4,7 @@ import { loadAssets } from "./assets";
 import { initWebsocket, sendMessage, socket } from "./websocket";
 import { di } from "./utils";
 import { hideLoading, initView, showLoading } from "./view";
+import { fps } from "./constants";
 
 async function init() {
   showLoading();
@@ -30,22 +31,25 @@ async function main() {
 let lastTime: number | undefined;
 let acc = 0;
 function loop(currentTime: number) {
-  if (lastTime === undefined) lastTime = currentTime;
-  else {
+  requestAnimationFrame(loop);
+  if (lastTime === undefined) {
+    lastTime = currentTime;
+    yacht.update();
+    yacht.draw();
+  } else {
     const delta = currentTime - lastTime;
-    const fps = 1000 / delta;
-    di("fps").innerText = `${fps.toPrecision(4)}`;
+    const calculatedFps = 1000 / delta;
+    di("fps").innerText = `${calculatedFps.toPrecision(4)} | ${fps}`;
     lastTime = currentTime;
 
     acc += delta;
     while (acc > 1000 / fps) {
       acc -= 1000 / fps;
       yacht.step();
+      yacht.update();
+      yacht.draw();
     }
   }
-  requestAnimationFrame(loop);
-  yacht.update();
-  yacht.draw();
 }
 
 main();
