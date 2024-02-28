@@ -66,7 +66,6 @@ function handleMessage(message: any) {
 
   switch (message.type) {
     case "ping":
-      console.log("recieved ping");
       break;
     case "me": {
       const data: UserState = message.data;
@@ -97,7 +96,6 @@ function handleMessage(message: any) {
       break;
     }
     case "selectScore": {
-      // const data: SelectScoreData = message.data
       handleSelectScore();
       break;
     }

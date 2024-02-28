@@ -4,6 +4,17 @@ import { Callback } from "./types";
 import { cupX, cupY } from "./constants";
 import { isQuatNaN, random } from "./utils";
 
+export type Animation = {
+  frames: Frame[];
+  callback?: Callback;
+};
+
+export interface Frame {
+  translation?: Vector;
+  rotation?: Rotation;
+}
+
+
 function interpolateVec(a: Vector, b: Vector, t: number): Vector {
   return {
     x: a.x * (1 - t) + b.x * t,
@@ -16,6 +27,7 @@ function interpolateQuat(a: Rotation, b: Rotation, t: number): Rotation {
   if (isQuatNaN(a)) a = { w: 1, x: 0, y: 0, z: 0 };
   if (isQuatNaN(b)) b = { w: 1, x: 0, y: 0, z: 0 };
   const omega = Math.acos(a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w);
+  if (omega === 0) return a;
   return {
     x:
       (a.x * Math.sin((1 - t) * omega)) / Math.sin(omega) +
@@ -59,16 +71,6 @@ export function interpolate(
     }
   }
   return frames;
-}
-
-export type Animation = {
-  frames: Frame[];
-  callback?: Callback;
-};
-
-export interface Frame {
-  translation?: Vector;
-  rotation?: Rotation;
 }
 
 function generateCupShake(): Frame[] {
