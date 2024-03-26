@@ -2,8 +2,10 @@ package main
 
 import (
 	"errors"
-	"log"
+	"fmt"
 	"math/rand"
+
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 type GameStatus string
@@ -69,13 +71,27 @@ func (game *GameState) Next() {
 	}
 }
 
-var games map[string]*GameState
-var players map[string]string
+func SetGameState(gameState *GameState) error {
+	data, err := msgpack.Marshal(gameState)
+	if err != nil {
+		return err
+	}
+	_, err = rdb.Set(c, fmt.Sprintf("game:%s", gameState.Id), data, 0).Result()
+	return err
+}
 
-func InitGame() {
-	log.Println("Initializing game")
-	games = map[string]*GameState{}
-	players = map[string]string{}
+func GetGameState(gameId string) (*GameState, error) {
+	val, err := rdb.Get(c, fmt.Sprintf("game:%s", gameId)).Bytes()
+	if err != nil {
+		return nil, err
+	}
+
+	gameState := GameState{}
+	err = msgpack.Unmarshal(val, &gameState)
+	if err != nil {
+		return nil, err
+	}
+	return &gameState, nil
 }
 
 func StartGame(player1Id string, player2Id string) {
@@ -91,7 +107,7 @@ func StartGame(player1Id string, player2Id string) {
 		IsLocked:  [5]bool{},
 		Dice:      [5]int{},
 	}
-	games[gameId] = gameState
+	SetGameState(gameState)
 
 	SetUserStatus(player1Id, USER_PLAYING)
 	SetUserStatus(player2Id, USER_PLAYING)
@@ -112,7 +128,10 @@ func HandleGameState(userId string) error {
 		return err
 	}
 
-	gameState := games[gameId]
+	gameState, err := GetGameState(gameId)
+	if err != nil {
+		return err
+	}
 	hub.SendMessage(userId, "gameState", map[string]interface{}{
 		"state": gameState,
 	}, nil)
@@ -125,7 +144,10 @@ func HandleShake(userId string) error {
 		return err
 	}
 
-	game := games[gameId]
+	game, err := GetGameState(gameId)
+	if err != nil {
+		return err
+	}
 
 	if game.PlayerId[game.Turn%2] != userId {
 		return errors.New("not in turn")
@@ -147,7 +169,10 @@ func HandleRoll(userId string) error {
 		return err
 	}
 
-	game := games[gameId]
+	game, err := GetGameState(gameId)
+	if err != nil {
+		return err
+	}
 	if game.PlayerId[game.Turn%2] != userId {
 		return errors.New("not in turn")
 	}
@@ -186,6 +211,10 @@ func HandleRoll(userId string) error {
 		game.Dice[i] = int(result[resultIdx])
 		resultIdx++
 	}
+	err = SetGameState(game)
+	if err != nil {
+		return err
+	}
 
 	// send message
 	hub.SendMessage(game.PlayerId[0], "roll", map[string]interface{}{
@@ -208,7 +237,10 @@ func HandleLockDice(userId string, diceIndex int) error {
 		return err
 	}
 
-	game := games[gameId]
+	game, err := GetGameState(gameId)
+	if err != nil {
+		return err
+	}
 	if game.PlayerId[game.Turn%2] != userId {
 		return errors.New("not in turn")
 	}
@@ -220,6 +252,11 @@ func HandleLockDice(userId string, diceIndex int) error {
 	}
 
 	game.IsLocked[diceIndex] = true
+
+	err = SetGameState(game)
+	if err != nil {
+		return err
+	}
 
 	hub.SendMessage(game.PlayerId[0], "lockDice", map[string]interface{}{
 		"dice": diceIndex,
@@ -237,7 +274,10 @@ func HandleUnlockDice(userId string, diceIndex int) error {
 		return err
 	}
 
-	game := games[gameId]
+	game, err := GetGameState(gameId)
+	if err != nil {
+		return err
+	}
 	if game.PlayerId[game.Turn%2] != userId {
 		return errors.New("not in turn")
 	}
@@ -249,6 +289,11 @@ func HandleUnlockDice(userId string, diceIndex int) error {
 	}
 
 	game.IsLocked[diceIndex] = false
+
+	err = SetGameState(game)
+	if err != nil {
+		return err
+	}
 
 	hub.SendMessage(game.PlayerId[0], "unlockDice", map[string]interface{}{
 		"dice": diceIndex,
@@ -266,7 +311,10 @@ func HandleSelectScore(userId string, selection int) error {
 		return err
 	}
 
-	game := games[gameId]
+	game, err := GetGameState(gameId)
+	if err != nil {
+		return err
+	}
 	if game.PlayerId[game.Turn%2] != userId {
 		return errors.New("not in turn")
 	}
@@ -280,6 +328,11 @@ func HandleSelectScore(userId string, selection int) error {
 	score := CalculateScore(game.Dice, selection)
 	game.Selected[game.Turn%2][selection] = true
 	game.Scores[game.Turn%2][selection] = score
+
+	err = SetGameState(game)
+	if err != nil {
+		return err
+	}
 
 	hub.SendMessage(game.PlayerId[0], "selectScore", map[string]interface{}{
 		"selection": selection,
