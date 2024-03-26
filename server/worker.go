@@ -55,6 +55,10 @@ func (h *Hub) Worker() {
 			err = HandleGameState(packet.Id)
 		case "shake":
 			err = HandleShake(packet.Id)
+		case "encup":
+			err = HandleEncup(packet.Id)
+		case "decup":
+			err = HandleDecup(packet.Id)
 		case "roll":
 			err = HandleRoll(packet.Id)
 		case "lockDice":

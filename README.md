@@ -52,7 +52,7 @@ every game data is stored in redis
     "leftRolls": number,
 
     // is dice in cup
-    "isInCup": boolean,
+    "inCup": boolean,
 
     // index of dice locked
     "isLocked": [boolean, boolean, boolean, boolean, boolean],

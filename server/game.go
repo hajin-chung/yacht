@@ -35,15 +35,16 @@ const (
 const MAX_TURN = 2 * 12
 
 type GameState struct {
-	Id        string      `msgpack:"id"`
-	PlayerId  [2]string   `msgpack:"playerId"`
-	Status    GameStatus  `msgpack:"status"`
-	Selected  [2][12]bool `msgpack:"selected"`
-	Scores    [2][12]int  `msgpack:"scores"`
-	Turn      uint8       `msgpack:"turn"`
-	LeftRolls uint8       `msgpack:"leftRolls"`
-	IsLocked  [5]bool     `msgpack:"isLocked"`
-	Dice      [5]int      `msgpack:"dice"`
+	Id        string       `msgpack:"id"`
+	PlayerId  [2]string    `msgpack:"playerId"`
+	Status    GameStatus   `msgpack:"status"`
+	Selected  [2][12]bool  `msgpack:"selected"`
+	Scores    [2][12]uint8 `msgpack:"scores"`
+	Turn      uint8        `msgpack:"turn"`
+	LeftRolls uint8        `msgpack:"leftRolls"`
+	InCup     bool         `msgpack:"inCup"`
+	IsLocked  [5]bool      `msgpack:"isLocked"`
+	Dice      [5]uint8     `msgpack:"dice"`
 }
 
 func (game *GameState) Next() {
@@ -53,6 +54,7 @@ func (game *GameState) Next() {
 	}
 	game.LeftRolls = 3
 	game.Turn++
+	game.InCup = true
 
 	if game.Turn == MAX_TURN {
 		game.Status = GAME_DONE
@@ -101,11 +103,12 @@ func StartGame(player1Id string, player2Id string) {
 		PlayerId:  [2]string{player1Id, player2Id},
 		Status:    GAME_PLAYING,
 		Selected:  [2][12]bool{},
-		Scores:    [2][12]int{},
+		Scores:    [2][12]uint8{},
 		Turn:      0,
+		InCup:     true,
 		LeftRolls: 3,
 		IsLocked:  [5]bool{},
-		Dice:      [5]int{},
+		Dice:      [5]uint8{},
 	}
 	SetGameState(gameState)
 
@@ -149,6 +152,9 @@ func HandleShake(userId string) error {
 		return err
 	}
 
+	if !game.InCup {
+		return errors.New("dice is not in cup")
+	}
 	if game.PlayerId[game.Turn%2] != userId {
 		return errors.New("not in turn")
 	}
@@ -158,6 +164,52 @@ func HandleShake(userId string) error {
 
 	hub.SendMessage(game.PlayerId[0], "shake", nil, nil)
 	hub.SendMessage(game.PlayerId[1], "shake", nil, nil)
+	return nil
+}
+
+func HandleEncup(userId string) error {
+	gameId, err := GetUserGameId(userId)
+	if err != nil {
+		return err
+	}
+
+	game, err := GetGameState(gameId)
+	if err != nil {
+		return err
+	}
+
+	game.InCup = true
+	err = SetGameState(game)
+	if err != nil {
+		return err
+	}
+
+	hub.SendMessage(game.PlayerId[0], "encup", nil, nil)
+	hub.SendMessage(game.PlayerId[1], "encup", nil, nil)
+
+	return nil
+}
+
+func HandleDecup(userId string) error {
+	gameId, err := GetUserGameId(userId)
+	if err != nil {
+		return err
+	}
+
+	game, err := GetGameState(gameId)
+	if err != nil {
+		return err
+	}
+
+	game.InCup = false
+	err = SetGameState(game)
+	if err != nil {
+		return err
+	}
+
+	hub.SendMessage(game.PlayerId[0], "encup", nil, nil)
+	hub.SendMessage(game.PlayerId[1], "encup", nil, nil)
+
 	return nil
 }
 
@@ -172,6 +224,10 @@ func HandleRoll(userId string) error {
 	game, err := GetGameState(gameId)
 	if err != nil {
 		return err
+	}
+
+	if !game.InCup {
+		return errors.New("dice is not in cup")
 	}
 	if game.PlayerId[game.Turn%2] != userId {
 		return errors.New("not in turn")
@@ -208,7 +264,7 @@ func HandleRoll(userId string) error {
 		if game.IsLocked[i] {
 			continue
 		}
-		game.Dice[i] = int(result[resultIdx])
+		game.Dice[i] = uint8(result[resultIdx])
 		resultIdx++
 	}
 	err = SetGameState(game)
@@ -240,6 +296,10 @@ func HandleLockDice(userId string, diceIndex int) error {
 	game, err := GetGameState(gameId)
 	if err != nil {
 		return err
+	}
+
+	if game.InCup {
+		return errors.New("dice is in cup")
 	}
 	if game.PlayerId[game.Turn%2] != userId {
 		return errors.New("not in turn")
@@ -277,6 +337,10 @@ func HandleUnlockDice(userId string, diceIndex int) error {
 	game, err := GetGameState(gameId)
 	if err != nil {
 		return err
+	}
+
+	if game.InCup {
+		return errors.New("dice is in cup")
 	}
 	if game.PlayerId[game.Turn%2] != userId {
 		return errors.New("not in turn")
@@ -329,11 +393,6 @@ func HandleSelectScore(userId string, selection int) error {
 	game.Selected[game.Turn%2][selection] = true
 	game.Scores[game.Turn%2][selection] = score
 
-	err = SetGameState(game)
-	if err != nil {
-		return err
-	}
-
 	hub.SendMessage(game.PlayerId[0], "selectScore", map[string]interface{}{
 		"selection": selection,
 	}, nil)
@@ -343,16 +402,21 @@ func HandleSelectScore(userId string, selection int) error {
 
 	game.Next()
 
+	err = SetGameState(game)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func CalculateScore(dice [5]int, selection int) int {
-	cnt := [7]int{0, 0, 0, 0, 0, 0}
-	cntCount := [6]int{0, 0, 0, 0, 0, 0}
-	straight := 0
-	sum := 0
-	cntMax := 0
-	maxEyes := 0
+func CalculateScore(dice [5]uint8, selection int) uint8 {
+	cnt := [7]uint8{0, 0, 0, 0, 0, 0}
+	cntCount := [6]uint8{0, 0, 0, 0, 0, 0}
+	var straight uint8 = 0
+	var sum uint8 = 0
+	var cntMax uint8 = 0
+	var maxEyes uint8 = 0
 	for _, eyes := range dice {
 		cnt[eyes]++
 		if cnt[eyes] > cntMax {
