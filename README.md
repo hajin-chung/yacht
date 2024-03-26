@@ -26,12 +26,8 @@ realtime 3d secure yacht dice game
 
 ## server architecture 
 
-1. implement basic websocket hub.
-2. try docker, k8s, rabbitMQ, ...
-
-for database seperate user and game datas
-
-one sqlite3 user db and redis for game data
+the server is written in go and is a simple websocket server
+every game data is stored in redis
 
 ### game state
 
@@ -40,6 +36,8 @@ one sqlite3 user db and redis for game data
     "id": string,
     "playerId": [string, string],
     "status": "PLAYING" | "DONE",
+
+    // keep record of selected scores
     "selected": [
         boolean[],
         boolean[],
@@ -52,6 +50,9 @@ one sqlite3 user db and redis for game data
     // num of current turn
     "turn": number,
     "leftRolls": number,
+
+    // is dice in cup
+    "isInCup": boolean,
 
     // index of dice locked
     "isLocked": [boolean, boolean, boolean, boolean, boolean],
@@ -96,6 +97,10 @@ every message is in a binary using MessagePack for serialization and deserializa
 { "type": "gameState" }
 
 { "type": "shake" }
+
+{ "type": "encup" }
+
+{ "type": "decup" }
 
 { "type": "roll" }
 
@@ -173,6 +178,10 @@ every message is in a binary using MessagePack for serialization and deserializa
 
 { "type": "shake", "error": true | false }
 
+{ "type": "encup", "error": true | false }
+
+{ "type": "decup", "error": true | false }
+
 { 
     "type": "roll", 
     "data": {
@@ -222,9 +231,8 @@ every message is in a binary using MessagePack for serialization and deserializa
 
 ### client implementations
 
-It is tough to think about a elegant way to implement / envision a elegant way
-to handle multiple stages of the game. After many hours of careful thought and
-many trials I think the best way is to focus on the dice rather than the entire
-game state.
+It is tough to think about a elegant way to implement multiple stages of the game. 
+After many hours of careful thought and many trials I found out that
+the best way is to focus on the dice rather than the entire game state.
 
-the dice can be showing the result, locked, rolling, shaking(in cup)
+the dice can be showing the result, locked, rolling, in cup
