@@ -1,0 +1,46 @@
+body {
+  background: black;
+  color: white;
+}
+
+button {
+  background: #020616;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+button:hover {
+  background: #1e293b;
+}
+
+#userState {
+  display: flex;
+  gap: 8px;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px;
+}
+
+#log {
+  white-space: pre;
+}
+
+#controls {
+  display: flex;
+  gap: 8px;
+}
+
+#dice {
+  display: flex;
+  gap: 8px;
+}
+
+#dice > button {
+  width: 32px;
+  height: 32px;
+}

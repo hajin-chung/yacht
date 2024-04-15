@@ -6,7 +6,6 @@ require (
 	github.com/gofiber/contrib/websocket v1.3.0
 	github.com/gofiber/fiber/v2 v2.52.0
 	github.com/gofiber/storage/sqlite3 v1.3.8
-	github.com/jmoiron/sqlx v1.3.5
 	github.com/nrednav/cuid2 v1.0.0
 	github.com/redis/go-redis/v9 v9.4.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1
