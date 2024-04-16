@@ -5,3 +5,4 @@ physics/libyacht.a
 db/*
 tmp
 lib/libyacht.a
+session.db
