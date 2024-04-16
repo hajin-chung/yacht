@@ -27,17 +27,16 @@ export let socket: WebSocket;
 export function initSocket() {
   socket = new WebSocket(`${import.meta.env.VITE_WEBSOCKET_URL}/ws`);
   socket.addEventListener("open", () => {
-    const data = encode({ type: "me" });
-    socket.send(data);
+    sendMessage("me")
   });
 
   socket.addEventListener("message", async (e) => {
     const msg = await e.data.arrayBuffer();
     const decoded = decode(msg);
     console.log("recv", decoded);
+    log(`recv ${formatJson(decoded)}`);
     // TODO:  handle error
     handleMessage(decoded);
-    log(`recv ${formatJson(decoded)}`);
   });
 }
 

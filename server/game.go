@@ -178,6 +178,10 @@ func HandleEncup(userId string) error {
 		return err
 	}
 
+	if game.InCup {
+		return errors.New("dice already in cup")
+	}
+
 	game.InCup = true
 	err = SetGameState(game)
 	if err != nil {
@@ -201,14 +205,18 @@ func HandleDecup(userId string) error {
 		return err
 	}
 
+	if !game.InCup {
+		return errors.New("dice already out cup")
+	}
+
 	game.InCup = false
 	err = SetGameState(game)
 	if err != nil {
 		return err
 	}
 
-	hub.SendMessage(game.PlayerId[0], "encup", nil, nil)
-	hub.SendMessage(game.PlayerId[1], "encup", nil, nil)
+	hub.SendMessage(game.PlayerId[0], "decup", nil, nil)
+	hub.SendMessage(game.PlayerId[1], "decup", nil, nil)
 
 	return nil
 }
@@ -274,11 +282,11 @@ func HandleRoll(userId string) error {
 
 	// send message
 	hub.SendMessage(game.PlayerId[0], "roll", map[string]interface{}{
-		"result": result,
+		"result": game.Dice,
 		"buffer": buffer,
 	}, nil)
 	hub.SendMessage(game.PlayerId[1], "roll", map[string]interface{}{
-		"result": result,
+		"result": game.Dice,
 		"buffer": buffer,
 	}, nil)
 

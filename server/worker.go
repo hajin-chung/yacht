@@ -87,6 +87,7 @@ func (h *Hub) Worker() {
 		}
 
 		if err != nil {
+			log.Printf("packet error: %s\n", err)
 			h.SendMessage(packet.Id, "error", nil, err)
 			continue
 		}

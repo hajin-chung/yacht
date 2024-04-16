@@ -24,7 +24,7 @@ export type GameState = {
 };
 
 export type RollData = {
-  result: number[];
+  result: DiceResult;
   buffer: Float32Array;
 };
 

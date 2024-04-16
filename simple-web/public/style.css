@@ -44,3 +44,7 @@ button:hover {
   width: 32px;
   height: 32px;
 }
+
+#dice > button.locked {
+  background: #475569;
+}
