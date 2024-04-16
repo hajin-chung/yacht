@@ -21,6 +21,7 @@ export function handleCancelQueue() {
 export function handleGameStart(gameId: string) {
   state.setUserStatus("PLAYING");
   state.setUserGameId(gameId);
+  sendMessage("gameState");
 }
 
 export function handleGameState(gameState: GameState) {
