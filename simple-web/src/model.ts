@@ -99,7 +99,7 @@ class StateSingleton {
       return;
     }
 
-    const playerIdx = playerId === this.game?.playerId[0] ? 0 : 1
+    const playerIdx = playerId === this.game?.playerId[0] ? 0 : 1;
     this.game.scores[playerIdx][scoreIdx] = score;
     showScoreSheet(this.game.scores);
   }

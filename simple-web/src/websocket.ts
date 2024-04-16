@@ -27,7 +27,7 @@ export let socket: WebSocket;
 export function initSocket() {
   socket = new WebSocket(`${import.meta.env.VITE_WEBSOCKET_URL}/ws`);
   socket.addEventListener("open", () => {
-    sendMessage("me")
+    sendMessage("me");
   });
 
   socket.addEventListener("message", async (e) => {

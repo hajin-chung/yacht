@@ -24,11 +24,11 @@ export function initView() {
     $(`#dice-${i + 1}`).onclick = () => onDiceClick(i);
   }
   $$("#player1 > button").forEach((scoreButton, idx) => {
-    scoreButton.onclick = () => onSelectScore(0, idx)
-  })
+    scoreButton.onclick = () => onSelectScore(0, idx);
+  });
   $$("#player2 > button").forEach((scoreButton, idx) => {
-    scoreButton.onclick = () => onSelectScore(1, idx)
-  })
+    scoreButton.onclick = () => onSelectScore(1, idx);
+  });
 }
 
 export function showUserId(id: string) {
@@ -47,10 +47,10 @@ export function showPlayerIds(playerIds: string[]) {
 export function showScoreSheet(scores: [number[], number[]]) {
   $$("#player1 > button").forEach((elem, idx) => {
     elem.innerText = scores[0][idx].toString();
-  })
+  });
   $$("#player2 > button").forEach((elem, idx) => {
     elem.innerText = scores[1][idx].toString();
-  })
+  });
 }
 
 export function showDiceResult(result: DiceResult) {

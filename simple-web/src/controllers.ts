@@ -27,11 +27,11 @@ export function handleGameState(gameState: GameState) {
   state.setGameState(gameState);
 }
 
-export function handleShake() { }
+export function handleShake() {}
 
-export function handleEncup() { }
+export function handleEncup() {}
 
-export function handleDecup() { }
+export function handleDecup() {}
 
 export function handleRoll(data: RollData) {
   state.setDiceResult(data.result);
@@ -45,7 +45,11 @@ export function handleUnlockDice(diceIdx: number) {
   state.setDiceUnlock(diceIdx);
 }
 
-export function handleSelectScore(playerId: string, scoreIdx: number, score: number) { 
+export function handleSelectScore(
+  playerId: string,
+  scoreIdx: number,
+  score: number,
+) {
   state.setScore(playerId, scoreIdx, score);
   sendMessage("gameState");
 }
