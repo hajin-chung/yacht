@@ -1,4 +1,4 @@
-import { UserState, GameState, UserStatus, DiceResult } from "./type";
+import { UserState, GameState, UserStatus, DiceResult } from "./types";
 import {
   showDiceResult,
   showLockedDice,

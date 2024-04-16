@@ -8,9 +8,9 @@ import {
   onRoll,
   onSelectScore,
   onShake,
-} from "./controllers";
-import { DiceResult, UserStatus } from "./type";
-import { $, $$ } from "./util";
+} from "./controller";
+import { DiceResult, UserStatus } from "./types";
+import { $, $$ } from "./utils";
 
 export function initView() {
   $("#controls > #queue").onclick = onQueue;

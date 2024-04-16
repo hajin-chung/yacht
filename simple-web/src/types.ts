@@ -34,6 +34,10 @@ export type SelectScoreData = {
   score: number;
 };
 
+export type SelectScorePayload = {
+  selection: number;
+}
+
 export type DiceSelectData = {
   dice: number;
 };

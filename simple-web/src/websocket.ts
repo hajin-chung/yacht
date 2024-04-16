@@ -5,7 +5,8 @@ import {
   SelectScoreData,
   UserState,
   GameState,
-} from "./type";
+  SelectScorePayload,
+} from "./types";
 import {
   handleCancelQueue,
   handleDecup,
@@ -19,8 +20,8 @@ import {
   handleShake,
   handleUnlockDice,
   handleSelectScore,
-} from "./controllers";
-import { formatJson, log } from "./util";
+} from "./controller";
+import { formatJson, log } from "./utils";
 
 export let socket: WebSocket;
 
@@ -33,7 +34,6 @@ export function initSocket() {
   socket.addEventListener("message", async (e) => {
     const msg = await e.data.arrayBuffer();
     const decoded = decode(msg);
-    console.log("recv", decoded);
     log(`recv ${formatJson(decoded)}`);
     // TODO:  handle error
     handleMessage(decoded);
@@ -102,6 +102,19 @@ function handleMessage(message: any) {
     // TODO: handle error
   }
 }
+
+export function sendMessage(type: "me"): void;
+export function sendMessage(type: "queue"): void;
+export function sendMessage(type: "queue"): void;
+export function sendMessage(type: "cancelQueue"): void;
+export function sendMessage(type: "gameState"): void;
+export function sendMessage(type: "shake"): void;
+export function sendMessage(type: "encup"): void;
+export function sendMessage(type: "decup"): void;
+export function sendMessage(type: "roll"): void;
+export function sendMessage(type: "lockDice", data: DiceSelectData): void;
+export function sendMessage(type: "unlockDice", data: DiceSelectData): void;
+export function sendMessage(type: "selectScore", data: SelectScorePayload): void;
 
 export function sendMessage(type: string, data?: any) {
   const message = { type, data };

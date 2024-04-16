@@ -1,5 +1,5 @@
 import { state } from "./model";
-import { GameState, RollData, UserState } from "./type";
+import { GameState, RollData, UserState } from "./types";
 import { sendMessage } from "./websocket";
 
 export function handleMe(userState: UserState) {
