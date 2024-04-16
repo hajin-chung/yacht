@@ -29,7 +29,9 @@ export type RollData = {
 };
 
 export type SelectScoreData = {
+  playerId: string;
   selection: number;
+  score: number;
 };
 
 export type DiceSelectData = {

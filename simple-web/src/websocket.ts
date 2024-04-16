@@ -95,7 +95,7 @@ function handleMessage(message: any) {
     }
     case "selectScore": {
       const data: SelectScoreData = message.data;
-      handleSelectScore(data.selection);
+      handleSelectScore(data.playerId, data.selection, data.score);
       break;
     }
     default:

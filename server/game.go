@@ -275,6 +275,7 @@ func HandleRoll(userId string) error {
 		game.Dice[i] = uint8(result[resultIdx])
 		resultIdx++
 	}
+	game.InCup = false
 	err = SetGameState(game)
 	if err != nil {
 		return err
@@ -402,10 +403,14 @@ func HandleSelectScore(userId string, selection int) error {
 	game.Scores[game.Turn%2][selection] = score
 
 	hub.SendMessage(game.PlayerId[0], "selectScore", map[string]interface{}{
+		"playerId": userId,
 		"selection": selection,
+		"score": score,
 	}, nil)
 	hub.SendMessage(game.PlayerId[1], "selectScore", map[string]interface{}{
+		"playerId": userId,
 		"selection": selection,
+		"score": score,
 	}, nil)
 
 	game.Next()

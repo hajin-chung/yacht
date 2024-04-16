@@ -48,3 +48,35 @@ button:hover {
 #dice > button.locked {
   background: #475569;
 }
+
+#scoreSheet {
+  display: flex;
+  gap: 8px;
+}
+
+#scoreSheet > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#scoreSheet button {
+  width: 72px;
+  height: 32px; 
+}
+
+#index {
+  padding-right: 32px;
+}
+
+#index > p {
+  height: 32px; 
+}
+
+#player1Id {
+  height: 32px;
+}
+
+#player2Id {
+  height: 32px;
+}

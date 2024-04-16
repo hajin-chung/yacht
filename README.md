@@ -210,7 +210,9 @@ every message is in a binary using MessagePack for serialization and deserializa
 {
     "type": "selectScore"
     "data": {
+        "playerId": /* player id */
         "selection": /* score name */
+        "score": /* score number */
     },
     "error": true | false
 }

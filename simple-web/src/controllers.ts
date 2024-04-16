@@ -27,11 +27,11 @@ export function handleGameState(gameState: GameState) {
   state.setGameState(gameState);
 }
 
-export function handleShake() {}
+export function handleShake() { }
 
-export function handleEncup() {}
+export function handleEncup() { }
 
-export function handleDecup() {}
+export function handleDecup() { }
 
 export function handleRoll(data: RollData) {
   state.setDiceResult(data.result);
@@ -45,7 +45,10 @@ export function handleUnlockDice(diceIdx: number) {
   state.setDiceUnlock(diceIdx);
 }
 
-export function handleSelectScore(scoreIdx: number) {}
+export function handleSelectScore(playerId: string, scoreIdx: number, score: number) { 
+  state.setScore(playerId, scoreIdx, score);
+  sendMessage("gameState");
+}
 
 export function onQueue() {
   sendMessage("queue");
@@ -75,6 +78,14 @@ export function onRoll() {
   sendMessage("roll");
 }
 
-export function onLockDice(idx: number) {
-  sendMessage("lockDice", { dice: idx });
+export function onDiceClick(idx: number) {
+  if (state.game?.isLocked[idx]) sendMessage("unlockDice", { dice: idx });
+  else sendMessage("lockDice", { dice: idx });
+}
+
+export function onSelectScore(playerIdx: number, scoreIdx: number) {
+  if (!state.game || !state.user) return;
+  if (state.game.playerId[playerIdx] === state.user.id) {
+    sendMessage("selectScore", { selection: scoreIdx });
+  }
 }

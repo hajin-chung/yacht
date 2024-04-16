@@ -16,3 +16,7 @@ export function log(message: string) {
 export function $(query: string): HTMLElement {
   return document.querySelector(query)!;
 }
+
+export function $$(query: string): HTMLElement[] {
+  return [...document.querySelectorAll(query)]! as HTMLElement[];
+}

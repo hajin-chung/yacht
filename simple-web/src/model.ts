@@ -2,6 +2,8 @@ import { UserState, GameState, UserStatus, DiceResult } from "./type";
 import {
   showDiceResult,
   showLockedDice,
+  showPlayerIds,
+  showScoreSheet,
   showUnlockedDice,
   showUserId,
   showUserStatus,
@@ -43,6 +45,8 @@ class StateSingleton {
       return;
     }
     this.game = gameState;
+    showPlayerIds(gameState.playerId);
+    showScoreSheet(gameState.scores);
     showDiceResult(gameState.dice);
     for (let i = 0; i < 5; i++) {
       if (this.game.isLocked[i]) showLockedDice(i);
@@ -61,7 +65,7 @@ class StateSingleton {
     }
 
     if (!this.game) {
-      sendMessage("game");
+      sendMessage("gameState");
       return;
     }
 
@@ -76,12 +80,28 @@ class StateSingleton {
     }
 
     if (!this.game) {
-      sendMessage("game");
+      sendMessage("gameState");
       return;
     }
 
-    this.game.isLocked[idx] = true;
+    this.game.isLocked[idx] = false;
     showUnlockedDice(idx);
+  }
+
+  setScore(playerId: string, scoreIdx: number, score: number) {
+    if (!this.user) {
+      sendMessage("me");
+      return;
+    }
+
+    if (!this.game) {
+      sendMessage("gameState");
+      return;
+    }
+
+    const playerIdx = playerId === this.game?.playerId[0] ? 0 : 1
+    this.game.scores[playerIdx][scoreIdx] = score;
+    showScoreSheet(this.game.scores);
   }
 }
 
