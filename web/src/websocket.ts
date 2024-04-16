@@ -1,62 +1,44 @@
-import { decode, encode } from "messagepack";
+import { encode, decode } from "@msgpack/msgpack";
 import {
-  GameState,
+  RollData,
+  DiceSelectData,
+  SelectScoreData,
   UserState,
+  GameState,
+  SelectScorePayload,
+} from "./types";
+import {
   handleCancelQueue,
+  handleDecup,
+  handleEncup,
   handleGameStart,
   handleGameState,
   handleLockDice,
   handleMe,
   handleQueue,
   handleRoll,
-  handleSelectScore,
   handleShake,
   handleUnlockDice,
+  handleSelectScore,
 } from "./controller";
+import { formatJson, log } from "./utils";
 
 export let socket: WebSocket;
 
-export function initWebsocket() {
-  socket = new WebSocket("ws://158.247.201.176:4434/ws");
-
+export function initSocket() {
+  socket = new WebSocket(`${import.meta.env.VITE_WEBSOCKET_URL}/ws`);
   socket.addEventListener("open", () => {
-    console.log("socket open");
+    sendMessage("me");
   });
 
-  socket.addEventListener("close", () => {
-    console.log("socket closed");
-  });
-
-  socket.addEventListener("message", async (evt) => {
-    const msg = await evt.data.arrayBuffer();
+  socket.addEventListener("message", async (e) => {
+    const msg = await e.data.arrayBuffer();
     const decoded = decode(msg);
-    console.log("recv", decoded);
+    log(`recv ${formatJson(decoded)}`);
+    // TODO:  handle error
     handleMessage(decoded);
   });
-
-  socket.addEventListener("error", (evt) => {
-    console.log(`socket error: ${JSON.stringify(evt)}`);
-  });
 }
-
-export function sendMessage(type: string, data?: any) {
-  const message = { type, data };
-  const encoded = encode(message);
-  socket.send(encoded);
-}
-
-export type RollData = {
-  result: number[];
-  buffer: Float32Array;
-};
-
-export type SelectScoreData = {
-  selection: number;
-};
-
-export type DiceSelectData = {
-  dice: number;
-};
 
 function handleMessage(message: any) {
   if (typeof message.type !== "string") {
@@ -90,13 +72,15 @@ function handleMessage(message: any) {
     case "shake":
       handleShake();
       break;
+    case "encup":
+      handleEncup();
+      break;
+    case "decup":
+      handleDecup();
+      break;
     case "roll": {
       const data: RollData = message.data;
       handleRoll(data);
-      break;
-    }
-    case "selectScore": {
-      handleSelectScore();
       break;
     }
     case "lockDice": {
@@ -109,7 +93,32 @@ function handleMessage(message: any) {
       handleUnlockDice(data.dice);
       break;
     }
+    case "selectScore": {
+      const data: SelectScoreData = message.data;
+      handleSelectScore(data.playerId, data.selection, data.score);
+      break;
+    }
     default:
     // TODO: handle error
   }
+}
+
+export function sendMessage(type: "me"): void;
+export function sendMessage(type: "queue"): void;
+export function sendMessage(type: "queue"): void;
+export function sendMessage(type: "cancelQueue"): void;
+export function sendMessage(type: "gameState"): void;
+export function sendMessage(type: "shake"): void;
+export function sendMessage(type: "encup"): void;
+export function sendMessage(type: "decup"): void;
+export function sendMessage(type: "roll"): void;
+export function sendMessage(type: "lockDice", data: DiceSelectData): void;
+export function sendMessage(type: "unlockDice", data: DiceSelectData): void;
+export function sendMessage(type: "selectScore", data: SelectScorePayload): void;
+
+export function sendMessage(type: string, data?: any) {
+  const message = { type, data };
+  const encoded = encode(message);
+  socket.send(encoded);
+  log(`send ${formatJson(message)}`);
 }

@@ -1,97 +1,92 @@
-import { onRoll, onScoreSelect, onShake, onCup } from "./controller";
-import { di, dq, dqs } from "./utils";
-import { sendMessage } from "./websocket";
+import {
+  onCancelQueue,
+  onDecup,
+  onDiceClick,
+  onEncup,
+  onGameState,
+  onQueue,
+  onRoll,
+  onSelectScore,
+  onShake,
+} from "./controller";
+import { DiceResult, UserStatus } from "./types";
+import { $, $$ } from "./utils";
 
 export function initView() {
-  di("shake").onclick = onShake;
-  di("roll").onclick = onRoll;
-  di("cup").onclick = onCup;
-
-  dqs(".scoreButton").forEach((scoreButton, i) => {
-    const playerIdx = i % 2;
-    const scoreIdx = Math.floor(i / 2);
-    scoreButton.onclick = () => onScoreSelect(playerIdx, scoreIdx);
+  // init button click handlers
+  $("#controls > #queue").onclick = onQueue;
+  $("#controls > #cancelQueue").onclick = onCancelQueue;
+  $("#controls > #gameState").onclick = onGameState;
+  $("#controls > #shake").onclick = onShake;
+  $("#controls > #encup").onclick = onEncup;
+  $("#controls > #decup").onclick = onDecup;
+  $("#controls > #roll").onclick = onRoll;
+  for (let i = 0; i < 5; i++) {
+    $(`#dice-${i + 1}`).onclick = () => onDiceClick(i);
+  }
+  $$("#player1 > button").forEach((scoreButton, idx) => {
+    scoreButton.onclick = () => onSelectScore(0, idx);
+  });
+  $$("#player2 > button").forEach((scoreButton, idx) => {
+    scoreButton.onclick = () => onSelectScore(1, idx);
   });
 }
 
-let spinnerInterval: number | undefined;
-
-export function showLoading() {
-  di("loading").style.display = "null";
-  spinnerInterval = setInterval(() => {
-    dqs(".dice-spinner").forEach((dice) => {
-      (dice as HTMLImageElement).src =
-        `/images/dice_${Math.ceil(6 * Math.random())}.png`;
-    });
-  }, 1000);
+export function showUserId(id: string) {
+  // display user id
+  $("#userId").innerText = id;
 }
 
-export async function hideLoading() {
-  spinnerInterval = undefined;
-  return new Promise<void>((resolve) => {
-    setTimeout(() => {
-      clearInterval(spinnerInterval);
-      di("loading").style.display = "none";
-      resolve();
-    }, 1000);
+export function showUserStatus(status: UserStatus) {
+  // remove
+  $("#userStatus").innerText = status;
+}
+
+export function showPlayerIds(playerIds: string[]) {
+  // show playerIds on score sheet
+  $("#player1Id").innerText = playerIds[0];
+  $("#player2Id").innerText = playerIds[1];
+}
+
+export function showScoreSheet(scores: [number[], number[]]) {
+  // update score sheet scores
+  $$("#player1 > button").forEach((elem, idx) => {
+    elem.innerText = scores[0][idx].toString();
+  });
+  $$("#player2 > button").forEach((elem, idx) => {
+    elem.innerText = scores[1][idx].toString();
   });
 }
 
-export function showUserId(userId: string) {
-  di("userId").innerText = userId;
+export function showShake() {
+  // enable rapier and shake that cup
 }
 
-export function showIdle() {
-  di("queueLoading").style.display = "none";
-  di("queueButton").innerText = "PLAY";
-  di("queueButton").onclick = () => {
-    sendMessage("queue");
-  };
+export function showEncup() {
+  // move cup to shake position and move dice into the cup with position previously saved
+}
 
-  if (spinnerInterval !== undefined) {
-    spinnerInterval = undefined;
-    clearInterval(spinnerInterval);
+// TODO: add isLocked and result to arguments
+export function showDecup() {
+  // save current stable dice positions
+  // move cup to decup position
+  // move dice to decup or lock position
+}
+
+// TODO: add isLocked to arguments
+export function showDiceResult(result: DiceResult) {
+  // animate dice result based on result and isLocked
+  for (let i = 0; i < 5; i++) {
+    $(`#dice-${i + 1}`).innerText = result[i].toString();
   }
 }
 
-export function showQueue() {
-  di("queueLoading").style.display = "";
-  di("queueButton").innerText = "CANCEL";
-  di("queueButton").onclick = () => {
-    sendMessage("cancelQueue");
-  };
-  spinnerInterval = setInterval(() => {
-    const dice = dq("#queueLoading .dice-spinner") as HTMLImageElement;
-    dice.src = `/images/dice_${Math.ceil(6 * Math.random())}.png`;
-  }, 1000);
+export function showLockedDice(idx: number) {
+  // animate dice to lock position
+  $(`#dice-${idx + 1}`).classList.add("locked");
 }
 
-export function hideLobby() {
-  if (spinnerInterval !== undefined) clearInterval(spinnerInterval);
-  di("lobby").classList.add("hide");
-}
-
-export function showLobby() {
-  di("lobby").classList.remove("hide");
-}
-
-export function showPlayers(playerId: string[]) {
-  di("player1").innerText = playerId[0];
-  di("player2").innerText = playerId[1];
-}
-
-export function showScores(
-  scores: [number[], number[]],
-  selected: [boolean[], boolean[]],
-) {
-  dqs(".scoreButton").forEach((scoreButton, idx) => {
-    const playerIdx = idx % 2;
-    const scoreIdx = Math.floor(idx / 2);
-    if (selected[playerIdx][scoreIdx])
-      scoreButton.innerText = scores[playerIdx][scoreIdx].toString();
-  });
-}
-
-export function showLeftRolls(leftRolls: number) {
-  di("leftRolls").innerText = `Left Rolls: ${leftRolls}`;
+export function showUnlockedDice(idx: number) {
+  // animate dice to unlock position
+  $(`#dice-${idx + 1}`).classList.remove("locked");
 }
