@@ -1,9 +1,7 @@
 import {
   onCancelQueue,
   onDecup,
-  onDiceClick,
   onEncup,
-  onGameState,
   onQueue,
   onRoll,
   onSelectScore,
@@ -14,16 +12,12 @@ import { $, $$ } from "./utils";
 
 export function initView() {
   // init button click handlers
-  $("#controls > #queue").onclick = onQueue;
-  $("#controls > #cancelQueue").onclick = onCancelQueue;
-  $("#controls > #gameState").onclick = onGameState;
+  $("#queue").onclick = onQueue;
+  $("#cancelQueue").onclick = onCancelQueue;
   $("#controls > #shake").onclick = onShake;
   $("#controls > #encup").onclick = onEncup;
   $("#controls > #decup").onclick = onDecup;
   $("#controls > #roll").onclick = onRoll;
-  for (let i = 0; i < 5; i++) {
-    $(`#dice-${i + 1}`).onclick = () => onDiceClick(i);
-  }
   $$("#player1 > button").forEach((scoreButton, idx) => {
     scoreButton.onclick = () => onSelectScore(0, idx);
   });
@@ -32,14 +26,43 @@ export function initView() {
   });
 }
 
+export function showLoading() {
+  $("#loading").style.display = "";
+}
+
+export function hideLoading() {
+  $("#loading").style.display = "none";
+}
+
+export function showIdle() {
+  showLobby();
+  $("#queueLoading").style.display = "none";
+  $("#queue").style.display = "";
+}
+
+export function showQueue() {
+  showLobby();
+  $("#queueLoading").style.display = "";
+  $("#queue").style.display = "none";
+}
+
+export function showLobby() {
+  $("#lobby").style.display = "";
+}
+
+export function hideLobby() {
+  $("#lobby").style.display = "none";
+}
+
 export function showUserId(id: string) {
   // display user id
   $("#userId").innerText = id;
 }
 
 export function showUserStatus(status: UserStatus) {
-  // remove
-  $("#userStatus").innerText = status;
+  if (status === "IDLE") showIdle();
+  else if(status === "QUEUE") showQueue();
+  else if (status === "PLAYING") hideLobby();
 }
 
 export function showPlayerIds(playerIds: string[]) {

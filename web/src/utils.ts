@@ -9,8 +9,7 @@ export function formatJson(json: any) {
 }
 
 export function log(message: string) {
-  const logElement = document.getElementById("log");
-  if (logElement) logElement.innerHTML = `${message}\n` + logElement.innerHTML;
+  console.log(message);
 }
 
 export function $(query: string): HTMLElement {
