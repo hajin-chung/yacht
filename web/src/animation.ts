@@ -244,7 +244,7 @@ export function generateCupOut(): Keyframe[] {
     translation: { x: cupX + 2, y: cupY, z: 0 },
     rotation: { w: 1, x: 0, y: 0, z: 0 },
   };
-  return [{ type: "animate", start, end, steps: 16 }];
+  return [{ type: "animate", start, end, steps: 8 }];
 }
 
 export function generateCupIn(): Keyframe[] {
@@ -252,7 +252,7 @@ export function generateCupIn(): Keyframe[] {
     translation: { x: cupX, y: cupY, z: 0 },
     rotation: { w: 1, x: 0, y: 0, z: 0 },
   };
-  return [{ type: "continue", end, steps: 16 }];
+  return [{ type: "continue", end, steps: 8 }];
 }
 
 const diceRotations: Rotation[] = [

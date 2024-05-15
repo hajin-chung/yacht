@@ -11,33 +11,25 @@ import {
 } from "./animation";
 import {
   onCancelQueue,
-  onDecup,
-  onDiceClick,
-  onEncup,
   onQueue,
   onRoll,
   onSelectScore,
   onShake,
 } from "./controller";
-import { state } from "./model";
 import { scene } from "./scene";
-import { DiceResult, UserStatus } from "./types";
+import { DiceResult, IsLocked, UserStatus } from "./types";
 import { $, $$ } from "./utils";
+import * as THREE from "three";
+
+export const pointer: THREE.Vector2 = new THREE.Vector2();
+export let isMouseDown = false;
 
 export function initView() {
   // init button click handlers
   $("#queue").onclick = onQueue;
   $("#cancelQueue").onclick = onCancelQueue;
   $("#controls #shake").onclick = onShake;
-  $("#controls #encup").onclick = onEncup;
-  $("#controls #decup").onclick = onDecup;
   $("#controls #roll").onclick = onRoll;
-
-  // ================ temptemp
-  for (let i = 1; i <= 5; i++) {
-    $(`#controls #lock-${i}`).onclick = () => onDiceClick(i - 1);
-  }
-  // ================ temptemp
 
   $$("#player1 > button").forEach((scoreButton, idx) => {
     scoreButton.onclick = () => onSelectScore(0, idx);
@@ -45,6 +37,15 @@ export function initView() {
   $$("#player2 > button").forEach((scoreButton, idx) => {
     scoreButton.onclick = () => onSelectScore(1, idx);
   });
+
+  window.addEventListener("pointermove", (e) => {
+    pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+    pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  });
+
+  window.addEventListener("mousedown", () => (isMouseDown = true));
+  window.addEventListener("mouseup", () => (isMouseDown = false));
+  window.addEventListener("mouseout", () => (isMouseDown = false));
 }
 
 export function showLoading() {
@@ -106,35 +107,30 @@ export function showShake() {
   scene.cup.keyframes.push(...generateShake());
 }
 
-export function showEncup() {
+export function showEncup(isLocked: IsLocked) {
   scene.cup.keyframes.push(...generateCupIn());
   scene.diceList.forEach((dice, idx) => {
-    if (!state.game!.isLocked[idx]) {
+    if (!isLocked[idx]) {
       dice.keyframes.push(...generateEncupDice(idx));
       dice.keyframes.push({
         type: "wait",
         steps: 0,
-        callback: () => (scene.diceList[idx].simulate = true),
+        callback: () => (dice.simulate = true),
       });
     }
   });
 }
 
-export function showRoll(result: DiceResult, buffer: Float32Array) {
-  if (!state.game) return;
-
+export function showRoll(isLocked: IsLocked, buffer: Float32Array) {
   // cup roll animation
   scene.cup.keyframes.push(...generateCupRoll());
 
   // dice roll animation
-  const freeDice = state.game!.isLocked.reduce(
-    (acc, v) => (v ? acc : acc + 1),
-    0,
-  );
+  const freeDice = isLocked.reduce((acc, v) => (v ? acc : acc + 1), 0);
   if (buffer.length % (7 * freeDice) !== 0) return;
 
   for (let i = 0; i < 5; i++) {
-    if (state.game.isLocked[i]) continue;
+    if (isLocked[i]) continue;
 
     scene.diceList[i].simulate = true;
     scene.diceList[i].keyframes.push({
@@ -152,7 +148,7 @@ export function showRoll(result: DiceResult, buffer: Float32Array) {
   const blockLength = buffer.length / (7 * freeDice);
   for (let i = 0; i < blockLength; i++) {
     for (let j = 0, idx = 0; j < 5; j++) {
-      if (state.game.isLocked[j]) continue;
+      if (isLocked[j]) continue;
 
       const offset = i * (7 * freeDice) + idx * 7;
       const pose: Pose = {
@@ -173,18 +169,20 @@ export function showRoll(result: DiceResult, buffer: Float32Array) {
       idx++;
     }
   }
-
-  showResult(result);
 }
 
-// TODO: add isLocked to arguments
-export function showResult(result: DiceResult) {
+export function showResult(isLocked: IsLocked, result: DiceResult) {
   scene.cup.keyframes.push(...generateCupOut());
-  if (!state.game) return;
 
-  scene.diceList.forEach((dice) => (dice.simulate = false));
+  scene.diceList.forEach((dice) =>
+    dice.keyframes.push({
+      type: "wait",
+      steps: 0,
+      callback: () => (dice.simulate = false),
+    }),
+  );
   for (let i = 0; i < 5; i++) {
-    if (state.game.isLocked[i]) showLockedDice(i, result[i]);
+    if (isLocked[i]) showLockedDice(i, result[i]);
     else showUnlockedDice(i, result[i]);
   }
 }

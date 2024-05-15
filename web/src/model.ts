@@ -48,11 +48,22 @@ class StateSingleton {
     this.game = gameState;
     showPlayerIds(gameState.playerId);
     showScoreSheet(gameState.scores);
-    if (this.game.leftRolls === 3)  {
-      showEncup()
+    if (this.game.leftRolls === 3) {
+      showEncup(this.game.isLocked);
     } else {
-      showResult(gameState.dice);
+      showResult(this.game.isLocked, this.game.dice);
     }
+  }
+
+  setInCup(inCup: boolean) {
+    if (!this.game) {
+      sendMessage("gameState");
+      return;
+    }
+
+    this.game.inCup = inCup;
+    if (inCup) showEncup(this.game.isLocked);
+    else showResult(this.game.isLocked, this.game.dice);
   }
 
   setDiceResult(result: DiceResult) {

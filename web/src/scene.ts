@@ -4,6 +4,8 @@ import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { rapier } from "./rapier";
 import { Board, Cup, Dice, Ground } from "./components";
 import { World } from "@dimforge/rapier3d-compat";
+import { isMouseDown, pointer } from "./view";
+import { onCupClick, onDiceClick } from "./controller";
 
 export let scene: Scene;
 
@@ -11,6 +13,7 @@ class Scene {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
   renderer: THREE.WebGLRenderer;
+  raycaster: THREE.Raycaster;
 
   controls?: OrbitControls;
   isDebug: boolean = false;
@@ -21,6 +24,9 @@ class Scene {
   board: Board;
   ground: Ground;
   world: World;
+
+  cupClicked: boolean = false;
+  diceClicked: boolean[] = [false, false, false, false, false];
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -36,11 +42,13 @@ class Scene {
     });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 
+    this.raycaster = new THREE.Raycaster();
+
     this.camera = new THREE.PerspectiveCamera(
-      40,
+      35,
       window.innerWidth / window.innerHeight,
       0.1,
-      1000,
+      100,
     );
     this.camera.position.set(0, 20, 0);
     this.camera.rotateX((Math.PI * 3) / 2);
@@ -78,6 +86,27 @@ class Scene {
     this.world.step();
     this.cup.update();
     this.diceList.forEach((dice) => dice.update());
+
+    if (isMouseDown) {
+      this.raycaster.setFromCamera(pointer, this.camera);
+
+      this.diceList.forEach((dice, idx) => {
+        const intersects = this.raycaster.intersectObject(dice.model);
+        if (intersects.length > 0 && this.diceClicked[idx] === false) {
+          onDiceClick(idx);
+          this.diceClicked[idx] = true;
+        }
+      })
+
+      const intersects = this.raycaster.intersectObject(this.cup.model);
+      if (intersects.length > 0 && this.cupClicked === false) {
+        onCupClick();
+        this.cupClicked = true;
+      }
+    } else {
+      this.cupClicked = false;
+      this.diceClicked = [false, false, false, false, false];
+    }
   }
 
   render() {

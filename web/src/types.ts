@@ -19,6 +19,7 @@ export type GameState = {
   scores: [number[], number[]];
   turn: number;
   leftRolls: number;
+  inCup: boolean;
   isLocked: IsLocked;
   dice: DiceResult;
 };

@@ -30,7 +30,7 @@ export function generateRandomDicePose(idx: number): Pose {
   return {
     translation: {
       x: cupX + 0.5 * random(),
-      y: cupY + 2 * idx + 10,
+      y: cupY + 2 * idx + 4,
       z: 0.5 * random(),
     },
     rotation: { w: 1, x: 0, y: 0, z: 0 },
