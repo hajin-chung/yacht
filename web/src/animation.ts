@@ -54,6 +54,49 @@ export type Keyframe =
   | PoseKeyframe
   | ContinuedKeyframe;
 
+interface Animatable {
+  keyframes: Keyframe[];
+  pose: Pose;
+  step: number;
+}
+
+export function animate(animatable: Animatable) {
+  if (animatable.keyframes.length === 0) return
+
+  const keyframe = animatable.keyframes[0];
+
+  if (keyframe.type === "animate") {
+    if (keyframe.steps < animatable.step) {
+      animatable.step = 1;
+      animatable.keyframes.splice(0, 1);
+      if (keyframe.callback) keyframe.callback();
+    } else {
+      animatable.pose = interpolate(keyframe, animatable.step);
+      animatable.step++;
+    }
+  } else if (keyframe.type === "continue") {
+    animatable.keyframes[0] = {
+      type: "animate",
+      start: animatable.pose,
+      end: keyframe.end,
+      steps: keyframe.steps,
+      callback: keyframe.callback,
+    };
+  } else if (keyframe.type === "pose") {
+    animatable.pose = keyframe.pose;
+    animatable.keyframes.splice(0, 1);
+    if (keyframe.callback) keyframe.callback();
+  } else if (keyframe.type === "wait") {
+    if (keyframe.steps < animatable.step) {
+      animatable.step = 1;
+      animatable.keyframes.splice(0, 1);
+      if (keyframe.callback) keyframe.callback();
+    } else {
+      animatable.step++;
+    }
+  }
+}
+
 export function interpolate(keyframe: AnimateKeyframe, step: number): Pose {
   const t = step / keyframe.steps;
   const startTranslation = keyframe.start.translation;
@@ -78,6 +121,7 @@ export function interpolate(keyframe: AnimateKeyframe, step: number): Pose {
 function slerp(start: Rotation, end: Rotation, t: number): Rotation {
   let dot =
     start.x * end.x + start.y * end.y + start.z * end.z + start.w * end.w;
+  dot = Math.min(Math.max(dot, -1), 1);
 
   const theta_0 = Math.acos(dot);
   const sin_theta_0 = Math.sin(theta_0);
