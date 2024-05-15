@@ -182,6 +182,18 @@ func HandleEncup(userId string) error {
 		return errors.New("dice already in cup")
 	}
 
+	if userId != game.PlayerId[game.Turn % 2] {
+		return errors.New("not in turn")
+	}
+
+	if game.LeftRolls == 3 {
+		return errors.New("dice not thrown")
+	}
+
+	if game.LeftRolls == 0 {
+		return errors.New("no rolls left")
+	}
+
 	game.InCup = true
 	err = SetGameState(game)
 	if err != nil {
@@ -207,6 +219,14 @@ func HandleDecup(userId string) error {
 
 	if !game.InCup {
 		return errors.New("dice already out cup")
+	}
+
+	if userId != game.PlayerId[game.Turn % 2] {
+		return errors.New("not in turn")
+	}
+
+	if game.LeftRolls == 3 {
+		return errors.New("dice not thrown")
 	}
 
 	game.InCup = false

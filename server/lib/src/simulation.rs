@@ -66,7 +66,7 @@ pub fn simulate(buffer: &mut Vec<f32>, result: &Vec<i32>, num: i32) {
         let dice_handle = rigid_body_set.insert(rigid_body);
 
         let mut collider = ColliderBuilder::cuboid(0.4, 0.4, 0.4).build();
-        collider.set_mass(0.5);
+        collider.set_mass(1000.0);
         collider_set.insert_with_parent(
             collider,
             dice_handle,
