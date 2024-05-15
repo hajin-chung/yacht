@@ -1,6 +1,6 @@
 import { state } from "./model";
 import { GameState, RollData, UserState } from "./types";
-import { showDecup, showEncup, showShake } from "./view";
+import { showEncup, showResult, showRoll, showShake } from "./view";
 import { sendMessage } from "./websocket";
 
 export function handleMe(userState: UserState) {
@@ -38,11 +38,12 @@ export function handleEncup() {
 }
 
 export function handleDecup() {
-  showDecup();
+  showResult(state.game!.dice);
 }
 
 export function handleRoll(data: RollData) {
   state.setDiceResult(data.result);
+  showRoll(data.result, data.buffer);
 }
 
 export function handleLockDice(diceIdx: number) {

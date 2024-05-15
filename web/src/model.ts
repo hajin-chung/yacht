@@ -1,12 +1,13 @@
 import { UserState, GameState, UserStatus, DiceResult } from "./types";
 import {
-  showDiceResult,
+  showResult,
   showLockedDice,
   showPlayerIds,
   showScoreSheet,
   showUnlockedDice,
   showUserId,
   showUserStatus,
+  showEncup,
 } from "./view";
 import { sendMessage } from "./websocket";
 
@@ -47,15 +48,20 @@ class StateSingleton {
     this.game = gameState;
     showPlayerIds(gameState.playerId);
     showScoreSheet(gameState.scores);
-    showDiceResult(gameState.dice);
-    for (let i = 0; i < 5; i++) {
-      if (this.game.isLocked[i]) showLockedDice(i);
-      else showUnlockedDice(i);
+    if (this.game.leftRolls === 3)  {
+      showEncup()
+    } else {
+      showResult(gameState.dice);
     }
   }
 
   setDiceResult(result: DiceResult) {
-    showDiceResult(result);
+    if (!this.game) {
+      sendMessage("gameState");
+      return;
+    }
+
+    this.game.dice = result;
   }
 
   setDiceLock(idx: number) {
@@ -70,7 +76,7 @@ class StateSingleton {
     }
 
     this.game.isLocked[idx] = true;
-    showLockedDice(idx);
+    showLockedDice(idx, this.game.dice[idx]);
   }
 
   setDiceUnlock(idx: number) {
@@ -85,7 +91,7 @@ class StateSingleton {
     }
 
     this.game.isLocked[idx] = false;
-    showUnlockedDice(idx);
+    showUnlockedDice(idx, this.game.dice[idx]);
   }
 
   setScore(playerId: string, scoreIdx: number, score: number) {

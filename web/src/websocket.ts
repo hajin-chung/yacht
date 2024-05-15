@@ -21,7 +21,7 @@ import {
   handleUnlockDice,
   handleSelectScore,
 } from "./controller";
-import { formatJson, log } from "./utils";
+import { formatJson } from "./utils";
 
 export let socket: WebSocket;
 
@@ -34,7 +34,7 @@ export function initSocket() {
   socket.addEventListener("message", async (e) => {
     const msg = await e.data.arrayBuffer();
     const decoded = decode(msg);
-    log(`recv ${formatJson(decoded)}`);
+    console.log(`recv ${formatJson(decoded)}`);
     // TODO:  handle error
     handleMessage(decoded);
   });
@@ -120,5 +120,5 @@ export function sendMessage(type: string, data?: any) {
   const message = { type, data };
   const encoded = encode(message);
   socket.send(encoded);
-  log(`send ${formatJson(message)}`);
+  console.log(`send ${formatJson(message)}`);
 }
