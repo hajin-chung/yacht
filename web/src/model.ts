@@ -15,6 +15,15 @@ class StateSingleton {
   game: GameState | undefined;
   user: UserState | undefined;
 
+  reduceLeftRolls() {
+    if (!this.game) {
+      sendMessage("gameState");
+      return;
+    }
+
+    this.game.leftRolls--;
+  }
+
   setUserState(userState: UserState) {
     this.user = userState;
     showUserId(userState.id);
@@ -51,7 +60,7 @@ class StateSingleton {
     if (this.game.leftRolls === 3) {
       showEncup(this.game.isLocked);
     } else {
-      showResult(this.game.isLocked, this.game.dice);
+      showResult(this.game.isLocked, this.game.dice, this.game.leftRolls === 0);
     }
   }
 
@@ -63,7 +72,7 @@ class StateSingleton {
 
     this.game.inCup = inCup;
     if (inCup) showEncup(this.game.isLocked);
-    else showResult(this.game.isLocked, this.game.dice);
+    else showResult(this.game.isLocked, this.game.dice, this.game.leftRolls === 0);
   }
 
   setDiceResult(result: DiceResult) {

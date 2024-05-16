@@ -129,10 +129,17 @@ export function showRoll(isLocked: IsLocked, buffer: Float32Array) {
   const freeDice = isLocked.reduce((acc, v) => (v ? acc : acc + 1), 0);
   if (buffer.length % (7 * freeDice) !== 0) return;
 
-  for (let i = 0; i < 5; i++) {
-    if (isLocked[i]) continue;
+  const blockLength = buffer.length / (7 * freeDice);
 
-    scene.diceList[i].simulate = true;
+  for (let i = 0; i < 5; i++) {
+    if (isLocked[i]) {
+      scene.diceList[i].keyframes.push({
+        type: "wait",
+        steps: 16 + blockLength,
+      });
+      continue;
+    }
+
     scene.diceList[i].keyframes.push({
       type: "wait",
       steps: 0,
@@ -145,7 +152,6 @@ export function showRoll(isLocked: IsLocked, buffer: Float32Array) {
     });
   }
 
-  const blockLength = buffer.length / (7 * freeDice);
   for (let i = 0; i < blockLength; i++) {
     for (let j = 0, idx = 0; j < 5; j++) {
       if (isLocked[j]) continue;
@@ -171,7 +177,11 @@ export function showRoll(isLocked: IsLocked, buffer: Float32Array) {
   }
 }
 
-export function showResult(isLocked: IsLocked, result: DiceResult) {
+export function showResult(
+  isLocked: IsLocked,
+  result: DiceResult,
+  isLastRoll: boolean,
+) {
   scene.cup.keyframes.push(...generateCupOut());
 
   scene.diceList.forEach((dice) =>
@@ -182,8 +192,12 @@ export function showResult(isLocked: IsLocked, result: DiceResult) {
     }),
   );
   for (let i = 0; i < 5; i++) {
-    if (isLocked[i]) showLockedDice(i, result[i]);
-    else showUnlockedDice(i, result[i]);
+    if (isLastRoll) {
+      showUnlockedDice(i, result[i]);
+    } else {
+      if (isLocked[i]) showLockedDice(i, result[i]);
+      else showUnlockedDice(i, result[i]);
+    }
   }
 }
 
