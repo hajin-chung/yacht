@@ -116,16 +116,31 @@ button {
   height: 100%;
 }
 
+#info {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  gap: 8px;
+}
+
+#whoseTurn {
+  padding: 8px;
+  font-size: 20px;
+  background-color: white;
+  border-radius: 8px;
+  background-color: white;
+}
+
 #leftRolls {
   padding: 8px;
   font-size: 20px;
   background-color: white;
   border-radius: 8px;
   background-color: white;
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  z-index: 10;
 }
 
 #controls {

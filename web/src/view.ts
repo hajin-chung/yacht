@@ -87,10 +87,21 @@ export function showUserStatus(status: UserStatus) {
   else if (status === "PLAYING") hideLobby();
 }
 
-export function showPlayerIds(playerIds: string[]) {
+export function showLeftRolls(leftRolls: number) {
+  $("#leftRolls").innerText = `Left Rolls: ${leftRolls}`;
+}
+
+export function showPlayerIds(
+  playerIds: string[],
+  myId: string,
+  turns: number,
+) {
   // show playerIds on score sheet
-  $("#player1Id").innerText = playerIds[0];
-  $("#player2Id").innerText = playerIds[1];
+  $("#player1Id").innerText = myId === playerIds[0] ? "You" : "Opponent";
+  $("#player2Id").innerText = myId === playerIds[1] ? "You" : "Opponent";
+
+  $("#whoseTurn").innerText =
+    myId === playerIds[turns % 2] ? "Your Turn" : "Opponent's Turn";
 }
 
 export function showScoreSheet(
