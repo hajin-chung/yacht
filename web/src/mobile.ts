@@ -22,37 +22,11 @@ function isLandscape() {
 }
 
 // Combine the checks
-function checkMobileFullscreenLandscape() {
+export function checkMobileFullscreenLandscape() {
   if (!isMobileDevice()) return;
-  if (!isFullscreen()) return;
-
-  document.body.requestFullscreen();
-
+  if (!isFullscreen()) document.body.requestFullscreen();
   if (!isLandscape()) return;
 
   const s = screen as any;
   s.orientation.lock("landscape");
-}
-
-export function checkMobile() {
-  checkMobileFullscreenLandscape();
-
-  // Optionally, you can add event listeners to check when fullscreen mode or orientation changes
-  document.addEventListener("fullscreenchange", checkMobileFullscreenLandscape);
-  document.addEventListener(
-    "webkitfullscreenchange",
-    checkMobileFullscreenLandscape,
-  );
-  document.addEventListener(
-    "mozfullscreenchange",
-    checkMobileFullscreenLandscape,
-  );
-  document.addEventListener(
-    "MSFullscreenChange",
-    checkMobileFullscreenLandscape,
-  );
-
-  window.addEventListener("orientationchange", checkMobileFullscreenLandscape);
-  window.addEventListener("resize", checkMobileFullscreenLandscape);
-  window.addEventListener("touchstart", checkMobileFullscreenLandscape);
 }

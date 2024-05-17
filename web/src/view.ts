@@ -16,6 +16,7 @@ import {
   onSelectScore,
   onShake,
 } from "./controller";
+import { checkMobileFullscreenLandscape } from "./mobile";
 import { scene } from "./scene";
 import { DiceResult, IsLocked, UserStatus } from "./types";
 import { $, $$ } from "./utils";
@@ -25,11 +26,11 @@ export const pointer: THREE.Vector2 = new THREE.Vector2();
 export let isMouseDown = false;
 
 export function initView() {
-  // init button click handlers
   $("#queue").onclick = onQueue;
   $("#cancelQueue").onclick = onCancelQueue;
   $("#controls #shake").onclick = onShake;
   $("#controls #roll").onclick = onRoll;
+  $("#fullscreen").onclick = checkMobileFullscreenLandscape
 
   $$("#player1 > button").forEach((scoreButton, idx) => {
     scoreButton.onclick = () => onSelectScore(0, idx);

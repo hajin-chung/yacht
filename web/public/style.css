@@ -126,6 +126,16 @@ button {
   gap: 8px;
 }
 
+#fullscreen {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 10;
+  width: 32px;
+  height: 32px;
+  padding: 2px;
+}
+
 #whoseTurn {
   padding: 8px;
   font-size: 20px;
