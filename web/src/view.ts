@@ -93,13 +93,16 @@ export function showPlayerIds(playerIds: string[]) {
   $("#player2Id").innerText = playerIds[1];
 }
 
-export function showScoreSheet(scores: [number[], number[]]) {
+export function showScoreSheet(
+  scores: [number[], number[]],
+  selected: [boolean[], boolean[]],
+) {
   // update score sheet scores
   $$("#player1 > button").forEach((elem, idx) => {
-    elem.innerText = scores[0][idx].toString();
+    if (selected[0][idx]) elem.innerText = scores[0][idx].toString();
   });
   $$("#player2 > button").forEach((elem, idx) => {
-    elem.innerText = scores[1][idx].toString();
+    if (selected[1][idx]) elem.innerText = scores[1][idx].toString();
   });
 }
 

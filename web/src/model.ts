@@ -56,7 +56,7 @@ class StateSingleton {
     }
     this.game = gameState;
     showPlayerIds(gameState.playerId);
-    showScoreSheet(gameState.scores);
+    showScoreSheet(gameState.scores, gameState.selected);
     if (this.game.leftRolls === 3) {
       showEncup(this.game.isLocked);
     } else {
@@ -127,7 +127,7 @@ class StateSingleton {
 
     const playerIdx = playerId === this.game?.playerId[0] ? 0 : 1;
     this.game.scores[playerIdx][scoreIdx] = score;
-    showScoreSheet(this.game.scores);
+    showScoreSheet(this.game.scores, this.game.selected);
   }
 }
 
