@@ -24,13 +24,9 @@ function isLandscape() {
 // Combine the checks
 function checkMobileFullscreenLandscape() {
   if (!isMobileDevice()) return;
-
-  alert("on mobile!");
-
   if (!isFullscreen()) return;
 
-  const d = document as any;
-  d.requestFullscreen();
+  document.body.requestFullscreen();
 
   if (!isLandscape()) return;
 
@@ -58,4 +54,5 @@ export function checkMobile() {
 
   window.addEventListener("orientationchange", checkMobileFullscreenLandscape);
   window.addEventListener("resize", checkMobileFullscreenLandscape);
+  window.addEventListener("touchstart", checkMobileFullscreenLandscape);
 }
