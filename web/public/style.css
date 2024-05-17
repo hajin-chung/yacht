@@ -155,9 +155,14 @@ button {
   z-index: 10;
   position: absolute;
   left: 8px;
-  bottom: 8px;
+  bottom: -100%;
   display: flex;
   gap: 16px;
+  transition: all 0.5s ease-in-out;
+}
+
+#scoreSheet.open {
+  bottom: 8px;
 }
 
 #scoreSheet > div {

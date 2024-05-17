@@ -98,6 +98,7 @@ export function showScoreSheet(
   selected: [boolean[], boolean[]],
 ) {
   // update score sheet scores
+  $("#scoreSheet").classList.add("open");
   $$("#player1 > button").forEach((elem, idx) => {
     if (selected[0][idx]) {
       elem.innerText = scores[0][idx].toString();
