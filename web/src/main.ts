@@ -3,6 +3,7 @@ import { loadAssets } from "./assets";
 import { hideLoading, initView, showIdle, showLoading } from "./view";
 import { initRapier } from "./rapier";
 import { initScene } from "./scene";
+import { checkMobile } from "./mobile";
 
 // init threejs
 // init rapier
@@ -11,6 +12,7 @@ import { initScene } from "./scene";
 async function init() {
   showLoading();
 
+  checkMobile();
   initView();
   await loadAssets();
   await initRapier();
