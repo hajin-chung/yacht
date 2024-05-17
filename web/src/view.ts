@@ -99,10 +99,16 @@ export function showScoreSheet(
 ) {
   // update score sheet scores
   $$("#player1 > button").forEach((elem, idx) => {
-    if (selected[0][idx]) elem.innerText = scores[0][idx].toString();
+    if (selected[0][idx]) {
+      elem.innerText = scores[0][idx].toString();
+      elem.classList.add("selected");
+    }
   });
   $$("#player2 > button").forEach((elem, idx) => {
-    if (selected[1][idx]) elem.innerText = scores[1][idx].toString();
+    if (selected[1][idx]) {
+      elem.innerText = scores[1][idx].toString();
+      elem.classList.add("selected");
+    }
   });
 }
 
