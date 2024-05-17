@@ -447,14 +447,15 @@ func CalculateScore(dice [5]uint8, selection int) uint8 {
 	cnt := [7]uint8{0, 0, 0, 0, 0, 0}
 	cntCount := [6]uint8{0, 0, 0, 0, 0, 0}
 	var straight uint8 = 0
+	var maxStraight uint8 = 0
 	var sum uint8 = 0
 	var cntMax uint8 = 0
-	var maxEyes uint8 = 0
+	var maxCntEyes uint8 = 0
 	for _, eyes := range dice {
 		cnt[eyes]++
 		if cnt[eyes] > cntMax {
 			cntMax = cnt[eyes]
-			maxEyes = eyes
+			maxCntEyes = eyes
 		}
 		sum += eyes
 	}
@@ -462,6 +463,10 @@ func CalculateScore(dice [5]uint8, selection int) uint8 {
 	for _, count := range cnt {
 		if count > 0 {
 			straight++
+			
+			if straight > maxStraight {
+				maxStraight = straight
+			}
 		} else {
 			straight = 0
 		}
@@ -486,18 +491,18 @@ func CalculateScore(dice [5]uint8, selection int) uint8 {
 		return sum
 	case FOUROFAKIND:
 		if cntMax >= 4 {
-			return 4 * maxEyes
+			return 4 * maxCntEyes
 		}
 	case FULLHOUSE:
 		if cntCount[2] == 1 && cntCount[3] == 1 {
 			return sum
 		}
 	case SMALLSTRAIGHT:
-		if straight >= 4 {
+		if maxStraight >= 4 {
 			return 15
 		}
 	case LARGESTRAIGHT:
-		if straight == 5 {
+		if maxStraight == 5 {
 			return 30
 		}
 	case YACHT:
