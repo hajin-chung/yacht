@@ -1,7 +1,6 @@
 FROM node:18-alpine
 WORKDIR /web
-COPY web/package.json web/pnpm-lock.yaml ./
-COPY web/ ./
+COPY . .
 RUN npm install -g pnpm && pnpm install
 
 EXPOSE 5173
