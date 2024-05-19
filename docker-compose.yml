@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  app:
+    image: yy:0.1
+    ports:
+      - "4434:4434"
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
