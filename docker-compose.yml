@@ -7,9 +7,11 @@ services:
       - "4434:4434"
     depends_on:
       - redis
+    environment:
+      - REDIS_ADDR=redis:6379
 
   redis:
     image: redis:latest
     ports:
-      - "6379:6379"
+      - "6379"
 
