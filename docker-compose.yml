@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   app:
-    image: yy:0.1
+    build:
+      context: .
+      dockerfile: server/Dockerfile
     ports:
       - "4434:4434"
     depends_on:
