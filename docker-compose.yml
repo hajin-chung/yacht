@@ -4,7 +4,7 @@ services:
   app:
     build:
       context: server
-      dockerfile: server/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "4434:4434"
     depends_on:
