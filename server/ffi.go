@@ -1,7 +1,7 @@
 package main
 
 /*
-#cgo LDFLAGS: ./lib/libyacht.a -ldl -lm
+#cgo LDFLAGS: -L./lib -lyacht -lm -static
 #include "./lib/yacht.h"
 */
 import "C"

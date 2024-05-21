@@ -6,7 +6,6 @@ RUN cargo build --release
 FROM golang:1.22.2-bookworm as server-builder
 WORKDIR /root
 COPY . .
-RUN mkdir -p /usr/local/include
 COPY --from=lib-builder /root/target/release/libyacht.a ./lib/
 ENV CGO_ENABLED=1
 RUN go build -o yachty-yachta .
