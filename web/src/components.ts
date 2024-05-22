@@ -85,7 +85,7 @@ export class Dice {
       this.pose.translation.z,
     );
     this.rigidBody = world.createRigidBody(rigidBodyDesc);
-    const colliderDesc = rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4).setMass(1000);
+    const colliderDesc = rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4).setMass(2000);
     this.collider = world.createCollider(colliderDesc, this.rigidBody);
   }
 

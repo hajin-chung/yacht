@@ -67,7 +67,7 @@ class Scene {
     const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x080820, 0.8);
     this.scene.add(hemisphereLight);
 
-    this.world = new rapier.World({ x: 0.0, y: -9.0, z: 0.0 });
+    this.world = new rapier.World({ x: 0.0, y: -16.0, z: 0.0 });
     this.world.timestep = 1 / fps;
 
     this.cup = new Cup(this.scene, this.world);

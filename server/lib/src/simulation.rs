@@ -16,7 +16,7 @@ pub fn simulate(buffer: &mut Vec<f32>, result: &Vec<i32>, num: i32) {
     let wall_h = 3.0;
     let wall_d = 0.16;
 
-    let friction = 0.5;
+    let friction = 0.4;
     let restitution = 0.6;
 
     let top = ColliderBuilder::cuboid(wall_w / 2., wall_h, wall_d / 2.)
@@ -56,17 +56,39 @@ pub fn simulate(buffer: &mut Vec<f32>, result: &Vec<i32>, num: i32) {
     collider_set.insert(bottom);
     collider_set.insert(ground);
 
+    let translations = vec![
+        vector![2., 3., 0.],
+        vector![1.5, 4., 1.],
+        vector![1.5, 4., -1.],
+        vector![2.5, 4., 0.5],
+        vector![2.5, 4., -0.5],
+    ];
+
     let mut dice_handles = Vec::new();
-    for _ in 0..num {
+    for i in 0..num {
         let mut rigid_body = RigidBodyBuilder::dynamic().build();
-        rigid_body.set_linvel(vector![0., 0., 0.], true);
-        rigid_body.set_angvel(vector![0., 0., 0.], true);
-        rigid_body.reset_forces(true);
-        rigid_body.reset_torques(true);
+        let translation = translations[i];
+        let rotation = Unit::from_euler_angles(
+            PI * rand::random::<f32>(),
+            PI * rand::random::<f32>(),
+            PI * rand::random::<f32>(),
+        );
+
+        rigid_body.set_translation(translation, true);
+        rigid_body.set_rotation(rotation, true);
+        rigid_body.set_linvel(
+            vector![
+                -4.0 + 2.0 * (rand::random::<f32>() - 0.5),
+                -0.1,
+                rand::random::<f32>() - 0.5
+            ],
+            true,
+        );
+
         let dice_handle = rigid_body_set.insert(rigid_body);
 
         let mut collider = ColliderBuilder::cuboid(0.4, 0.4, 0.4).build();
-        collider.set_mass(1000.0);
+        collider.set_mass(10.0);
         collider_set.insert_with_parent(
             collider,
             dice_handle,
@@ -76,29 +98,7 @@ pub fn simulate(buffer: &mut Vec<f32>, result: &Vec<i32>, num: i32) {
         dice_handles.push(dice_handle);
     }
 
-    let translations = vec![
-        vector![2., 3., 0.],
-        vector![1.5, 4., 1.],
-        vector![1.5, 4., -1.],
-        vector![2.5, 4., 0.5],
-        vector![2.5, 4., -0.5],
-    ];
-
-    for i in 0..num {
-        let body = &mut rigid_body_set[dice_handles[i]];
-        let translation = translations[i];
-        let rotation = Unit::from_euler_angles(
-            PI * rand::random::<f32>(),
-            PI * rand::random::<f32>(),
-            PI * rand::random::<f32>(),
-        );
-        body.set_translation(translation, true);
-        body.set_rotation(rotation, true);
-
-        body.add_force(vector![-0.6, -0.1, 0.1], true);
-    }
-
-    let gravity = vector![0., -8.0, 0.];
+    let gravity = vector![0., -16.0, 0.];
     let mut integration_parameters = IntegrationParameters::default();
     let mut physics_pipeline = PhysicsPipeline::new();
     let mut island_manager = IslandManager::new();
@@ -132,7 +132,9 @@ pub fn simulate(buffer: &mut Vec<f32>, result: &Vec<i32>, num: i32) {
         let mut is_dice_moving = false;
         for i in 0..num {
             let dice_body: &RigidBody = &rigid_body_set[dice_handles[i]];
-            if dice_body.is_moving() {
+            if dice_body.linvel().magnitude() > 0.01
+                || dice_body.angvel().magnitude() > 0.01
+            {
                 is_dice_moving = true;
             }
 
