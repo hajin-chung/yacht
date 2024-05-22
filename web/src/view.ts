@@ -30,7 +30,7 @@ export function initView() {
   $("#cancelQueue").onclick = onCancelQueue;
   $("#controls #shake").onclick = onShake;
   $("#controls #roll").onclick = onRoll;
-  $("#fullscreen").onclick = checkMobileFullscreenLandscape
+  $("#fullscreen").onclick = checkMobileFullscreenLandscape;
 
   $$("#player1 > button").forEach((scoreButton, idx) => {
     scoreButton.onclick = () => onSelectScore(0, idx);
@@ -105,10 +105,7 @@ export function showPlayerIds(
     myId === playerIds[turns % 2] ? "Your Turn" : "Opponent's Turn";
 }
 
-export function showScoreSheet(
-  scores: number[][],
-  selected: boolean[][],
-) {
+export function showScoreSheet(scores: number[][], selected: boolean[][]) {
   // update score sheet scores
   $("#scoreSheet").classList.add("open");
   $$("#player1 > button").forEach((elem, idx) => {
@@ -127,6 +124,9 @@ export function showScoreSheet(
 
 export function showShake() {
   scene.cup.keyframes.push(...generateShake());
+  scene.diceList.forEach((dice) =>
+    dice.keyframes.push({ type: "wait", steps: 16 }),
+  );
 }
 
 export function showEncup(isLocked: IsLocked) {
