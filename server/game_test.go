@@ -6,8 +6,8 @@ import (
 	"testing"
 )
 
-func randomDice() uint8 {
-	return uint8(rand.Uint32()%6 + 1)
+func randomDice() int {
+	return int(rand.Uint32()%6 + 1)
 }
 
 func randomSelection() int {
@@ -16,7 +16,7 @@ func randomSelection() int {
 
 func TestCalculateScore(t *testing.T) {
 	for i := 0; i < 30; i++ {
-		dice := [5]uint8{randomDice(), randomDice(), randomDice(), randomDice(), randomDice()}
+		dice := [5]int{randomDice(), randomDice(), randomDice(), randomDice(), randomDice()}
 		selection := randomSelection()
 		score := CalculateScore(dice, selection)
 

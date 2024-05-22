@@ -15,36 +15,35 @@ const (
 	GAME_DONE               = "DONE"
 )
 
-type Score uint8
-
 const (
-	ACES          Score = 0
-	DEUCES              = 1
-	THREES              = 2
-	FOURS               = 3
-	FIVES               = 4
-	SIXES               = 5
-	CHOICE              = 6
-	FOUROFAKIND         = 7
-	FULLHOUSE           = 8
-	SMALLSTRAIGHT       = 9
-	LARGESTRAIGHT       = 10
-	YACHT               = 11
+	ACES          int = 0
+	DEUCES            = 1
+	THREES            = 2
+	FOURS             = 3
+	FIVES             = 4
+	SIXES             = 5
+	CHOICE            = 6
+	FOUROFAKIND       = 7
+	FULLHOUSE         = 8
+	SMALLSTRAIGHT     = 9
+	LARGESTRAIGHT     = 10
+	YACHT             = 11
 )
 
-const MAX_TURN = 2 * 12
+const SCORE_COUNT = 12
+const MAX_ROLL = 3
 
 type GameState struct {
-	Id        string     `msgpack:"id"`
-	PlayerIds []string   `msgpack:"playerIds"`
-	Status    GameStatus `msgpack:"status"`
-	Selected  [][12]bool `msgpack:"selected"`
-	Scores    [][12]int  `msgpack:"scores"`
-	Turn      int        `msgpack:"turn"`
-	LeftRolls int        `msgpack:"leftRolls"`
-	InCup     bool       `msgpack:"inCup"`
-	IsLocked  [5]bool    `msgpack:"isLocked"`
-	Dice      [5]int     `msgpack:"dice"`
+	Id        string              `msgpack:"id"`
+	PlayerIds []string            `msgpack:"playerIds"`
+	Status    GameStatus          `msgpack:"status"`
+	Selected  [][SCORE_COUNT]bool `msgpack:"selected"`
+	Scores    [][SCORE_COUNT]int  `msgpack:"scores"`
+	Turn      int                 `msgpack:"turn"`
+	LeftRolls int                 `msgpack:"leftRolls"`
+	InCup     bool                `msgpack:"inCup"`
+	IsLocked  [5]bool             `msgpack:"isLocked"`
+	Dice      [5]int              `msgpack:"dice"`
 }
 
 func (game *GameState) Next() {
@@ -56,7 +55,7 @@ func (game *GameState) Next() {
 	game.Turn++
 	game.InCup = true
 
-	if game.Turn == MAX_TURN {
+	if game.Turn == len(game.PlayerIds) * SCORE_COUNT {
 		game.Status = GAME_DONE
 
 		for _, playerId := range game.PlayerIds {
@@ -109,7 +108,7 @@ func StartGame(playerIds []string) {
 		Scores:    scores,
 		Turn:      0,
 		InCup:     true,
-		LeftRolls: 3,
+		LeftRolls: MAX_ROLL,
 		IsLocked:  [5]bool{},
 		Dice:      [5]int{},
 	}
@@ -454,7 +453,7 @@ func CalculateScore(dice [5]int, selection int) int {
 		cntCount[count]++
 	}
 
-	switch Score(selection) {
+	switch selection {
 	case ACES:
 		return cnt[1]
 	case DEUCES:
