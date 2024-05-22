@@ -31,7 +31,7 @@ func MatchMaker(ticker *time.Ticker) {
 			RemoveUserQueue(player1Id)
 			RemoveUserQueue(player2Id)
 
-			StartGame(player1Id, player2Id)
+			StartGame([]string{player1Id, player2Id})
 		}
 	}
 }
