@@ -153,7 +153,7 @@ func HandleShake(userId string) error {
 	if !game.InCup {
 		return errors.New("dice is not in cup")
 	}
-	if game.IsPlayersTurn(userId) {
+	if !game.IsPlayersTurn(userId) {
 		return errors.New("not in turn")
 	}
 	if game.LeftRolls <= 0 {
@@ -179,7 +179,7 @@ func HandleEncup(userId string) error {
 		return errors.New("dice already in cup")
 	}
 
-	if game.IsPlayersTurn(userId) {
+	if !game.IsPlayersTurn(userId) {
 		return errors.New("not in turn")
 	}
 
@@ -217,7 +217,7 @@ func HandleDecup(userId string) error {
 		return errors.New("dice already out cup")
 	}
 
-	if game.IsPlayersTurn(userId) {
+	if !game.IsPlayersTurn(userId) {
 		return errors.New("not in turn")
 	}
 
@@ -251,7 +251,7 @@ func HandleRoll(userId string) error {
 	if !game.InCup {
 		return errors.New("dice is not in cup")
 	}
-	if game.IsPlayersTurn(userId) {
+	if !game.IsPlayersTurn(userId) {
 		return errors.New("not in turn")
 	}
 	if game.LeftRolls <= 0 {
@@ -320,7 +320,7 @@ func HandleLockDice(userId string, diceIndex int) error {
 	if game.InCup {
 		return errors.New("dice is in cup")
 	}
-	if game.IsPlayersTurn(userId) {
+	if !game.IsPlayersTurn(userId) {
 		return errors.New("not in turn")
 	}
 	if game.LeftRolls <= 0 {
@@ -358,7 +358,7 @@ func HandleUnlockDice(userId string, diceIndex int) error {
 	if game.InCup {
 		return errors.New("dice is in cup")
 	}
-	if game.IsPlayersTurn(userId) {
+	if !game.IsPlayersTurn(userId) {
 		return errors.New("not in turn")
 	}
 	if game.LeftRolls <= 0 {
@@ -392,7 +392,7 @@ func HandleSelectScore(userId string, selection int) error {
 	if err != nil {
 		return err
 	}
-	if game.IsPlayersTurn(userId) {
+	if !game.IsPlayersTurn(userId) {
 		return errors.New("not in turn")
 	}
 	if selection < 0 || 12 <= selection {
