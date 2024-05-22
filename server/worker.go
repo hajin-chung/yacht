@@ -108,6 +108,12 @@ func (h *Hub) SendMessage(id string, messageType string, data interface{}, err e
 	h.Out <- &Packet{Id: id, Message: encoded}
 }
 
+func (h *Hub) BroadcastMessage(ids []string, messageType string, data interface{}, err error) {
+	for _, id := range ids {
+		h.SendMessage(id, messageType, data, err)
+	}
+}
+
 func HandleMe(userId string) error {
 	status, err := GetUserStatus(userId)
 	if err != nil {

@@ -161,9 +161,7 @@ func HandleShake(userId string) error {
 		return errors.New("no left rolls")
 	}
 
-	for _, playerId := range game.PlayerIds {
-		hub.SendMessage(playerId, "shake", nil, nil)
-	}
+	hub.BroadcastMessage(game.PlayerIds, "shake", nil, nil)
 	return nil
 }
 
@@ -200,9 +198,7 @@ func HandleEncup(userId string) error {
 		return err
 	}
 
-	for _, playerId := range game.PlayerIds {
-		hub.SendMessage(playerId, "encup", nil, nil)
-	}
+	hub.BroadcastMessage(game.PlayerIds, "encup", nil, nil)
 
 	return nil
 }
@@ -236,9 +232,7 @@ func HandleDecup(userId string) error {
 		return err
 	}
 
-	for _, playerId := range game.PlayerIds {
-		hub.SendMessage(playerId, "decup", nil, nil)
-	}
+	hub.BroadcastMessage(game.PlayerIds, "decup", nil, nil)
 	return nil
 }
 
@@ -303,12 +297,10 @@ func HandleRoll(userId string) error {
 	}
 
 	// send message
-	for _, playerId := range game.PlayerIds {
-		hub.SendMessage(playerId, "roll", map[string]interface{}{
-			"result": game.Dice,
-			"buffer": buffer,
-		}, nil)
-	}
+	hub.BroadcastMessage(game.PlayerIds, "roll", map[string]interface{}{
+		"result": game.Dice,
+		"buffer": buffer,
+	}, nil)
 
 	// TODO: free buffer
 
@@ -346,11 +338,9 @@ func HandleLockDice(userId string, diceIndex int) error {
 		return err
 	}
 
-	for _, playerId := range game.PlayerIds {
-		hub.SendMessage(playerId, "lockDice", map[string]interface{}{
-			"dice": diceIndex,
-		}, nil)
-	}
+	hub.BroadcastMessage(game.PlayerIds, "lockDice", map[string]interface{}{
+		"dice": diceIndex,
+	}, nil)
 
 	return nil
 }
@@ -386,11 +376,9 @@ func HandleUnlockDice(userId string, diceIndex int) error {
 		return err
 	}
 
-	for _, playerId := range game.PlayerIds {
-		hub.SendMessage(playerId, "unlockDice", map[string]interface{}{
-			"dice": diceIndex,
-		}, nil)
-	}
+	hub.BroadcastMessage(game.PlayerIds, "unlockDice", map[string]interface{}{
+		"dice": diceIndex,
+	}, nil)
 
 	return nil
 }
@@ -419,13 +407,11 @@ func HandleSelectScore(userId string, selection int) error {
 	game.Selected[game.Turn%len(game.PlayerIds)][selection] = true
 	game.Scores[game.Turn%len(game.PlayerIds)][selection] = score
 
-	for _, playerId := range game.PlayerIds {
-		hub.SendMessage(playerId, "selectScore", map[string]interface{}{
-			"playerId":  userId,
-			"selection": selection,
-			"score":     score,
-		}, nil)
-	}
+	hub.BroadcastMessage(game.PlayerIds, "selectScore", map[string]interface{}{
+		"playerId":  userId,
+		"selection": selection,
+		"score":     score,
+	}, nil)
 
 	game.Next()
 
