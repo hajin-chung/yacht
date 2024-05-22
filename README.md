@@ -17,10 +17,10 @@ realtime 3d secure yacht dice game
 - [x] sending server side simulated dice rotations to client side
 - [x] match making
 - [x] server side game logic
+- [x] client side game logic
 - [ ] authorization & authentication
 - [ ] private & public room
 - [ ] database management
-- [ ] client side game logic
 - [ ] various game effects
 - [ ] frontend stuff
 
@@ -34,19 +34,12 @@ every game data is stored in redis
 ```typescript
 {
     "id": string,
-    "playerId": [string, string],
+    "playerIds": string[],
     "status": "PLAYING" | "DONE",
 
     // keep record of selected scores
-    "selected": [
-        boolean[],
-        boolean[],
-    ],
-    "scores": [
-        number[],
-        number[],
-    ],
-
+    "selected": boolean[][],
+    "scores": boolean[][]
     // num of current turn
     "turn": number,
     "leftRolls": number,
@@ -230,11 +223,3 @@ every message is in a binary using MessagePack for serialization and deserializa
     "error": true | false
 }
 ```
-
-### client implementations
-
-It is tough to think about a elegant way to implement multiple stages of the game. 
-After many hours of careful thought and many trials I found out that
-the best way is to focus on the dice rather than the entire game state.
-
-the dice can be showing the result, locked, rolling, in cup
