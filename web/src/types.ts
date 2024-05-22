@@ -13,10 +13,10 @@ export type DiceResult = [number, number, number, number, number];
 
 export type GameState = {
   id: string;
-  playerId: [string, string];
+  playerIds: string[];
   status: GameStatus;
-  selected: [boolean[], boolean[]];
-  scores: [number[], number[]];
+  selected: boolean[][];
+  scores: number[][];
   turn: number;
   leftRolls: number;
   inCup: boolean;

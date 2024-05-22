@@ -105,7 +105,7 @@ export function onDiceClick(idx: number) {
 
 export function onSelectScore(playerIdx: number, scoreIdx: number) {
   if (!state.game || !state.user) return;
-  if (state.game.playerId[playerIdx] === state.user.id) {
+  if (state.game.playerIds[playerIdx] === state.user.id) {
     sendMessage("selectScore", { selection: scoreIdx });
   }
 }

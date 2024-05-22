@@ -57,7 +57,7 @@ class StateSingleton {
       return;
     }
     this.game = gameState;
-    showPlayerIds(gameState.playerId, this.user.id, this.game.turn);
+    showPlayerIds(gameState.playerIds, this.user.id, this.game.turn);
     showScoreSheet(gameState.scores, gameState.selected);
     showLeftRolls(this.game.leftRolls);
     if (this.game.leftRolls === 3) {
@@ -128,7 +128,7 @@ class StateSingleton {
       return;
     }
 
-    const playerIdx = playerId === this.game?.playerId[0] ? 0 : 1;
+    const playerIdx = playerId === this.game?.playerIds[0] ? 0 : 1;
     this.game.scores[playerIdx][scoreIdx] = score;
     showScoreSheet(this.game.scores, this.game.selected);
   }

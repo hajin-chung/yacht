@@ -106,8 +106,8 @@ export function showPlayerIds(
 }
 
 export function showScoreSheet(
-  scores: [number[], number[]],
-  selected: [boolean[], boolean[]],
+  scores: number[][],
+  selected: boolean[][],
 ) {
   // update score sheet scores
   $("#scoreSheet").classList.add("open");
