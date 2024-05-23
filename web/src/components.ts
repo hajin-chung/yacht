@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { GLTF } from "three/examples/jsm/Addons.js";
-import { Collider, RigidBody, RigidBodyDesc, World } from "@dimforge/rapier3d-compat";
+import { Collider, RigidBody, World } from "@dimforge/rapier3d-compat";
 import { rapier } from "./rapier";
 import { cupX, cupY, generateRandomDicePose } from "./utils";
 import { boardModel, cupModel, diceModel, groundTexture } from "./assets";
