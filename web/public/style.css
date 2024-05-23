@@ -141,6 +141,21 @@ button {
   border-radius: 8px;
 }
 
+#combination {
+  position: absolute;
+  top: 30%;
+  font-size: 44px;
+  font-weight: bold;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  color: white;
+}
+
+#combination.hide {
+  display: none;
+}
+
 #info {
   position: absolute;
   top: 24px;

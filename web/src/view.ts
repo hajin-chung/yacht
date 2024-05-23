@@ -20,7 +20,7 @@ import {
 import { checkMobileFullscreenLandscape } from "./mobile";
 import { scene } from "./scene";
 import { DiceResult, IsLocked, UserStatus } from "./types";
-import { $, $$ } from "./utils";
+import { $, $$, getCombination } from "./utils";
 import * as THREE from "three";
 
 export const pointer: THREE.Vector2 = new THREE.Vector2();
@@ -161,7 +161,11 @@ export function showEncup(isLocked: IsLocked) {
   });
 }
 
-export function showRoll(isLocked: IsLocked, buffer: Float32Array) {
+export function showRoll(
+  isLocked: IsLocked,
+  buffer: Float32Array,
+  result: DiceResult,
+) {
   // cup roll animation
   scene.cup.keyframes.push(...generateCupRoll());
 
@@ -215,6 +219,14 @@ export function showRoll(isLocked: IsLocked, buffer: Float32Array) {
       idx++;
     }
   }
+
+  scene.diceList.forEach((dice, i) => {
+    dice.keyframes.push({
+      type: "wait",
+      steps: 0,
+      callback: i == 0 ? () => showCombination(result) : undefined,
+    });
+  });
 }
 
 export function showResult(
@@ -262,4 +274,15 @@ export function showGameEnd(didWin: boolean) {
 
 export function hideGameEnd() {
   $("#gameEnd").classList.add("hide");
+}
+
+function showCombination(result: DiceResult) {
+  const combination = getCombination(result);
+  if (!combination) return;
+
+  $("#combination").innerText = combination;
+  $("#combination").classList.remove("hide");
+  setTimeout(() => {
+    $("#combination").classList.add("hide");
+  }, 1500);
 }

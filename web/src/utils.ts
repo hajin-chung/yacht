@@ -1,5 +1,6 @@
 import { Vector } from "@dimforge/rapier3d-compat";
 import { Pose } from "./animation";
+import { DiceResult } from "./types";
 
 export function formatJson(json: any) {
   let formattedJson = JSON.stringify(json, null, 2);
@@ -50,4 +51,34 @@ export function minClamp(value: number, min: number): number {
 export function maxClamp(value: number, max: number): number {
   if (value < max) return value;
   else return max;
+}
+
+// returns combination name
+// Four of a Kind, Full House, Small Straight, Large Straight, Yacht
+export function getCombination(result: DiceResult): string | undefined {
+  const countEyes = [0, 0, 0, 0, 0, 0];
+  const countCount = [0, 0, 0, 0, 0, 0];
+  result.forEach((eye) => countEyes[eye - 1]++);
+  countEyes.forEach((count) => countCount[count]++);
+  const maxEyeCount = countEyes.reduce(
+    (max, cnt) => (cnt > max ? cnt : max),
+    0,
+  );
+  if (maxEyeCount === 5) return "Yacht";
+  else if (maxEyeCount === 4) return "Four of a Kind";
+  else if (countCount[2] === 1 && countCount[3] === 1) return "Full House";
+
+  let increase = countEyes[0] > 0 ? 1 : 0;
+  let maxIncrease = increase;
+  for (let i = 1; i < 6; i++) {
+    if (countEyes[i] > 0) increase++;
+    else increase = 0;
+
+    if (increase > maxIncrease) maxIncrease = increase;
+  }
+
+  if (maxIncrease === 5) return "Large Straight";
+  else if (maxIncrease === 4) return "Small Straight";
+
+  return;
 }

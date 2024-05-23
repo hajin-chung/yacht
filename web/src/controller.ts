@@ -51,7 +51,7 @@ export function handleDecup() {
 export function handleRoll(data: RollData) {
   state.setDiceResult(data.result);
   state.reduceLeftRolls();
-  showRoll(state.game!.isLocked, data.buffer);
+  showRoll(state.game!.isLocked, data.buffer, data.result);
   state.setInCup(false);
 }
 
