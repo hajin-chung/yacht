@@ -33,6 +33,10 @@ export function initView() {
   $("#controls #roll").onclick = onRoll;
   $("#fullscreen").onclick = checkMobileFullscreenLandscape;
   $("#gotoLobby").onclick = onGotoLobby;
+  $("#scoreSheetToggle").onclick = () => {
+    if ($("#scoreSheet").classList.contains("hide")) openScoreSheet();
+    else hideScoreSheet();
+  };
 
   $$("#player1 > button").forEach((scoreButton, idx) => {
     scoreButton.onclick = () => onSelectScore(0, idx);
@@ -106,12 +110,14 @@ export function showPlayerIds(
   $("#player2Id").innerText = myId === playerIds[1] ? "You" : "Opponent";
 
   $("#whoseTurn").innerText =
-    myId === playerIds[turns % 2] ? "Your Turn" : "Opponent's Turn";
+    myId === playerIds[turns % playerIds.length]
+      ? "Your Turn"
+      : "Opponent's Turn";
 }
 
 export function showScoreSheet(scores: number[][], selected: boolean[][]) {
   // update score sheet scores
-  $("#scoreSheet").classList.add("open");
+  openScoreSheet();
   $$("#player1 > button").forEach((elem, idx) => {
     if (selected[0][idx]) {
       elem.innerText = scores[0][idx].toString();
@@ -126,8 +132,12 @@ export function showScoreSheet(scores: number[][], selected: boolean[][]) {
   });
 }
 
+export function openScoreSheet() {
+  $("#scoreSheet").classList.remove("hide");
+}
+
 export function hideScoreSheet() {
-  $("#scoreSheet").classList.remove("open");
+  $("#scoreSheet").classList.add("hide");
 }
 
 export function showShake() {

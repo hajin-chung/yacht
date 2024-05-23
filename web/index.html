@@ -1,74 +1,75 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Yacht Dice</title>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/tailwindcss@3.4.3/src/css/preflight.css"
-    />
-    <link rel="stylesheet" href="/style.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap"
-      rel="stylesheet"
-    />
-  </head>
 
-  <body>
-    <div id="root">
-      <div id="loading">
-        <p class="title">Yachty Yachta</p>
-        <div id="spinner">
-          <img class="dice-spinner" src="/images/dice_1.png" />
-          <img class="dice-spinner" src="/images/dice_2.png" />
-          <img class="dice-spinner" src="/images/dice_3.png" />
-          <img class="dice-spinner" src="/images/dice_4.png" />
-          <img class="dice-spinner" src="/images/dice_5.png" />
-        </div>
-        <p>Loading assets...</p>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yacht Dice</title>
+  <link rel="stylesheet" href="https://unpkg.com/tailwindcss@3.4.3/src/css/preflight.css" />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap"
+    rel="stylesheet" />
+</head>
+
+<body>
+  <div id="root">
+    <div id="loading">
+      <p class="title">Yachty Yachta</p>
+      <div id="spinner">
+        <img class="dice-spinner" src="/images/dice_1.png" />
+        <img class="dice-spinner" src="/images/dice_2.png" />
+        <img class="dice-spinner" src="/images/dice_3.png" />
+        <img class="dice-spinner" src="/images/dice_4.png" />
+        <img class="dice-spinner" src="/images/dice_5.png" />
       </div>
-      <div id="game">
-        <div id="lobby">
-          <div id="top">
-            <p class="title">Yachty Yachta</p>
-            <div id="userState">
-              <div id="badge"></div>
-              <p id="userId"></p>
-            </div>
+      <p>Loading assets...</p>
+    </div>
+    <div id="game">
+      <div id="lobby">
+        <div id="top">
+          <p class="title">Yachty Yachta</p>
+          <div id="userState">
+            <div id="badge"></div>
+            <p id="userId"></p>
           </div>
-          <div id="queueLoading">
-            <img class="dice-spinner" src="/images/dice_1.png" />
-            <p>Waiting for opponent</p>
-            <button id="cancelQueue">Cancel</button>
-          </div>
-          <button id="queue">PLAY</button>
         </div>
-        <div id="yacht">
-          <div id="gameEnd" class="hide">
-            <div id="result">
-              <p id="message"></p>
-              <button id="gotoLobby">Go Back to Lobby</button>
-            </div>
+        <div id="queueLoading">
+          <img class="dice-spinner" src="/images/dice_1.png" />
+          <p>Waiting for opponent</p>
+          <button id="cancelQueue">Cancel</button>
+        </div>
+        <button id="queue">PLAY</button>
+      </div>
+      <div id="yacht">
+        <div id="gameEnd" class="hide">
+          <div id="result">
+            <p id="message"></p>
+            <button id="gotoLobby">Go Back to Lobby</button>
           </div>
-          <div id="combination" class="hide"></div>
-          <button id="fullscreen">
-            <img src="/icons/fullscreen.svg" />
+        </div>
+        <div id="combination" class="hide"></div>
+        <button id="fullscreen">
+          <img src="/icons/fullscreen.svg" />
+        </button>
+        <div id="info">
+          <p id="whoseTurn"></p>
+          <p id="leftRolls"></p>
+        </div>
+        <div id="controls">
+          <div id="row">
+            <button id="shake">Shake</button>
+            <button id="roll">Roll</button>
+          </div>
+        </div>
+        <div id="scoreSheet" class="hide">
+          <button id="scoreSheetToggle">
+            <p>Score Sheet</p>
+            <img src="/icons/chevron-up.svg" />
           </button>
-          <div id="info">
-            <p id="whoseTurn"></p>
-            <p id="leftRolls"></p>
-          </div>
-          <div id="controls">
-            <div id="row">
-              <button id="shake">Shake</button>
-              <button id="roll">Roll</button>
-            </div>
-          </div>
-          <div id="scoreSheet">
+          <div id="columns">
             <div id="index">
               <p></p>
               <p>Aces</p>
@@ -115,10 +116,12 @@
               <button class="yacht"></button>
             </div>
           </div>
-          <canvas id="canvas" />
         </div>
+        <canvas id="canvas" />
       </div>
     </div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
 </html>
