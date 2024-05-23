@@ -153,7 +153,7 @@ export function showEncup(isLocked: IsLocked) {
         type: "wait",
         steps: 0,
         callback: () => {
-          dice.simulate = true
+          dice.simulate = true;
           if (scene.mute) scene.mute = false;
         },
       });

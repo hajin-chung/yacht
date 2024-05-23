@@ -3,7 +3,13 @@ import { GLTF } from "three/examples/jsm/Addons.js";
 import { Collider, RigidBody, World } from "@dimforge/rapier3d-compat";
 import { rapier } from "./rapier";
 import { cupX, cupY, generateRandomDicePose } from "./utils";
-import { boardModel, cupModel, diceHoverModel, diceModel, groundTexture } from "./assets";
+import {
+  boardModel,
+  cupModel,
+  diceHoverModel,
+  diceModel,
+  groundTexture,
+} from "./assets";
 import { Keyframe, Pose, animate } from "./animation";
 
 export class Cup {
@@ -162,8 +168,8 @@ export class Ground {
     this.model.position.set(0, -2, 0);
     scene.add(this.model);
 
-    const rigidBodyDesc = rapier.RigidBodyDesc.fixed()
-    this.rigidBody = world.createRigidBody(rigidBodyDesc)
+    const rigidBodyDesc = rapier.RigidBodyDesc.fixed();
+    this.rigidBody = world.createRigidBody(rigidBodyDesc);
     this.rigidBody.setTranslation({ x: 0, y: -0.7, z: 0 }, false);
     const colliderDesc = rapier.ColliderDesc.cuboid(10, 1, 10);
     this.collider = world.createCollider(colliderDesc, this.rigidBody);

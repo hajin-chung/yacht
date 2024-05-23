@@ -112,8 +112,8 @@ class Scene {
     this.diceList.forEach((dice, idx) => {
       const intersects = this.raycaster.intersectObject(dice.model);
       if (intersects.length === 0) {
-        return
-      } 
+        return;
+      }
 
       intersectsWithDice = true;
       if (this.showDiceHover) this.diceHover.show(idx);
@@ -125,7 +125,6 @@ class Scene {
     });
 
     if (!intersectsWithDice) this.diceHover.hide();
-
 
     const intersects = this.raycaster.intersectObject(this.cup.model);
     if (intersects.length > 0) {
@@ -146,19 +145,19 @@ class Scene {
     if (!this.mute) {
       let playCount = 0;
       this.eventQueue.drainCollisionEvents((handle1, handle2, start) => {
-        if (playCount > 5) return
-        if (!start) return
+        if (playCount > 5) return;
+        if (!start) return;
 
         const body1 = this.world.getCollider(handle1).parent();
         const body2 = this.world.getCollider(handle2).parent();
-        const body = body1 || body2
-        if (!body) return
+        const body = body1 || body2;
+        if (!body) return;
 
         const tick = tickSound.cloneNode(true) as HTMLAudioElement;
         tick.volume = minClamp(getMagnitude(body.linvel()), 0.1);
         tick.play();
         playCount++;
-      })
+      });
     }
 
     if (this.isDebug && this.controls) this.controls.update();

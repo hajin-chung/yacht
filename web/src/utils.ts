@@ -39,7 +39,7 @@ export function generateRandomDicePose(idx: number): Pose {
 }
 
 export function getMagnitude(v: Vector): number {
-  return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z)
+  return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
 export function minClamp(value: number, min: number): number {
