@@ -6,6 +6,7 @@ export let diceModel: GLTF;
 export let boardModel: GLTF;
 export let cupModel: GLTF;
 export let groundTexture: THREE.Texture;
+export let tickSound: HTMLAudioElement;
 
 export async function loadAssets() {
   const loader = new GLTFLoader();
@@ -15,4 +16,6 @@ export async function loadAssets() {
   groundTexture = await new THREE.TextureLoader().loadAsync(
     "/textures/wood.jpg",
   );
+  tickSound = new Audio("/sound/tick2.mp3");
+  tickSound.preload = "auto";
 }

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { GLTF } from "three/examples/jsm/Addons.js";
-import { Collider, RigidBody, World } from "@dimforge/rapier3d-compat";
+import { Collider, RigidBody, RigidBodyDesc, World } from "@dimforge/rapier3d-compat";
 import { rapier } from "./rapier";
 import { cupX, cupY, generateRandomDicePose } from "./utils";
 import { boardModel, cupModel, diceModel, groundTexture } from "./assets";
@@ -85,9 +85,9 @@ export class Dice {
       this.pose.translation.z,
     );
     this.rigidBody = world.createRigidBody(rigidBodyDesc);
-    const colliderDesc = rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4).setMass(
-      2000,
-    );
+    const colliderDesc = rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4)
+      .setMass(2000)
+      .setActiveEvents(rapier.ActiveEvents.COLLISION_EVENTS);
     this.collider = world.createCollider(colliderDesc, this.rigidBody);
   }
 
@@ -126,8 +126,10 @@ export class Board {
 
 export class Ground {
   model: THREE.Mesh;
+  collider: Collider;
+  rigidBody: RigidBody;
 
-  constructor(scene: THREE.Scene) {
+  constructor(scene: THREE.Scene, world: World) {
     groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
     groundTexture.repeat.set(10, 10);
     const material = new THREE.MeshStandardMaterial({ map: groundTexture });
@@ -135,5 +137,11 @@ export class Ground {
     this.model.rotateX((Math.PI * 3) / 2);
     this.model.position.set(0, -2, 0);
     scene.add(this.model);
+
+    const rigidBodyDesc = rapier.RigidBodyDesc.fixed()
+    this.rigidBody = world.createRigidBody(rigidBodyDesc)
+    this.rigidBody.setTranslation({ x: 0, y: -0.7, z: 0 }, false);
+    const colliderDesc = rapier.ColliderDesc.cuboid(10, 1, 10);
+    this.collider = world.createCollider(colliderDesc, this.rigidBody);
   }
 }

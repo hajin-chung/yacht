@@ -132,8 +132,8 @@ pub fn simulate(buffer: &mut Vec<f32>, result: &Vec<i32>, num: i32) {
         let mut is_dice_moving = false;
         for i in 0..num {
             let dice_body: &RigidBody = &rigid_body_set[dice_handles[i]];
-            if dice_body.linvel().magnitude() > 0.01
-                || dice_body.angvel().magnitude() > 0.01
+            if dice_body.linvel().magnitude() > 0.001
+                || dice_body.angvel().magnitude() > 0.001
             {
                 is_dice_moving = true;
             }

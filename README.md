@@ -18,7 +18,7 @@ realtime 3d secure yacht dice game
 - [x] match making
 - [x] server side game logic
 - [x] client side game logic
-- [ ] handle game end
+- [x] handle game end
 - [ ] authorization & authentication
 - [ ] private & public room
 - [ ] database management

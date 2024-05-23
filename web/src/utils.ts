@@ -1,3 +1,4 @@
+import { Vector } from "@dimforge/rapier3d-compat";
 import { Pose } from "./animation";
 
 export function formatJson(json: any) {
@@ -35,4 +36,18 @@ export function generateRandomDicePose(idx: number): Pose {
     },
     rotation: { w: 1, x: 0, y: 0, z: 0 },
   };
+}
+
+export function getMagnitude(v: Vector): number {
+  return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z)
+}
+
+export function minClamp(value: number, min: number): number {
+  if (value < min) return min;
+  else return value;
+}
+
+export function maxClamp(value: number, max: number): number {
+  if (value < max) return value;
+  else return max;
 }

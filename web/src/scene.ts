@@ -1,11 +1,12 @@
 import * as THREE from "three";
-import { $, fps } from "./utils";
+import { $, fps, getMagnitude, minClamp } from "./utils";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { rapier } from "./rapier";
 import { Board, Cup, Dice, Ground } from "./components";
-import { World } from "@dimforge/rapier3d-compat";
+import { World, EventQueue } from "@dimforge/rapier3d-compat";
 import { isMouseDown, pointer } from "./view";
 import { onCupClick, onDiceClick } from "./controller";
+import { tickSound } from "./assets";
 
 export let scene: Scene;
 
@@ -27,6 +28,9 @@ class Scene {
 
   cupClicked: boolean = false;
   diceClicked: boolean[] = [false, false, false, false, false];
+
+  eventQueue: EventQueue;
+  mute: boolean = false;
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -73,6 +77,7 @@ class Scene {
 
     this.world = new rapier.World({ x: 0.0, y: -16.0, z: 0.0 });
     this.world.timestep = 1 / fps;
+    this.eventQueue = new rapier.EventQueue(true);
 
     this.cup = new Cup(this.scene, this.world);
     this.diceList = [];
@@ -80,7 +85,7 @@ class Scene {
       this.diceList.push(new Dice(this.scene, this.world, i));
     }
     this.board = new Board(this.scene);
-    this.ground = new Ground(this.scene);
+    this.ground = new Ground(this.scene, this.world);
 
     // this.debug();
 
@@ -93,7 +98,7 @@ class Scene {
   }
 
   update() {
-    this.world.step();
+    this.world.step(this.eventQueue);
     this.cup.update();
     this.diceList.forEach((dice) => dice.update());
 
@@ -120,6 +125,25 @@ class Scene {
   }
 
   render() {
+    console.log(this.mute);
+    if (!this.mute) {
+      let playCount = 0;
+      this.eventQueue.drainCollisionEvents((handle1, handle2, start) => {
+        if (playCount > 5) return
+        if (!start) return
+
+        const body1 = this.world.getCollider(handle1).parent();
+        const body2 = this.world.getCollider(handle2).parent();
+        const body = body1 || body2
+        if (!body) return
+
+        const tick = tickSound.cloneNode(true) as HTMLAudioElement;
+        tick.volume = minClamp(getMagnitude(body.linvel()), 0.1);
+        tick.play();
+        playCount++;
+      })
+    }
+
     if (this.isDebug && this.controls) this.controls.update();
     if (this.isDebug && this.lines) {
       let buffers = this.world.debugRender();

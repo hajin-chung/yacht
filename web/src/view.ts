@@ -145,7 +145,10 @@ export function showEncup(isLocked: IsLocked) {
       dice.keyframes.push({
         type: "wait",
         steps: 0,
-        callback: () => (dice.simulate = true),
+        callback: () => {
+          dice.simulate = true
+          if (scene.mute) scene.mute = false;
+        },
       });
     }
   });
@@ -218,7 +221,10 @@ export function showResult(
     dice.keyframes.push({
       type: "wait",
       steps: 0,
-      callback: () => (dice.simulate = false),
+      callback: () => {
+        dice.simulate = false;
+        if (!scene.mute) scene.mute = true;
+      },
     }),
   );
   for (let i = 0; i < 5; i++) {
