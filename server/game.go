@@ -398,7 +398,7 @@ func HandleSelectScore(userId string, selection int) error {
 	if selection < 0 || 12 <= selection {
 		return errors.New("selection out of bounds")
 	}
-	if game.Selected[game.Turn%2][selection] == true {
+	if game.Selected[game.Turn%len(game.PlayerIds)][selection] == true {
 		return errors.New("score already selected")
 	}
 
