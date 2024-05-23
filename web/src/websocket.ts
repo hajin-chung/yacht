@@ -6,7 +6,6 @@ import {
   UserState,
   GameState,
   SelectScorePayload,
-  GameEndData,
 } from "./types";
 import {
   handleCancelQueue,
