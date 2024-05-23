@@ -53,6 +53,15 @@ export function initView() {
   window.addEventListener("mousedown", () => (isMouseDown = true));
   window.addEventListener("mouseup", () => (isMouseDown = false));
   window.addEventListener("mouseout", () => (isMouseDown = false));
+  window.addEventListener("touchstart", (e) => {
+    isMouseDown = true;
+    if (e.touches.length > 0) {
+      pointer.x = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+      pointer.y = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+    }
+  });
+
+  window.addEventListener("touchend", () => (isMouseDown = false));
 }
 
 export function showLoading() {
