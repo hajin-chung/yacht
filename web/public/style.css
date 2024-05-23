@@ -243,10 +243,11 @@ button {
   height: 24px;
   width: 24px;
   transition: all 0.5s ease-in-out;
+  transform: rotate(180deg);
 }
 
 #scoreSheet.hide > #scoreSheetToggle > img {
-  transform: rotate(180deg);
+  transform: rotate(360deg);
 }
 
 #columns {

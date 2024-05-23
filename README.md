@@ -21,11 +21,11 @@ realtime 3d secure yacht dice game
 - [x] handle game end
 - [x] dice select effect 
 - [x] combination made effect
-- [ ] show calculated scores of current dice result
 - [ ] authorization & authentication
 - [ ] private & public room
 - [ ] database management
 - [ ] frontend stuff
+- [ ] show calculated scores of current dice result
 
 ## server architecture 
 
