@@ -20,7 +20,8 @@ realtime 3d secure yacht dice game
 - [x] client side game logic
 - [x] handle game end
 - [x] dice select effect 
-- [ ] combination made effect
+- [x] combination made effect
+- [ ] show calculated scores of current dice result
 - [ ] authorization & authentication
 - [ ] private & public room
 - [ ] database management
