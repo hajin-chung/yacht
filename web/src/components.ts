@@ -3,7 +3,7 @@ import { GLTF } from "three/examples/jsm/Addons.js";
 import { Collider, RigidBody, World } from "@dimforge/rapier3d-compat";
 import { rapier } from "./rapier";
 import { cupX, cupY, generateRandomDicePose } from "./utils";
-import { boardModel, cupModel, diceModel, groundTexture } from "./assets";
+import { boardModel, cupModel, diceHoverModel, diceModel, groundTexture } from "./assets";
 import { Keyframe, Pose, animate } from "./animation";
 
 export class Cup {
@@ -113,6 +113,30 @@ export class Dice {
       this.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, false);
       this.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, false);
     }
+  }
+}
+
+export class DiceHover {
+  model: THREE.Group<THREE.Object3DEventMap>;
+  scene: THREE.Scene;
+  diceList: Dice[];
+
+  constructor(scene: THREE.Scene, diceList: Dice[]) {
+    this.scene = scene;
+    this.model = diceHoverModel.scene;
+    this.model.visible = false;
+    this.scene.add(this.model);
+    this.diceList = diceList;
+  }
+
+  show(diceIdx: number) {
+    const dicePosition = this.diceList[diceIdx].model.position;
+    this.model.position.set(dicePosition.x, dicePosition.y, dicePosition.z);
+    this.model.visible = true;
+  }
+
+  hide() {
+    this.model.visible = false;
   }
 }
 

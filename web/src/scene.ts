@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { $, fps, getMagnitude, minClamp } from "./utils";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { rapier } from "./rapier";
-import { Board, Cup, Dice, Ground } from "./components";
+import { Board, Cup, Dice, DiceHover, Ground } from "./components";
 import { World, EventQueue } from "@dimforge/rapier3d-compat";
 import { isMouseDown, pointer } from "./view";
 import { onCupClick, onDiceClick } from "./controller";
@@ -22,6 +22,7 @@ class Scene {
 
   cup: Cup;
   diceList: Dice[];
+  diceHover: DiceHover;
   board: Board;
   ground: Ground;
   world: World;
@@ -31,6 +32,8 @@ class Scene {
 
   eventQueue: EventQueue;
   mute: boolean = false;
+  showDiceHover: boolean = false;
+  showCupHover: boolean = false;
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -84,6 +87,7 @@ class Scene {
     for (let i = 0; i < 5; i++) {
       this.diceList.push(new Dice(this.scene, this.world, i));
     }
+    this.diceHover = new DiceHover(this.scene, this.diceList);
     this.board = new Board(this.scene);
     this.ground = new Ground(this.scene, this.world);
 
@@ -102,30 +106,43 @@ class Scene {
     this.cup.update();
     this.diceList.forEach((dice) => dice.update());
 
-    if (isMouseDown) {
-      this.raycaster.setFromCamera(pointer, this.camera);
+    this.raycaster.setFromCamera(pointer, this.camera);
 
-      this.diceList.forEach((dice, idx) => {
-        const intersects = this.raycaster.intersectObject(dice.model);
-        if (intersects.length > 0 && this.diceClicked[idx] === false) {
-          onDiceClick(idx);
-          this.diceClicked[idx] = true;
-        }
-      });
+    let intersectsWithDice = false;
+    this.diceList.forEach((dice, idx) => {
+      const intersects = this.raycaster.intersectObject(dice.model);
+      if (intersects.length === 0) {
+        return
+      } 
 
-      const intersects = this.raycaster.intersectObject(this.cup.model);
-      if (intersects.length > 0 && this.cupClicked === false) {
+      intersectsWithDice = true;
+      if (this.showDiceHover) this.diceHover.show(idx);
+
+      if (isMouseDown && this.diceClicked[idx] === false) {
+        onDiceClick(idx);
+        this.diceClicked[idx] = true;
+      }
+    });
+
+    if (!intersectsWithDice) this.diceHover.hide();
+
+
+    const intersects = this.raycaster.intersectObject(this.cup.model);
+    if (intersects.length > 0) {
+      // show cup hover
+      if (isMouseDown && this.cupClicked === false) {
         onCupClick();
         this.cupClicked = true;
       }
-    } else {
+    }
+
+    if (!isMouseDown) {
       this.cupClicked = false;
       this.diceClicked = [false, false, false, false, false];
     }
   }
 
   render() {
-    console.log(this.mute);
     if (!this.mute) {
       let playCount = 0;
       this.eventQueue.drainCollisionEvents((handle1, handle2, start) => {

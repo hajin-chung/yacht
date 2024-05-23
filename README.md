@@ -19,10 +19,11 @@ realtime 3d secure yacht dice game
 - [x] server side game logic
 - [x] client side game logic
 - [x] handle game end
+- [x] dice select effect 
+- [ ] combination made effect
 - [ ] authorization & authentication
 - [ ] private & public room
 - [ ] database management
-- [ ] various game effects
 - [ ] frontend stuff
 
 ## server architecture 

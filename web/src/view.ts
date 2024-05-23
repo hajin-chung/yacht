@@ -140,6 +140,13 @@ export function showShake() {
 export function showEncup(isLocked: IsLocked) {
   scene.cup.keyframes.push(...generateCupIn());
   scene.diceList.forEach((dice, idx) => {
+    dice.keyframes.push({
+      type: "wait",
+      steps: 0,
+      callback: () => {
+        if (scene.showDiceHover) scene.showDiceHover = false;
+      },
+    });
     if (!isLocked[idx]) {
       dice.keyframes.push(...generateEncupDice(idx));
       dice.keyframes.push({
@@ -224,6 +231,7 @@ export function showResult(
       callback: () => {
         dice.simulate = false;
         if (!scene.mute) scene.mute = true;
+        if (!scene.showDiceHover) scene.showDiceHover = true;
       },
     }),
   );
