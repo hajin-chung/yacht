@@ -15,4 +15,4 @@ export async function loadAssets() {
   groundTexture = await new THREE.TextureLoader().loadAsync(
     "/textures/wood.jpg",
   );
-} 
+}

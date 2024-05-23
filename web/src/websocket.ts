@@ -6,6 +6,7 @@ import {
   UserState,
   GameState,
   SelectScorePayload,
+  GameEndData,
 } from "./types";
 import {
   handleCancelQueue,
@@ -20,6 +21,7 @@ import {
   handleShake,
   handleUnlockDice,
   handleSelectScore,
+  handleGameEnd,
 } from "./controller";
 import { formatJson } from "./utils";
 
@@ -98,6 +100,10 @@ function handleMessage(message: any) {
       handleSelectScore(data.playerId, data.selection, data.score);
       break;
     }
+    case "gameEnd": {
+      handleGameEnd();
+      break;
+    }
     default:
     // TODO: handle error
   }
@@ -114,7 +120,10 @@ export function sendMessage(type: "decup"): void;
 export function sendMessage(type: "roll"): void;
 export function sendMessage(type: "lockDice", data: DiceSelectData): void;
 export function sendMessage(type: "unlockDice", data: DiceSelectData): void;
-export function sendMessage(type: "selectScore", data: SelectScorePayload): void;
+export function sendMessage(
+  type: "selectScore",
+  data: SelectScorePayload,
+): void;
 
 export function sendMessage(type: string, data?: any) {
   const message = { type, data };

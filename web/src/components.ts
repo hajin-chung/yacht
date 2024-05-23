@@ -85,7 +85,9 @@ export class Dice {
       this.pose.translation.z,
     );
     this.rigidBody = world.createRigidBody(rigidBodyDesc);
-    const colliderDesc = rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4).setMass(2000);
+    const colliderDesc = rapier.ColliderDesc.cuboid(0.4, 0.4, 0.4).setMass(
+      2000,
+    );
     this.collider = world.createCollider(colliderDesc, this.rigidBody);
   }
 
@@ -102,14 +104,14 @@ export class Dice {
     const { translation, rotation } = this.pose;
     this.model.position.set(translation.x, translation.y, translation.z);
     this.model.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
-    this.collider.setTranslation(translation)
-    this.collider.setRotation(rotation)
+    this.collider.setTranslation(translation);
+    this.collider.setRotation(rotation);
     this.rigidBody.setTranslation(translation, true);
     this.rigidBody.setRotation(rotation, true);
 
     if (!this.simulate) {
       this.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, false);
-      this.rigidBody.setAngvel({ x: 0, y: 0, z: 0}, false);
+      this.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, false);
     }
   }
 }

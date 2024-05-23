@@ -3,7 +3,7 @@ import { Pose } from "./animation";
 export function formatJson(json: any) {
   let formattedJson = JSON.stringify(json, null, 2);
 
-  formattedJson = formattedJson.replace(/(\[[\d,\s]+?\])/g, function(match) {
+  formattedJson = formattedJson.replace(/(\[[\d,\s]+?\])/g, function (match) {
     return match.replace(/\s+/g, " ");
   });
 

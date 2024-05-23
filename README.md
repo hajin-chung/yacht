@@ -18,6 +18,7 @@ realtime 3d secure yacht dice game
 - [x] match making
 - [x] server side game logic
 - [x] client side game logic
+- [ ] handle game end
 - [ ] authorization & authentication
 - [ ] private & public room
 - [ ] database management
@@ -29,10 +30,10 @@ realtime 3d secure yacht dice game
 the server is written in go and is a simple websocket server
 every game data is stored in redis
 
-### game state
+### state
 
 ```typescript
-{
+type GameState = {
     "id": string,
     "playerIds": string[],
     "status": "PLAYING" | "DONE",
@@ -52,6 +53,12 @@ every game data is stored in redis
 
     // dice results
     "dice": [number, number, number, number, number]
+}
+
+type UserState = {
+    id: string;
+    status: "IDLE" | "QUEUE" | "PLAYING";
+    gameId: string;
 }
 ```
 

@@ -1,6 +1,13 @@
 import { state } from "./model";
 import { GameState, RollData, UserState } from "./types";
-import { showRoll, showShake } from "./view";
+import {
+  hideGameEnd,
+  hideScoreSheet,
+  showGameEnd,
+  showIdle,
+  showRoll,
+  showShake,
+} from "./view";
 import { sendMessage } from "./websocket";
 
 export function handleMe(userState: UserState) {
@@ -62,7 +69,12 @@ export function handleSelectScore(
   score: number,
 ) {
   state.setScore(playerId, scoreIdx, score);
-  sendMessage("gameState");
+  state.next();
+}
+
+export function handleGameEnd() {
+  const didWin = state.didWin();
+  showGameEnd(didWin);
 }
 
 export function onQueue() {
@@ -108,4 +120,12 @@ export function onSelectScore(playerIdx: number, scoreIdx: number) {
   if (state.game.playerIds[playerIdx] === state.user.id) {
     sendMessage("selectScore", { selection: scoreIdx });
   }
+}
+
+export function onGotoLobby() {
+  state.game = undefined;
+  hideGameEnd();
+  sendMessage("me");
+  hideScoreSheet();
+  showIdle();
 }

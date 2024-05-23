@@ -37,8 +37,12 @@ export type SelectScoreData = {
 
 export type SelectScorePayload = {
   selection: number;
-}
+};
 
 export type DiceSelectData = {
   dice: number;
+};
+
+export type GameEndData = {
+  gameId: string;
 };

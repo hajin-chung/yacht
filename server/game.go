@@ -55,7 +55,7 @@ func (game *GameState) Next() {
 	game.Turn++
 	game.InCup = true
 
-	if game.Turn == len(game.PlayerIds) * SCORE_COUNT {
+	if game.Turn == len(game.PlayerIds)*SCORE_COUNT {
 		game.Status = GAME_DONE
 
 		for _, playerId := range game.PlayerIds {

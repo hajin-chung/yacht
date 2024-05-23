@@ -61,7 +61,7 @@ interface Animatable {
 }
 
 export function animate(animatable: Animatable) {
-  if (animatable.keyframes.length === 0) return
+  if (animatable.keyframes.length === 0) return;
 
   const keyframe = animatable.keyframes[0];
 

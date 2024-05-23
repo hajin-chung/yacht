@@ -67,6 +67,24 @@ class StateSingleton {
     }
   }
 
+  next() {
+    if (!this.game) {
+      sendMessage("gameState");
+      return;
+    }
+
+    const nextGameState = structuredClone(this.game);
+    for (let i = 0; i < 5; i++) {
+      nextGameState.isLocked[i] = false;
+      nextGameState.dice[i] = 0;
+    }
+    nextGameState.leftRolls = 3;
+    nextGameState.turn++;
+    nextGameState.inCup = true;
+
+    this.setGameState(nextGameState);
+  }
+
   setInCup(inCup: boolean) {
     if (!this.game) {
       sendMessage("gameState");
@@ -75,7 +93,8 @@ class StateSingleton {
 
     this.game.inCup = inCup;
     if (inCup) showEncup(this.game.isLocked);
-    else showResult(this.game.isLocked, this.game.dice, this.game.leftRolls === 0);
+    else
+      showResult(this.game.isLocked, this.game.dice, this.game.leftRolls === 0);
   }
 
   setDiceResult(result: DiceResult) {
@@ -129,8 +148,36 @@ class StateSingleton {
     }
 
     const playerIdx = playerId === this.game?.playerIds[0] ? 0 : 1;
+    this.game.selected[playerIdx][scoreIdx] = true;
     this.game.scores[playerIdx][scoreIdx] = score;
     showScoreSheet(this.game.scores, this.game.selected);
+  }
+
+  didWin() {
+    if (!this.user) {
+      sendMessage("me");
+      return false;
+    }
+
+    if (!this.game) {
+      sendMessage("gameState");
+      return false;
+    }
+
+    let maxScorePlayerIdx = 0;
+    const scoreSums = this.game.scores.map((score) =>
+      score.reduce((acc, s) => acc + s, 0),
+    );
+    for (let i = 0; i < scoreSums.length; i++) {
+      if (scoreSums[i] > scoreSums[maxScorePlayerIdx]) {
+        maxScorePlayerIdx = i;
+      }
+    }
+
+    return (
+      scoreSums[maxScorePlayerIdx] ===
+      scoreSums[this.game.playerIds.indexOf(this.user.id)]
+    );
   }
 }
 

@@ -11,6 +11,7 @@ import {
 } from "./animation";
 import {
   onCancelQueue,
+  onGotoLobby,
   onQueue,
   onRoll,
   onSelectScore,
@@ -31,6 +32,7 @@ export function initView() {
   $("#controls #shake").onclick = onShake;
   $("#controls #roll").onclick = onRoll;
   $("#fullscreen").onclick = checkMobileFullscreenLandscape;
+  $("#gotoLobby").onclick = onGotoLobby;
 
   $$("#player1 > button").forEach((scoreButton, idx) => {
     scoreButton.onclick = () => onSelectScore(0, idx);
@@ -61,6 +63,8 @@ export function showIdle() {
   showLobby();
   $("#queueLoading").style.display = "none";
   $("#queue").style.display = "";
+  $("#leftRolls").innerText = "";
+  $("#whoseTurn").innerText = "";
 }
 
 export function showQueue() {
@@ -120,6 +124,10 @@ export function showScoreSheet(scores: number[][], selected: boolean[][]) {
       elem.classList.add("selected");
     }
   });
+}
+
+export function hideScoreSheet() {
+  $("#scoreSheet").classList.remove("open");
 }
 
 export function showShake() {
@@ -231,4 +239,13 @@ export function showLockedDice(idx: number, result: number) {
 export function showUnlockedDice(idx: number, result: number) {
   // animate dice to unlock position
   scene.diceList[idx].keyframes.push(...generateDiceResult(idx, result));
+}
+
+export function showGameEnd(didWin: boolean) {
+  $("#gameEnd").classList.remove("hide");
+  $("#gameEnd #message").innerText = didWin ? "You WIN" : "You Lose";
+}
+
+export function hideGameEnd() {
+  $("#gameEnd").classList.add("hide");
 }

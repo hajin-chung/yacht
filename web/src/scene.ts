@@ -42,11 +42,15 @@ class Scene {
     });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 
-    window.addEventListener('resize', () => {
-      this.camera.aspect = window.innerWidth / window.innerHeight;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
-    }, false);
+    window.addEventListener(
+      "resize",
+      () => {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+      },
+      false,
+    );
 
     this.raycaster = new THREE.Raycaster();
 
@@ -102,7 +106,7 @@ class Scene {
           onDiceClick(idx);
           this.diceClicked[idx] = true;
         }
-      })
+      });
 
       const intersects = this.raycaster.intersectObject(this.cup.model);
       if (intersects.length > 0 && this.cupClicked === false) {
