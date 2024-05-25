@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { GLTF } from "three/examples/jsm/Addons.js";
 import { Collider, RigidBody, World } from "@dimforge/rapier3d-compat";
 import { rapier } from "./rapier";
 import { cupX, cupY, generateRandomDicePose } from "./utils";
@@ -147,10 +146,10 @@ export class DiceHover {
 }
 
 export class Board {
-  model: GLTF;
+  model: THREE.Group<THREE.Object3DEventMap>;
   constructor(scene: THREE.Scene) {
-    this.model = boardModel;
-    scene.add(this.model.scene);
+    this.model = boardModel.scene;
+    scene.add(this.model);
   }
 }
 
