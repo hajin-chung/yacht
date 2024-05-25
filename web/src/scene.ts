@@ -102,7 +102,7 @@ class Scene {
     this.board = new Board(this.scene);
     this.ground = new Ground(this.scene, this.world);
 
-    this.debug();
+    // this.debug();
 
     setInterval(this.loop.bind(this), 1000 / fps);
   }
