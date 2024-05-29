@@ -151,20 +151,21 @@ function slerp(start: Rotation, end: Rotation, t: number): Rotation {
 }
 
 export function generateShake(): Keyframe[] {
-  const dx = 0.4;
+  const dx = 0.8;
+  const dz = 0.6;
   const dy = 1.2;
-  const steps = 4;
+  const steps = 8;
 
   const start = {
     translation: { x: cupX, y: cupY, z: 0 },
     rotation: { w: 1, x: 0, y: 0, z: 0 },
   };
   const left = {
-    translation: { x: cupX - dx, y: cupY - dy, z: 0 },
+    translation: { x: cupX - dx, y: cupY - dy, z: dz },
     rotation: { w: 1, x: 0, y: 0, z: 0 },
   };
   const right = {
-    translation: { x: cupX + dx, y: cupY - dy, z: 0 },
+    translation: { x: cupX + dx, y: cupY - dy, z: -dz },
     rotation: { w: 1, x: 0, y: 0, z: 0 },
   };
 
@@ -204,7 +205,7 @@ export function generateEncupDice(idx: number): Keyframe[] {
 
   const pose: Pose = generateRandomDicePose(idx);
   return [
-    { type: "wait", steps: 8 },
+    { type: "wait", steps: 16 },
     { type: "pose", pose },
   ];
 }
@@ -230,8 +231,8 @@ export function generateCupRoll(): Keyframe[] {
   };
 
   return [
-    { type: "animate", start, end: rotated, steps: 16 },
-    { type: "animate", start: rotated, end, steps: 8 },
+    { type: "animate", start, end: rotated, steps: 24 },
+    { type: "animate", start: rotated, end, steps: 16 },
   ];
 }
 
@@ -244,7 +245,7 @@ export function generateCupOut(): Keyframe[] {
     translation: { x: cupX + 2, y: cupY, z: 0 },
     rotation: { w: 1, x: 0, y: 0, z: 0 },
   };
-  return [{ type: "animate", start, end, steps: 8 }];
+  return [{ type: "animate", start, end, steps: 24 }];
 }
 
 export function generateCupIn(): Keyframe[] {
@@ -252,7 +253,7 @@ export function generateCupIn(): Keyframe[] {
     translation: { x: cupX, y: cupY, z: 0 },
     rotation: { w: 1, x: 0, y: 0, z: 0 },
   };
-  return [{ type: "continue", end, steps: 8 }];
+  return [{ type: "continue", end, steps: 16 }];
 }
 
 const diceRotations: Rotation[] = [
@@ -274,7 +275,7 @@ export function generateDiceLock(idx: number, result: number): Keyframe[] {
     rotation: diceRotations[result - 1],
   };
 
-  return [{ type: "continue", end, steps: 16 }];
+  return [{ type: "continue", end, steps: 24 }];
 }
 
 export function generateDiceResult(idx: number, result: number): Keyframe[] {
@@ -287,5 +288,5 @@ export function generateDiceResult(idx: number, result: number): Keyframe[] {
     rotation: diceRotations[result - 1],
   };
 
-  return [{ type: "continue", end, steps: 16 }];
+  return [{ type: "continue", end, steps: 24 }];
 }

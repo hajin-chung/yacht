@@ -22,7 +22,7 @@ export function $$(query: string): HTMLElement[] {
 
 export const cupX = 3;
 export const cupY = 5;
-export const fps = 30;
+export const fps = 60;
 
 export function random() {
   return 2 * Math.random() - 1;

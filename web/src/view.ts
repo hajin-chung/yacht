@@ -180,6 +180,7 @@ export function showEncup(isLocked: IsLocked) {
 }
 
 export function showRoll(
+  turn: number,
   isLocked: IsLocked,
   buffer: Float32Array,
   result: DiceResult,
@@ -238,11 +239,15 @@ export function showRoll(
     }
   }
 
+  const callback = () => {
+    showCombination(result);
+    showScorePreview(turn, result);
+  };
   scene.diceList.forEach((dice, i) => {
     dice.keyframes.push({
       type: "wait",
       steps: 0,
-      callback: i == 0 ? () => showCombination(result) : undefined,
+      callback: i == 0 ? callback : undefined,
     });
   });
 }
@@ -303,4 +308,57 @@ function showCombination(result: DiceResult) {
   setTimeout(() => {
     $("#combination").classList.add("hide");
   }, 1500);
+}
+
+export function showScorePreview(turn: number, result: DiceResult) {
+  const scores: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  let sum = 0;
+  const cnt = [0, 0, 0, 0, 0, 0, 0];
+  const cntCount = [0, 0, 0, 0, 0, 0];
+  let cntMax = 0;
+
+  for (let i = 0; i < result.length; i++) {
+    sum += result[i];
+    cnt[result[i]]++;
+    if (cnt[result[i]] > cntMax) cntMax = cnt[result[i]];
+  }
+
+  let straight = 0,
+    maxStraight = 0;
+  for (let i = 1; i <= 6; i++) {
+    if (cnt[i] > 0) {
+      straight++;
+      if (straight > maxStraight) maxStraight = straight;
+    } else {
+      straight = 0;
+    }
+
+    cntCount[cnt[i]]++;
+  }
+
+  // aces to sixes
+  for (let i = 1; i <= 6; i++) {
+    scores[i - 1] = cnt[i] * i;
+  }
+  // choice
+  scores[6] = sum;
+  if (cntMax === 4) scores[7] = sum;
+  if (cntCount[2] === 1 && cntCount[3] === 1) scores[8] = sum;
+  if (maxStraight >= 4) scores[9] = 15;
+  if (maxStraight === 5) scores[10] = 30;
+  if (cntCount[5] === 1) scores[11] = 50;
+
+  $$("#player1 > button:not(.selected)").forEach((scoreButton) => {
+    scoreButton.innerText = "";
+  });
+  $$("#player2 > button:not(.selected)").forEach((scoreButton) => {
+    scoreButton.innerText = "";
+  });
+
+  for (let i = 0; i < 12; i++) {
+    const elem = $(`#player${(turn % 2) + 1} > button:nth-child(${i + 2})`);
+    if (elem.classList.contains("selected")) continue;
+    if (scores[i] > 0) elem.innerText = scores[i].toString();
+    else elem.innerText = "";
+  }
 }

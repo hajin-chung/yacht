@@ -429,12 +429,10 @@ func CalculateScore(dice [5]int, selection int) int {
 	var maxStraight int = 0
 	var sum int = 0
 	var cntMax int = 0
-	var maxCntEyes int = 0
 	for _, eyes := range dice {
 		cnt[eyes]++
 		if cnt[eyes] > cntMax {
 			cntMax = cnt[eyes]
-			maxCntEyes = eyes
 		}
 		sum += eyes
 	}
@@ -470,7 +468,7 @@ func CalculateScore(dice [5]int, selection int) int {
 		return sum
 	case FOUROFAKIND:
 		if cntMax >= 4 {
-			return 4 * maxCntEyes
+			return sum 
 		}
 	case FULLHOUSE:
 		if cntCount[2] == 1 && cntCount[3] == 1 {

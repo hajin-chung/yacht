@@ -226,7 +226,7 @@ button {
 }
 
 #scoreSheet {
-  background: rgba(255, 255, 255, 0.31);
+  background: rgba(255, 255, 255, 0.6);
   border-radius: 16px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(9.3px);
@@ -286,15 +286,19 @@ button {
 #columns button {
   width: 72px;
   height: 32px;
-  background: rgba(255, 255, 255, 0.6);
+  background: transparent;
+  font-weight: bold;
+  color: #aaaaaa;
 }
 
 #columns button.selected {
   background: transparent;
+  color: black;
 }
 
-#columns button:hover {
+#columns button:not(.selected):hover {
   background: white;
+  color: #222222;
 }
 
 #index {

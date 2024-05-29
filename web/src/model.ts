@@ -9,6 +9,8 @@ import {
   showUserStatus,
   showEncup,
   showLeftRolls,
+  openScoreSheet,
+  showScorePreview,
 } from "./view";
 import { sendMessage } from "./websocket";
 
@@ -23,6 +25,7 @@ class StateSingleton {
     }
 
     this.game.leftRolls--;
+    if (this.game.leftRolls === 0) openScoreSheet();
     showLeftRolls(this.game.leftRolls);
   }
 
@@ -60,6 +63,7 @@ class StateSingleton {
     showPlayerIds(gameState.playerIds, this.user.id, this.game.turn);
     showScoreSheet(gameState.scores, gameState.selected);
     showLeftRolls(this.game.leftRolls);
+    showScorePreview(this.game.turn, this.game.dice);
     if (this.game.leftRolls === 3) {
       showEncup(this.game.isLocked);
     } else {
